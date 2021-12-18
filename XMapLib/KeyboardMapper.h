@@ -6,10 +6,7 @@
 namespace sds
 {
 	/// <summary>
-	/// Handles achieving smooth, expected mouse movements.
-	/// This class starts a running thread that is used to process the XINPUT_STATE structure and use those values to determine if it should move the mouse cursor, and if so how much.
-	/// The class has an internal MouseInputPoller() instance that fetches controller information via the XInputGetState() function and associated lib.
-	/// It also has public functions for getting and setting the sensitivity as well as setting which thumbstick to use.
+	/// Handles achieving simulated keyboard input, from controller input, using a KeyboardKeyMap for the details.
 	/// </summary>
 	class KeyboardMapper : public CPPThreadRunner<int>
 	{
