@@ -5,12 +5,12 @@
 namespace sds
 {
 	/// <summary>
-	/// Polls for input from the XInput library in it's worker thread function,
-	/// sends them to MouseMapper and Mapper for processing.
+	/// Polls for input from the XInput library in it's worker thread function.
+	/// Values are used in MouseMapper, the main class for use.
 	/// </summary>
 	class MouseInputPoller : public CPPThreadRunner<XINPUT_STATE>
 	{
-		MousePlayerInfo m_localPlayer;
+		MousePlayerInfo m_local_player;
 	protected:
 		/// <summary>
 		/// Worker thread overriding the base pure virtual workThread.
@@ -29,7 +29,7 @@ namespace sds
 			while( !this->m_is_stop_requested)
 			{
 				memset(&tempState, 0, sizeof(XINPUT_STATE));
-				const DWORD error = XInputGetState(m_localPlayer.player_id, &tempState);
+				const DWORD error = XInputGetState(m_local_player.player_id, &tempState);
 				if (error == ERROR_SUCCESS)
 				{
 					if(tempState.dwPacketNumber != lastPacket)
@@ -48,7 +48,7 @@ namespace sds
 		{
 			Start();
 		}
-		explicit MouseInputPoller(MousePlayerInfo &p) : m_localPlayer(p) { }
+		explicit MouseInputPoller(MousePlayerInfo &p) : m_local_player(p) { }
 		MouseInputPoller(const MouseInputPoller& other) = delete;
 		MouseInputPoller(MouseInputPoller&& other) = delete;
 		MouseInputPoller& operator=(const MouseInputPoller& other) = delete;
@@ -95,7 +95,7 @@ namespace sds
 		{
 			XINPUT_STATE ss = {};
 			memset(&ss, 0, sizeof(XINPUT_STATE));
-			return XInputGetState(m_localPlayer.player_id, &ss) == ERROR_SUCCESS;
+			return XInputGetState(m_local_player.player_id, &ss) == ERROR_SUCCESS;
 		}
 		/// <summary>
 		/// Returns status of XINPUT library detecting a controller.
