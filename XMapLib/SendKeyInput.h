@@ -32,7 +32,6 @@ namespace sds::Utilities
 		/// <param name="down"> is a boolean denoting if the keypress event is KEYDOWN or KEYUP</param>
 		void SendScanCode(const int vk, const bool down)
 		{
-			//TODO it has to use a scancode for some video games to register it. Use the KeyboardSettings property.
 			if (m_auto_disable_numlock)
 			{
 				const SHORT NumLockState = GetKeyState(VK_NUMLOCK);
