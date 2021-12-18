@@ -6,8 +6,8 @@
 namespace sds
 {
 	/// <summary>
-	///	Main class for use, for mapping controller input to keyboard input.
-	///	Uses KeyboardKeyMap for the details.
+	/// Main class for use, for mapping controller input to keyboard input.
+	/// Uses KeyboardKeyMap for the details.
 	/// </summary>
 	class KeyboardMapper : public CPPThreadRunner<int>
 	{
