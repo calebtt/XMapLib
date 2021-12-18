@@ -31,7 +31,6 @@ namespace sds
 			const int us_delay_min_max) const noexcept
 		{
 			using namespace sds::Utilities; // for ToFloat() and ToDub() and LogError()
-			using namespace std::ranges;
 			//arg error checking
 			if (sens_min >= sens_max || us_delay_min >= us_delay_max || user_sens < sens_min || user_sens > sens_max)
 				LogError(m_except_build_map + "user sensitivity, or sensitivity range or delay range out of range.");
