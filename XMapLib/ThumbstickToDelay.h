@@ -98,11 +98,11 @@ namespace sds
 		/// Allows getting sensitivity values for the current axis, from using alternate deadzones and sensitivity values for each axis.
 		/// In effect, the delay values returned will be influenced by the state of the other axis.
 		/// </summary>
-		///	<exception cref="std::string"> logs std::string if XinSettings values are unusable. </exception>
+		/// <exception cref="std::string"> logs std::string if XinSettings values are unusable. </exception>
 		/// <param name="sensitivity">int sensitivity value</param>
 		/// <param name="player">MousePlayerInfo struct full of deadzone information</param>
 		/// <param name="whichStick">StickMap enum denoting which thumbstick</param>
-		///	<param name="isX">is it for the X axis?</param>
+		/// <param name="isX">is it for the X axis?</param>
 		ThumbstickToDelay(const int sensitivity, const MousePlayerInfo &player, StickMap whichStick, const bool isX) : m_is_x_axis(isX)
 		{
 			AssertSettings();
