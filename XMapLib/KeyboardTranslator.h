@@ -10,7 +10,8 @@
 namespace sds
 {
 	/// <summary>
-	/// Contains the logic for determining if a key press or mouse click should occur, uses sds::SendKey m_key_send to send the input.
+	/// Contains the logic for determining if a key press or mouse click should occur, uses sds::Utilities::SendKeyInput m_key_send to send the input.
+	///	Function ProcessKeystroke(XINPUT_KEYSTROKE &stroke) is used to process a controller input structure.
 	/// </summary>
 	class KeyboardTranslator
 	{
