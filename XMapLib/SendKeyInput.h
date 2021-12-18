@@ -12,7 +12,6 @@ namespace sds::Utilities
 	/// </summary>
 	class SendKeyInput
 	{
-		INPUT m_keystroke_input = {};
 		bool m_auto_disable_numlock = true; // toggle this to make the default behavior not toggle off numlock on your keyboard
 	public:
 		/// <summary>
