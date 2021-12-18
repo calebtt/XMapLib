@@ -8,8 +8,8 @@ namespace sds
 	struct SensitivityMap
 	{
 	private:
-		const std::string m_exceptMinimum = "Exception in SensitivityMap::SensitivityToMinimum(): ";
-		const std::string m_exceptBuildMap = "Exception in SensitivityMap::BuildSensitivityMap(): ";
+		const std::string m_except_minimum = "Exception in SensitivityMap::SensitivityToMinimum(): ";
+		const std::string m_except_build_map = "Exception in SensitivityMap::BuildSensitivityMap(): ";
 	public:
 		/// <summary>
 		/// Builds a sensitivity map that maps values from sens_min to sens_max to values between
@@ -32,11 +32,11 @@ namespace sds
 			using namespace sds::Utilities; // for ToFloat() and ToDub() and LogError()
 			//arg error checking
 			if (sens_min >= sens_max || us_delay_min >= us_delay_max || user_sens < sens_min || user_sens > sens_max)
-				XELog::LogError(m_exceptBuildMap + "user sensitivity, or sensitivity range or delay range out of range.");
+				LogError(m_except_build_map + "user sensitivity, or sensitivity range or delay range out of range.");
 			auto LogErrorIfFalse = [this](bool val)
 			{
 				if(!val)
-					XELog::LogError(m_exceptBuildMap + "computed value not std::isnormal()");
+					LogError(m_except_build_map + "computed value not std::isnormal()");
 			};
 			//getting new minimum using minimum maximum
 			const int adjustedMinimum = ToInt(std::lerp(ToFloat(us_delay_min), ToFloat(us_delay_min_max), ToFloat(user_sens) / ToFloat(sens_max)));
@@ -81,7 +81,7 @@ namespace sds
 			//arg error checking
 			if (sens_min >= sens_max || us_delay_min >= us_delay_max || user_sens < sens_min || user_sens > sens_max)
 			{
-				Utilities::XELog::LogError(m_exceptMinimum + "user sensitivity, or sensitivity range or delay range out of range.");
+				Utilities::LogError(m_except_minimum + "user sensitivity, or sensitivity range or delay range out of range.");
 				return 1;
 			}
 			const double sensitivityRange = ToDub(sens_max) - ToDub(sens_min);

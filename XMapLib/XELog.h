@@ -8,7 +8,7 @@
 ///	Can be disabled easily or redirected here.
 /// </summary>
 /// <param name="s"></param>
-namespace sds::Utilities::XELog
+namespace sds::Utilities
 {
 	void LogError(std::string_view s)
 	{

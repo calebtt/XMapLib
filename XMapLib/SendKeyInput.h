@@ -100,7 +100,7 @@ namespace sds::Utilities
 				tempInput.ki.wScan = scanCode;
 				UINT ret = CallSendInput(&tempInput, 1);
 				if (ret == 0)
-					XELog::LogError("SendInput returned 0");
+					Utilities::LogError("SendInput returned 0");
 			}
 		}
 		/// <summary>

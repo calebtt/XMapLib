@@ -43,7 +43,7 @@ int main()
 	KeyboardMapper keyer(kplayer);
 	AddTestKeyMappings(keyer);
 	std::string err = mouser.SetSensitivity(55); // 55 out of 100
-	XELog::LogError(err); // won't do anything if the string is empty
+	Utilities::LogError(err); // won't do anything if the string is empty
 	mouser.SetStick(StickMap::RIGHT_STICK);
 	std::cout << "Press [ENTER] to exit." << std::endl;
 	std::cout << "Xbox controller polling started..." << std::endl;

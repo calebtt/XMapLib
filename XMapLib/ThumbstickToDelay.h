@@ -26,17 +26,17 @@ namespace sds
 		{
 			//Assertions about the settings values used by this class.
 			if (MouseSettings::MICROSECONDS_MIN_MAX >= MouseSettings::MICROSECONDS_MAX)
-				Utilities::XELog::LogError("Exception in ThumbstickToDelay() ctor, MICROSECONDS_MIN_MAX >= MICROSECONDS_MAX");
+				Utilities::LogError("Exception in ThumbstickToDelay() ctor, MICROSECONDS_MIN_MAX >= MICROSECONDS_MAX");
 			if (MouseSettings::MICROSECONDS_MIN_MAX <= MouseSettings::MICROSECONDS_MIN)
-				Utilities::XELog::LogError("Exception in ThumbstickToDelay() ctor, MICROSECONDS_MIN_MAX <= MICROSECONDS_MIN");
+				Utilities::LogError("Exception in ThumbstickToDelay() ctor, MICROSECONDS_MIN_MAX <= MICROSECONDS_MIN");
 			if (MouseSettings::MICROSECONDS_MIN >= MouseSettings::MICROSECONDS_MAX)
-				Utilities::XELog::LogError("Exception in ThumbstickToDelay() ctor, MICROSECONDS_MIN >= MICROSECONDS_MAX");
+				Utilities::LogError("Exception in ThumbstickToDelay() ctor, MICROSECONDS_MIN >= MICROSECONDS_MAX");
 			if (MouseSettings::SENSITIVITY_MIN >= MouseSettings::SENSITIVITY_MAX)
-				Utilities::XELog::LogError("Exception in ThumbstickToDelay() ctor, SENSITIVITY_MIN >= SENSITIVITY_MAX");
+				Utilities::LogError("Exception in ThumbstickToDelay() ctor, SENSITIVITY_MIN >= SENSITIVITY_MAX");
 			if (MouseSettings::SENSITIVITY_MIN <= 0)
-				Utilities::XELog::LogError("Exception in ThumbstickToDelay() ctor, SENSITIVITY_MIN <= 0");
+				Utilities::LogError("Exception in ThumbstickToDelay() ctor, SENSITIVITY_MIN <= 0");
 			if (MouseSettings::SENSITIVITY_MAX > 100)
-				Utilities::XELog::LogError("Exception in ThumbstickToDelay() ctor, SENSITIVITY_MAX > 100");
+				Utilities::LogError("Exception in ThumbstickToDelay() ctor, SENSITIVITY_MAX > 100");
 		}
 		void InitFirstPiece(int sensitivity, int xAxisDz, int yAxisDz)
 		{
@@ -189,7 +189,7 @@ namespace sds
 			if (!Utilities::MapFunctions::IsInMap<int, int>(keyValue, m_shared_sensitivity_map, rval))
 			{
 				//this should not happen, but in case it does I want a plain string telling me it did.
-				Utilities::XELog::LogError("Exception in ThumbstickToDelay::GetDelayFromThumbstickValue(int,int,bool): " + BAD_DELAY_MSG);
+				Utilities::LogError("Exception in ThumbstickToDelay::GetDelayFromThumbstickValue(int,int,bool): " + BAD_DELAY_MSG);
 				return 1;
 			}
 			if(rval >= MouseSettings::MICROSECONDS_MIN && rval <= MouseSettings::MICROSECONDS_MAX)
@@ -198,7 +198,7 @@ namespace sds
 			}
 			else
 			{
-				Utilities::XELog::LogError("ThumbstickToDelay::GetDelayFromThumbstickValue(): Failed to acquire mapped value with key: " + (std::to_string(keyValue)));
+				Utilities::LogError("ThumbstickToDelay::GetDelayFromThumbstickValue(): Failed to acquire mapped value with key: " + (std::to_string(keyValue)));
 				return MouseSettings::MICROSECONDS_MAX;
 			}
 		}
