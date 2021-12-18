@@ -42,12 +42,11 @@ int main()
 	MouseMapper mouser(player);
 	KeyboardMapper keyer(kplayer);
 	AddTestKeyMappings(keyer);
-	std::string err = mouser.SetSensitivity(55); // 55 out of 100
+	std::string err = mouser.SetSensitivity(1); // 1 out of 100
 	Utilities::LogError(err); // won't do anything if the string is empty
 	mouser.SetStick(StickMap::RIGHT_STICK);
 	std::cout << "Press [ENTER] to exit." << std::endl;
 	std::cout << "Xbox controller polling started..." << std::endl;
-	std::cout << "Controller reported as: " << (mouser.IsControllerConnected() ? "Connected." : "Disconnected.") << std::endl;
 	do
 	{
 		const bool isControllerConnected = mouser.IsControllerConnected() && keyer.IsControllerConnected();
