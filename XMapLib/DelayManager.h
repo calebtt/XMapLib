@@ -39,11 +39,11 @@ namespace sds::Utilities
 			}
 			return false;
 		}
-		void Reset(size_t newDuration)
+		void Reset(size_t microsec_delay)
 		{
 			m_start_time = std::chrono::high_resolution_clock::now();
 			m_has_fired = false;
-			m_duration = newDuration;
+			m_duration = microsec_delay;
 		}
 	};
 }
