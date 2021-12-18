@@ -5,8 +5,8 @@
 namespace sds
 {
 	/// <summary>
-	/// Polls for input from the XInput library in it's worker thread function,
-	/// sends them to MouseMapper and KeyboardTranslator for processing.
+	/// Polls for input from the XInput library in it's worker thread function.
+	/// Values are used in KeyboardMapper, the main class for use.
 	/// </summary>
 	class KeyboardInputPoller : public CPPThreadRunner<XINPUT_KEYSTROKE>
 	{
