@@ -5,7 +5,7 @@
 namespace sds
 {
 	/// <summary>
-	/// Utility class for processing XINPUT_KEYSTROKE events to mapped input.
+	/// Utility class for holding controller to keyboard maps.
 	/// </summary>
 	struct KeyboardKeyMap
 	{
@@ -19,9 +19,9 @@ namespace sds
 			KEYUP = XINPUT_KEYSTROKE_KEYUP
 		};
 		//Struct members
-		int SendingElementVK;
-		int MappedToVK;
-		bool UsesRepeat;
+		int SendingElementVK = 0;
+		int MappedToVK = 0;
+		bool UsesRepeat = true;
 		ActionType LastAction = ActionType::NONE;
 		Utilities::DelayManager LastSentTime = KeyboardSettings::MICROSECONDS_DELAY_KEYREPEAT;
 		//Ctor
