@@ -2,6 +2,7 @@
 #include "stdafx.h"
 #include "Utilities.h"
 #include <cmath>
+#include <numeric>
 
 namespace sds
 {
@@ -30,6 +31,7 @@ namespace sds
 			const int us_delay_min_max) const noexcept
 		{
 			using namespace sds::Utilities; // for ToFloat() and ToDub() and LogError()
+			using namespace std::ranges;
 			//arg error checking
 			if (sens_min >= sens_max || us_delay_min >= us_delay_max || user_sens < sens_min || user_sens > sens_max)
 				LogError(m_except_build_map + "user sensitivity, or sensitivity range or delay range out of range.");
@@ -39,7 +41,7 @@ namespace sds
 					LogError(m_except_build_map + "computed value not std::isnormal()");
 			};
 			//getting new minimum using minimum maximum
-			const int adjustedMinimum = ToInt(std::lerp(ToFloat(us_delay_min), ToFloat(us_delay_min_max), ToFloat(user_sens) / ToFloat(sens_max)));
+			const int adjustedMinimum = SensitivityToMinimum(user_sens, sens_min, sens_max, us_delay_min, us_delay_min_max);
 			const float fstep = (ToFloat(us_delay_max) - ToFloat(adjustedMinimum)) / (ToFloat(sens_max) - ToFloat(sens_min));
 			const int step = static_cast<int>(std::lroundf(fstep));
 			LogErrorIfFalse(IsNormalF(adjustedMinimum));
