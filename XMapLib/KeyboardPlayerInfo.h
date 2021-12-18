@@ -3,7 +3,7 @@
 namespace sds
 {
 	/// <summary>
-	/// Used as a global data structure to hold player information.
+	/// A data structure to hold player information.
 	/// A default constructed KeyboardPlayerInfo struct has default values that are usable.
 	///	Thread safe.
 	/// </summary>
