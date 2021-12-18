@@ -39,7 +39,7 @@ namespace sds::Utilities
 		}
 		/// <summary>
 		/// One member function calls SendInput with the eventual built INPUT struct.
-		///	This is useful for debugging or re-routing the output for logging/testing of a real-time system.
+		/// This is useful for debugging or re-routing the output for logging/testing of a real-time system.
 		/// </summary>
 		/// <param name="inp">Pointer to first element of INPUT array.</param>
 		/// <param name="numSent">Number of elements in the array to send.</param>
