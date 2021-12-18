@@ -11,7 +11,7 @@ namespace sds::Utilities::MapFunctions
 	///	<param name="retVal">will be set to the value the key points to, if found</param>
 	/// <returns>true if found, false otherwise</returns>
 	template<class T, class H>
-		bool IsInMap(const T keyValue, const std::map<T, H>& curMap, H& retVal)
+	bool IsInMap(const T keyValue, const std::map<T, H>& curMap, H& retVal)
 	{
 		auto itx = std::find_if(curMap.begin(), curMap.end(), [&keyValue](const std::pair<T, H>& elem)
 			{
