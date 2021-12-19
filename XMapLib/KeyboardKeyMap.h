@@ -41,8 +41,7 @@ namespace sds
 		}
 		friend std::ostream& operator<<(std::ostream& os, const KeyboardKeyMap& obj)
 		{
-			return os
-				<< "SendingElementVK: " << obj.SendingElementVK << "\n"
+			return os << "SendingElementVK: " << obj.SendingElementVK << "\n"
 				<< "MappedToVK: " << obj.MappedToVK << " AKA: " << std::quoted(std::string("") + static_cast<char>(obj.MappedToVK)) << "\n"
 				<< "LastAction: " << obj.LastAction << "\n"
 				<< "LastSentTime: " << obj.LastSentTime << "\n";
