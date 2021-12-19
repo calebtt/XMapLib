@@ -13,5 +13,5 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-
+#include "TemplatesForTest.h"
 #endif //PCH_H

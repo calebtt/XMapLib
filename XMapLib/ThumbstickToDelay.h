@@ -60,25 +60,25 @@ namespace sds
 		bool IsBeyondDeadzone(const int val, const bool isX) const
 		{
 			using namespace Utilities;
-			auto GetDeadzoneCurrent = [this](const bool isX)
+			auto GetDeadzoneCurrent = [this](const bool isItX)
 			{
-				return static_cast<int>(isX ? this->m_x_axis_deadzone : this->m_y_axis_deadzone);
+				return static_cast<int>(isItX ? this->m_x_axis_deadzone : this->m_y_axis_deadzone);
 			};
 			const bool move = 
 				(ToFloat(val) > ToFloat(GetDeadzoneCurrent(isX)) 
 					|| ToFloat(val) < -ToFloat(GetDeadzoneCurrent(isX)));
 			return move;
 		}
-		bool IsBeyondAltDeadzone(const int val, const bool isX) const
+		bool IsBeyondAltDeadzone(const int val, const bool isItX) const
 		{
 			using namespace Utilities;
-			auto GetDeadzoneCurrent = [this](const bool isX)
+			auto GetDeadzoneCurrent = [this](const bool isTheX)
 			{
-				return static_cast<int>(isX ? (ToFloat(m_x_axis_deadzone) * m_alt_deadzone_multiplier) : (ToFloat(m_y_axis_deadzone) * m_alt_deadzone_multiplier));
+				return static_cast<int>(isTheX ? (ToFloat(m_x_axis_deadzone) * m_alt_deadzone_multiplier) : (ToFloat(m_y_axis_deadzone) * m_alt_deadzone_multiplier));
 			};
 			const bool move =
-				(ToFloat(val) > ToFloat(GetDeadzoneCurrent(isX))
-					|| ToFloat(val) < -ToFloat(GetDeadzoneCurrent(isX)));
+				(ToFloat(val) > ToFloat(GetDeadzoneCurrent(isItX))
+					|| ToFloat(val) < -ToFloat(GetDeadzoneCurrent(isItX)));
 			return move;
 		}
 		//Returns the dz for the axis, or the alternate if the dz is already activated.
@@ -166,14 +166,14 @@ namespace sds
 			x = GetRangedThumbstickValue(x, xdz);
 			y = GetRangedThumbstickValue(y, ydz);
 			//The transformation function applied to consider the value of both axes in the calculation.
-			auto TransformSensitivityValue = [this](const int x, const int y, const bool isX)
+			auto TransformSensitivityValue = [this](const int tx, const int ty, const bool isX)
 			{
 				using namespace Utilities;
 				double txVal = MouseSettings::SENSITIVITY_MIN;
-				if (isX && (y != 0))
-					txVal = ToDub(std::abs(x)) + (std::sqrt(std::abs(y)) * 3.6);
-				else if (x != 0)
-					txVal = ToDub(std::abs(y)) + (std::sqrt(std::abs(x)) * 3.6);
+				if (isX && (ty != 0))
+					txVal = ToDub(std::abs(tx)) + (std::sqrt(std::abs(ty)) * 3.6);
+				else if (tx != 0)
+					txVal = ToDub(std::abs(ty)) + (std::sqrt(std::abs(tx)) * 3.6);
 				return static_cast<int>(txVal);
 			};
 			x = TransformSensitivityValue(x, y, true);

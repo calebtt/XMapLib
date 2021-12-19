@@ -85,7 +85,7 @@ void AddTestKeyMappings(sds::KeyboardMapper& mapper)
 		KeyboardKeyMap{VK_PAD_DPAD_RIGHT, VK_RIGHT, true} // 'rightarrow'
 	};
 	std::string errorCondition;
-	ranges::for_each(begin(buttons), end(buttons), [&mapper, &errorCondition](const KeyboardKeyMap& m)
+	ranges::for_each(ranges::begin(buttons), ranges::end(buttons), [&mapper, &errorCondition](const KeyboardKeyMap& m)
 		{
 			if (errorCondition.empty())
 			{
