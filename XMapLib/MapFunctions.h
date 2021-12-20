@@ -13,12 +13,15 @@ namespace sds::Utilities::MapFunctions
 	template<class T, class H>
 	bool IsInMap(const T keyValue, const std::map<T, H>& curMap, H& retVal)
 	{
-		auto itx = std::find_if(curMap.begin(), curMap.end(), [&keyValue](const std::pair<T, H>& elem)
-			{
-				return elem.first == keyValue;
-			});
-		if (itx != curMap.end())
-			retVal = itx->second;
-		return (itx != curMap.end());
+		auto it = curMap.find(keyValue);
+		if(it != curMap.end())
+		{
+			retVal = it->second;
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 }

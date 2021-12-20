@@ -2,6 +2,7 @@
 #include "stdafx.h"
 #include <bitset>
 #include "XELog.h"
+#include "MapFunctions.h"
 
 namespace sds::Utilities
 {
@@ -14,6 +15,7 @@ namespace sds::Utilities
 	class SendKeyInput
 	{
 		bool m_auto_disable_numlock = true; // toggle this to make the default behavior not toggle off numlock on your keyboard
+		std::map<int,int> m_scancode_store;
 	public:
 		/// <summary>
 		/// Default Constructor
@@ -108,13 +110,21 @@ namespace sds::Utilities
 		/// </summary>
 		/// <param name="vk"> integer virtual keycode</param>
 		/// <returns></returns>
-		WORD GetScanCode(const int vk) const
+		WORD GetScanCode(const int vk)
 		{
-			//TODO store a list of scan-codes generated from specific VK, no need for an API call every time
 			if (vk > std::numeric_limits<unsigned char>::max() || vk < std::numeric_limits<unsigned char>::min())
 				return 0;
-			const WORD ret = static_cast<WORD> (MapVirtualKeyExA(vk, MAPVK_VK_TO_VSC, 0));
-			return ret;
+			int ret = 0;
+			if(MapFunctions::IsInMap(vk, m_scancode_store, ret))
+			{
+				return ret;
+			}
+			else
+			{
+				const WORD scan = static_cast<WORD> (MapVirtualKeyExA(vk, MAPVK_VK_TO_VSC, 0));
+				m_scancode_store[vk] = scan;
+				return scan;
+			}
 		}
 		/// <summary>
 		/// One member function calls SendInput with the eventual built INPUT struct.
