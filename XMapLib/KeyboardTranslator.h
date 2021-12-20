@@ -6,6 +6,7 @@
 #include <iostream>
 #include <iomanip>
 #include <chrono>
+#include <ranges>
 
 namespace sds
 {
@@ -16,6 +17,7 @@ namespace sds
 	class KeyboardTranslator
 	{
 		const std::string ERR_BAD_VK = "Either WordData.MappedToVK OR WordData.SendElementVK is <= 0";
+		const std::string ERR_DUP_KEYUP = "Sent a duplicate keyup event to handle thumbstick direction changing behavior.";
 		using ClockType = std::chrono::high_resolution_clock;
 		using PointInTime = std::chrono::time_point<ClockType>;
 	private:
@@ -73,13 +75,6 @@ namespace sds
 		void Normal(KeyboardKeyMap &detail, const XINPUT_KEYSTROKE &stroke)
 		{
 			using InpType = sds::KeyboardKeyMap::ActionType;
-			//Does the key send call, updates LastAction and updates LastSentTime
-			auto SendTheKey = [this](KeyboardKeyMap & mp, const bool keyDown, InpType action)
-			{
-				mp.LastAction = action;
-				m_key_send.SendScanCode(mp.MappedToVK, keyDown);
-				mp.LastSentTime.Reset(KeyboardSettings::MICROSECONDS_DELAY_KEYREPEAT); // update last sent time
-			};
 			const bool DoDown = (detail.LastAction == InpType::NONE) && (stroke.Flags & static_cast<WORD>(InpType::KEYDOWN));
 			const bool DoUp = ((detail.LastAction == InpType::KEYDOWN) || (detail.LastAction == InpType::KEYREPEAT)) && (stroke.Flags & static_cast<WORD>(InpType::KEYUP));
 			const bool DoRepeat = detail.UsesRepeat && ((detail.LastAction == InpType::KEYDOWN) || (detail.LastAction == InpType::KEYREPEAT)) && (stroke.Flags & static_cast<WORD>(InpType::KEYREPEAT));
@@ -87,34 +82,7 @@ namespace sds
 			const bool DoUpdate = (detail.LastAction == InpType::KEYUP && detail.LastSentTime.IsElapsed());
 			if (DoDown)
 			{
-				//quick check to see if a different thumbstick axis has been pressed already,
-				//and to release it if the current press is a thumbstick
-				const bool isLeftStick = IsInList(KeyboardSettings::THUMBSTICK_L_VK_LIST, detail.SendingElementVK);
-				const bool isRightStick = IsInList(KeyboardSettings::THUMBSTICK_R_VK_LIST, detail.SendingElementVK);
-				if(isLeftStick)
-				{
-					for (auto& elem : m_map_token_info)
-					{
-						if(IsInList(KeyboardSettings::THUMBSTICK_L_VK_LIST, elem.SendingElementVK) 
-							&& (elem.LastAction == InpType::KEYDOWN || elem.LastAction == InpType::KEYREPEAT))
-						{
-							SendTheKey(elem, false, InpType::KEYUP);
-							break;
-						}
-					}
-				}
-				if (isRightStick)
-				{
-					for (auto& elem : m_map_token_info)
-					{
-						if (IsInList(KeyboardSettings::THUMBSTICK_R_VK_LIST, elem.SendingElementVK)
-							&& (elem.LastAction == InpType::KEYDOWN || elem.LastAction == InpType::KEYREPEAT))
-						{
-							SendTheKey(elem, false, InpType::KEYUP);
-							break;
-						}
-					}
-				}
+				IsOvertaken(detail);
 				SendTheKey(detail, true, InpType::KEYDOWN);
 			}
 			else if (DoUp)
@@ -124,12 +92,48 @@ namespace sds
 			else if (DoUpdate)
 				detail.LastAction = InpType::NONE;
 		}
+		//Does the key send call, updates LastAction and updates LastSentTime
+		void SendTheKey(KeyboardKeyMap& mp, const bool keyDown, KeyboardKeyMap::ActionType action)
+		{
+			mp.LastAction = action;
+			m_key_send.SendScanCode(mp.MappedToVK, keyDown);
+			mp.LastSentTime.Reset(KeyboardSettings::MICROSECONDS_DELAY_KEYREPEAT); // update last sent time
+		};
 		template<typename ListType, typename ValueType>
 		bool IsInList(const ListType &currentList, const ValueType currentValue) const
 		{
 			return std::ranges::find(currentList.begin(),
 				currentList.end(),
 				currentValue) != currentList.end();
+		}
+		/// <summary>
+		/// Check to see if a different axis of the same thumbstick has been pressed already
+		/// </summary>
+		/// <param name="detail">Newest element being set to keydown state</param>
+		/// <returns>true if keyup sent</returns>
+		bool IsOvertaken(const KeyboardKeyMap &detail)
+		{
+			using InpType = sds::KeyboardKeyMap::ActionType;
+			//Determine if the current keydown'd KeyboardKeyMap is left or right thumbstick axis
+			const bool leftAxis = IsInList(KeyboardSettings::THUMBSTICK_L_VK_LIST, detail.SendingElementVK);
+			const bool rightAxis = IsInList(KeyboardSettings::THUMBSTICK_R_VK_LIST, detail.SendingElementVK);
+			bool upSent = false;
+			if (leftAxis || rightAxis)
+			{
+				//ranges is pretty cool
+				auto allDownMaps = m_map_token_info | std::views::filter([](auto& m) { return m.LastAction == InpType::KEYDOWN || m.LastAction == InpType::KEYREPEAT; });
+				std::ranges::for_each(allDownMaps.begin(), allDownMaps.end(), [&upSent, &leftAxis, this](auto& elem)
+					{
+						if (IsInList(leftAxis ? KeyboardSettings::THUMBSTICK_L_VK_LIST : KeyboardSettings::THUMBSTICK_R_VK_LIST, elem.SendingElementVK))
+						{
+							SendTheKey(elem, false, InpType::KEYUP);
+							if (upSent)
+								Utilities::LogError("Error in IsOvertaken(): " + ERR_DUP_KEYUP);
+							upSent = true;
+						}
+					});
+			}
+			return upSent;
 		}
 	};
 
