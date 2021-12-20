@@ -29,11 +29,8 @@ protected:
 /* Entry Point */
 int main()
 {
-	//TODO There still exists a bug where the thumbsticks don't send the keyup to release the mapped key press.
-	//This is because when a thumbstick is depressed in a direction, XInputGetKeystroke() will send the key-down event
-	//but if you then move the thumbstick (while still depressed) to another direction, the corresponding key-up event will not
-	//be sent by the XInputGetKeystroke() library. This can be worked around, by for instance, handling key input as it did using the older XInputGetState() function.
-	//It will be fixed soon.
+	//TODO I believe there still exists a bug where the single thread that spams the most SendInput calls gets 100% of the calls sent
+	//and the other idles. An input queue thread is the way to go.
 	using namespace sds;
 	using namespace sds::Utilities;
 	GetExit getter;

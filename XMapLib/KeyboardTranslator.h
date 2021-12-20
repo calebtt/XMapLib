@@ -74,12 +74,11 @@ namespace sds
 		{
 			using InpType = sds::KeyboardKeyMap::ActionType;
 			//Does the key send call, updates LastAction and updates LastSentTime
-			auto SendTheKey = [this, &detail](const bool isDown, InpType action)
+			auto SendTheKey = [this](KeyboardKeyMap & mp, const bool keyDown, InpType action)
 			{
-				detail.LastAction = action;
-				//m_key_send.Send(detail.MappedToVK, isDown);
-				m_key_send.SendScanCode(detail.MappedToVK, isDown);
-				detail.LastSentTime.Reset(KeyboardSettings::MICROSECONDS_DELAY_KEYREPEAT); // update last sent time
+				mp.LastAction = action;
+				m_key_send.SendScanCode(mp.MappedToVK, keyDown);
+				mp.LastSentTime.Reset(KeyboardSettings::MICROSECONDS_DELAY_KEYREPEAT); // update last sent time
 			};
 			const bool DoDown = (detail.LastAction == InpType::NONE) && (stroke.Flags & static_cast<WORD>(InpType::KEYDOWN));
 			const bool DoUp = ((detail.LastAction == InpType::KEYDOWN) || (detail.LastAction == InpType::KEYREPEAT)) && (stroke.Flags & static_cast<WORD>(InpType::KEYUP));
@@ -87,13 +86,50 @@ namespace sds
 			//If enough time has passed, reset a keyup to none to start the process again
 			const bool DoUpdate = (detail.LastAction == InpType::KEYUP && detail.LastSentTime.IsElapsed());
 			if (DoDown)
-				SendTheKey(true, InpType::KEYDOWN);
+			{
+				//quick check to see if a different thumbstick axis has been pressed already,
+				//and to release it if the current press is a thumbstick
+				const bool isLeftStick = IsInList(KeyboardSettings::THUMBSTICK_L_VK_LIST, detail.SendingElementVK);
+				const bool isRightStick = IsInList(KeyboardSettings::THUMBSTICK_R_VK_LIST, detail.SendingElementVK);
+				if(isLeftStick)
+				{
+					for (auto& elem : m_map_token_info)
+					{
+						if(IsInList(KeyboardSettings::THUMBSTICK_L_VK_LIST, elem.SendingElementVK) 
+							&& (elem.LastAction == InpType::KEYDOWN || elem.LastAction == InpType::KEYREPEAT))
+						{
+							SendTheKey(elem, false, InpType::KEYUP);
+							break;
+						}
+					}
+				}
+				if (isRightStick)
+				{
+					for (auto& elem : m_map_token_info)
+					{
+						if (IsInList(KeyboardSettings::THUMBSTICK_R_VK_LIST, elem.SendingElementVK)
+							&& (elem.LastAction == InpType::KEYDOWN || elem.LastAction == InpType::KEYREPEAT))
+						{
+							SendTheKey(elem, false, InpType::KEYUP);
+							break;
+						}
+					}
+				}
+				SendTheKey(detail, true, InpType::KEYDOWN);
+			}
 			else if (DoUp)
-				SendTheKey(false, InpType::KEYUP);
+				SendTheKey(detail, false, InpType::KEYUP);
 			else if (DoRepeat)
-				SendTheKey(true, InpType::KEYREPEAT);
+				SendTheKey(detail, true, InpType::KEYREPEAT);
 			else if (DoUpdate)
 				detail.LastAction = InpType::NONE;
+		}
+		template<typename ListType, typename ValueType>
+		bool IsInList(const ListType &currentList, const ValueType currentValue) const
+		{
+			return std::ranges::find(currentList.begin(),
+				currentList.end(),
+				currentValue) != currentList.end();
 		}
 	};
 
