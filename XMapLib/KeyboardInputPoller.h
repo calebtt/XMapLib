@@ -32,7 +32,7 @@ namespace sds
 				if (error == ERROR_SUCCESS)
 				{
 					updateState(tempState);
-					//Utilities::XErrorLogger::LogError(std::to_string(tempState.VirtualKey));
+					//Utilities::LogError(std::to_string(tempState.VirtualKey));
 				}
 				//std::this_thread::sleep_for(std::chrono::milliseconds(KeyboardSettings::THREAD_DELAY_POLLER));
 			}

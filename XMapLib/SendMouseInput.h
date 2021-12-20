@@ -43,9 +43,9 @@ namespace sds::Utilities
 		/// </summary>
 		/// <param name="inp">Pointer to first element of INPUT array.</param>
 		/// <param name="numSent">Number of elements in the array to send.</param>
-		void CallSendInput(INPUT* inp, size_t numSent) const
+		UINT CallSendInput(INPUT* inp, size_t numSent) const
 		{
-			SendInput(static_cast<UINT>(numSent), inp, sizeof(INPUT));
+			return SendInput(static_cast<UINT>(numSent), inp, sizeof(INPUT));
 		}
 	};
 }

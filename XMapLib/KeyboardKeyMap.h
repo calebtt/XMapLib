@@ -19,9 +19,9 @@ namespace sds
 			KEYUP = XINPUT_KEYSTROKE_KEYUP
 		};
 		//Struct members
-		int SendingElementVK = 0;
-		int MappedToVK = 0;
-		bool UsesRepeat = true;
+		int SendingElementVK = 0; // VK of controller button
+		int MappedToVK = 0; // VK of mapped-to input (key or mouse button)
+		bool UsesRepeat = true; // Uses the key-repeat behavior when held down
 		ActionType LastAction = ActionType::NONE;
 		Utilities::DelayManager LastSentTime = KeyboardSettings::MICROSECONDS_DELAY_KEYREPEAT;
 		//Ctor

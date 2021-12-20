@@ -2,6 +2,7 @@
 #include "stdafx.h"
 #include <bitset>
 #include "XELog.h"
+
 namespace sds::Utilities
 {
 	/// <summary>
@@ -109,6 +110,7 @@ namespace sds::Utilities
 		/// <returns></returns>
 		WORD GetScanCode(const int vk) const
 		{
+			//TODO store a list of scan-codes generated from specific VK, no need for an API call every time
 			if (vk > std::numeric_limits<unsigned char>::max() || vk < std::numeric_limits<unsigned char>::min())
 				return 0;
 			const WORD ret = static_cast<WORD> (MapVirtualKeyExA(vk, MAPVK_VK_TO_VSC, 0));
