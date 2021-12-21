@@ -34,10 +34,9 @@ namespace sds
 		KeyboardTranslator& operator=(const KeyboardTranslator& other) = delete;
 		KeyboardTranslator& operator=(KeyboardTranslator&& other) = delete;
 		~KeyboardTranslator() = default;
+
 		void ProcessKeystroke(const XINPUT_KEYSTROKE &stroke)
 		{
-			//TODO the thumbsticks can switch to a different direction without sending the "keyup" event at all,
-			//so it needs to automatically send keyup when the thumbstick direction changes.
 			std::ranges::for_each(m_map_token_info.begin(), m_map_token_info.end(), [this, &stroke](auto &w)
 				{
 					if (w.SendingElementVK == stroke.VirtualKey)
@@ -45,6 +44,8 @@ namespace sds
 						this->Normal(w, stroke);
 					}
 				});
+			//Key repeat loop
+			ProcessKeyRepeats();
 		}
 		std::string AddKeyMap(KeyboardKeyMap w)
 		{
@@ -59,6 +60,18 @@ namespace sds
 			m_map_token_info.clear();
 		}
 	private:
+		void ProcessKeyRepeats()
+		{
+			std::ranges::for_each(m_map_token_info.begin(), m_map_token_info.end(), [this](auto& w)
+				{
+					using AT = sds::KeyboardKeyMap::ActionType;
+					if(w.UsesRepeat && (((w.LastAction == AT::KEYDOWN) || (w.LastAction == AT::KEYREPEAT))))
+					{
+						if (w.LastSentTime.IsElapsed())
+							this->SendTheKey(w, true, AT::KEYREPEAT);
+					}
+				});
+		}
 		std::string CheckForVKError(const KeyboardKeyMap& detail) const
 		{
 			if ((detail.MappedToVK <= 0) || (detail.SendingElementVK <= 0))
@@ -77,18 +90,15 @@ namespace sds
 			using InpType = sds::KeyboardKeyMap::ActionType;
 			const bool DoDown = (detail.LastAction == InpType::NONE) && (stroke.Flags & static_cast<WORD>(InpType::KEYDOWN));
 			const bool DoUp = ((detail.LastAction == InpType::KEYDOWN) || (detail.LastAction == InpType::KEYREPEAT)) && (stroke.Flags & static_cast<WORD>(InpType::KEYUP));
-			const bool DoRepeat = detail.UsesRepeat && ((detail.LastAction == InpType::KEYDOWN) || (detail.LastAction == InpType::KEYREPEAT)) && (stroke.Flags & static_cast<WORD>(InpType::KEYREPEAT));
 			//If enough time has passed, reset a keyup to none to start the process again
 			const bool DoUpdate = (detail.LastAction == InpType::KEYUP && detail.LastSentTime.IsElapsed());
 			if (DoDown)
 			{
-				IsOvertaken(detail);
+				IsOvertaking(detail);
 				SendTheKey(detail, true, InpType::KEYDOWN);
 			}
 			else if (DoUp)
 				SendTheKey(detail, false, InpType::KEYUP);
-			else if (DoRepeat)
-				SendTheKey(detail, true, InpType::KEYREPEAT);
 			else if (DoUpdate)
 				detail.LastAction = InpType::NONE;
 		}
@@ -111,7 +121,7 @@ namespace sds
 		/// </summary>
 		/// <param name="detail">Newest element being set to keydown state</param>
 		/// <returns>true if keyup sent</returns>
-		bool IsOvertaken(const KeyboardKeyMap &detail)
+		bool IsOvertaking(const KeyboardKeyMap &detail)
 		{
 			using InpType = sds::KeyboardKeyMap::ActionType;
 			//Determine if the current keydown'd KeyboardKeyMap is left or right thumbstick axis
@@ -128,7 +138,7 @@ namespace sds
 						{
 							SendTheKey(elem, false, InpType::KEYUP);
 							if (upSent)
-								Utilities::LogError("Error in IsOvertaken(): " + ERR_DUP_KEYUP);
+								Utilities::LogError("Error in IsOvertaking(): " + ERR_DUP_KEYUP);
 							upSent = true;
 						}
 					});
