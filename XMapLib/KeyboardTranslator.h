@@ -62,6 +62,8 @@ namespace sds
 	private:
 		void ProcessKeyRepeats()
 		{
+			//TODO fix bug with left thumbstick keys being "stuck down" when being overtaken by
+			//a neighboring thumbstick depress-shift
 			std::ranges::for_each(m_map_token_info.begin(), m_map_token_info.end(), [this](auto& w)
 				{
 					using AT = sds::KeyboardKeyMap::ActionType;
@@ -91,7 +93,7 @@ namespace sds
 			const bool DoDown = (detail.LastAction == InpType::NONE) && (stroke.Flags & static_cast<WORD>(InpType::KEYDOWN));
 			const bool DoUp = ((detail.LastAction == InpType::KEYDOWN) || (detail.LastAction == InpType::KEYREPEAT)) && (stroke.Flags & static_cast<WORD>(InpType::KEYUP));
 			//If enough time has passed, reset a keyup to none to start the process again
-			const bool DoUpdate = (detail.LastAction == InpType::KEYUP && detail.LastSentTime.IsElapsed());
+			//const bool DoUpdate = (detail.LastAction == InpType::KEYUP && detail.LastSentTime.IsElapsed());
 			if (DoDown)
 			{
 				IsOvertaking(detail);
@@ -99,12 +101,13 @@ namespace sds
 			}
 			else if (DoUp)
 				SendTheKey(detail, false, InpType::KEYUP);
-			else if (DoUpdate)
-				detail.LastAction = InpType::NONE;
+			//else if (DoUpdate)
+			//	detail.LastAction = InpType::NONE;
 		}
 		//Does the key send call, updates LastAction and updates LastSentTime
 		void SendTheKey(KeyboardKeyMap& mp, const bool keyDown, KeyboardKeyMap::ActionType action)
 		{
+			//std::cerr << mp << std::endl; // temp logging
 			mp.LastAction = action;
 			m_key_send.SendScanCode(mp.MappedToVK, keyDown);
 			mp.LastSentTime.Reset(KeyboardSettings::MICROSECONDS_DELAY_KEYREPEAT); // update last sent time

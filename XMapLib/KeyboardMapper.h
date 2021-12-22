@@ -80,7 +80,12 @@ namespace sds
 			//thread main loop
 			while (!m_is_stop_requested)
 			{
-				m_mapper.ProcessKeystroke(m_poller.GetUpdatedState());
+				const std::vector<XINPUT_KEYSTROKE> states = m_poller.GetUpdatedState();
+				std::for_each(states.begin(), states.end(), [this](auto& cur)
+					{
+						m_mapper.ProcessKeystroke(cur);
+					});
+				//m_mapper.ProcessKeystroke(m_poller.GetUpdatedState());
 				std::this_thread::sleep_for(std::chrono::milliseconds(KeyboardSettings::THREAD_DELAY_POLLER));
 			}
 			//mark thread status as not running.

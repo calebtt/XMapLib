@@ -8,7 +8,7 @@ namespace sds
 	/// Polls for input from the XInput library in it's worker thread function.
 	/// Values are used in KeyboardMapper, the main class for use.
 	/// </summary>
-	class KeyboardInputPoller : public CPPThreadRunner<XINPUT_KEYSTROKE>
+	class KeyboardInputPoller : public CPPThreadRunner<std::vector<XINPUT_KEYSTROKE>>
 	{
 		KeyboardPlayerInfo m_local_player;
 	protected:
@@ -19,24 +19,54 @@ namespace sds
 		void workThread() override
 		{
 			this->m_is_thread_running = true;
-			{
-				//zero m_local_state before use
-				lock first(m_state_mutex);
-				memset(&m_local_state, 0, sizeof(m_local_state));
-			}
+			//{
+			//	//zero m_local_state before use
+			//	lock first(m_state_mutex);
+			//	memset(&m_local_state, 0, sizeof(m_local_state));
+			//}
 			XINPUT_KEYSTROKE tempState = {};
+			const int EMPTY_COUNT = 5000;
+			int currentCount = 0;
 			while (!this->m_is_stop_requested)
 			{
 				memset(&tempState, 0, sizeof(tempState));
 				const DWORD error = XInputGetKeystroke(m_local_player.player_id, 0, &tempState);
 				if (error == ERROR_SUCCESS)
 				{
-					updateState(tempState);
+					addElement(tempState);
 					//Utilities::LogError(std::to_string(tempState.VirtualKey));
 				}
+				else if(error == ERROR_EMPTY)
+				{
+					currentCount++;
+					if(currentCount > EMPTY_COUNT)
+					{
+						currentCount = 0;
+						addElement(tempState);
+					}
+				}
 				//std::this_thread::sleep_for(std::chrono::milliseconds(KeyboardSettings::THREAD_DELAY_POLLER));
+				//TODO implement a queue to ensure we aren't dropping keystrokes.
+
 			}
 			this->m_is_thread_running = false;
+		}
+		void updateState(const std::vector<XINPUT_KEYSTROKE>& state) = delete; //explicitly hidden base member
+		std::vector<XINPUT_KEYSTROKE> getCurrentState() = delete; //explicitly hidden base member
+		void addElement(const XINPUT_KEYSTROKE &state)
+		{
+			lock addLock(m_state_mutex);
+			if (m_local_state.size() < KeyboardSettings::MAX_STATE_COUNT)
+				m_local_state.push_back(state);
+			else
+				Utilities::LogError("KeyboardInputPoller::addElement(): State buffer dropping states.");
+		}
+		std::vector<XINPUT_KEYSTROKE> getAndClearStates()
+		{
+			lock retrieveLock(m_state_mutex);
+			std::vector<XINPUT_KEYSTROKE> ret(m_local_state);
+			m_local_state.clear();
+			return ret;
 		}
 	public:
 		KeyboardInputPoller()
@@ -56,9 +86,9 @@ namespace sds
 		{
 			Stop();
 		}
-		XINPUT_KEYSTROKE GetUpdatedState()
+		auto GetUpdatedState()
 		{
-			return getCurrentState();
+			return getAndClearStates();
 		}
 		/// <summary>
 		/// Start polling for updated XINPUT_STATE info.
