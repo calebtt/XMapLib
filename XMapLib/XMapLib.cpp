@@ -74,8 +74,8 @@ void AddTestKeyMappings(sds::KeyboardMapper& mapper)
 	const auto buttons =
 	{
 		//https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
-		KeyboardKeyMap{VK_PAD_LTRIGGER, VK_RBUTTON, false},
-		KeyboardKeyMap{VK_PAD_RTRIGGER, VK_LBUTTON, false},
+		KeyboardKeyMap{VK_PAD_LTRIGGER, VK_RBUTTON, false}, // right click
+		KeyboardKeyMap{VK_PAD_RTRIGGER, VK_LBUTTON, false}, // left click
 		KeyboardKeyMap{VK_PAD_LTHUMB_UP, 0x57, true}, // 'w'
 		KeyboardKeyMap{VK_PAD_LTHUMB_LEFT, 0x41, true}, // 'a'
 		KeyboardKeyMap{VK_PAD_LTHUMB_DOWN, 0x53, true}, // 's'
@@ -83,7 +83,18 @@ void AddTestKeyMappings(sds::KeyboardMapper& mapper)
 		KeyboardKeyMap{VK_PAD_DPAD_DOWN, VK_DOWN, true}, // 'downarrow'
 		KeyboardKeyMap{VK_PAD_DPAD_UP, VK_UP, true}, // 'uparrow'
 		KeyboardKeyMap{VK_PAD_DPAD_LEFT, VK_LEFT, true}, // 'leftarrow'
-		KeyboardKeyMap{VK_PAD_DPAD_RIGHT, VK_RIGHT, true} // 'rightarrow'
+		KeyboardKeyMap{VK_PAD_DPAD_RIGHT, VK_RIGHT, true}, // 'rightarrow'
+		KeyboardKeyMap{VK_PAD_LTHUMB_UPLEFT, 0x57, true}, // 'w'
+		KeyboardKeyMap{VK_PAD_LTHUMB_UPLEFT, 0x41, true}, // 'a'
+		KeyboardKeyMap{VK_PAD_LTHUMB_UPRIGHT, 0x57, true}, // 'w'
+		KeyboardKeyMap{VK_PAD_LTHUMB_UPRIGHT, 0x44, true}, // 'd'
+		KeyboardKeyMap{VK_PAD_LTHUMB_DOWNLEFT, 0x53, true}, // 's'
+		KeyboardKeyMap{VK_PAD_LTHUMB_DOWNLEFT, 0x41, true}, // 'a'
+		KeyboardKeyMap{VK_PAD_LTHUMB_DOWNRIGHT, 0x53, true}, // 's'
+		KeyboardKeyMap{VK_PAD_LTHUMB_DOWNRIGHT, 0x44, true}, // 'd'
+		KeyboardKeyMap{VK_PAD_A, VK_SPACE, false}, // ' '
+		KeyboardKeyMap{VK_PAD_B, 0x45, false}, // 'e'
+		KeyboardKeyMap{VK_PAD_X, 0x52, false} // 'r'
 	};
 	std::string errorCondition;
 	ranges::for_each(ranges::begin(buttons), ranges::end(buttons), [&mapper, &errorCondition](const KeyboardKeyMap& m)

@@ -139,7 +139,7 @@ namespace sds
 				const auto stickSettingList = leftStick ? KeyboardSettings::THUMBSTICK_L_VK_LIST : KeyboardSettings::THUMBSTICK_R_VK_LIST;
 				auto TestFunc = [&stickSettingList, &detail](const KeyboardKeyMap& elem)
 				{
-					if ((elem.LastAction == InpType::KEYDOWN || elem.LastAction == InpType::KEYREPEAT) && elem != detail)
+					if ((elem.LastAction == InpType::KEYDOWN || elem.LastAction == InpType::KEYREPEAT) && elem.SendingElementVK != detail.SendingElementVK)
 						return std::find(stickSettingList.begin(), stickSettingList.end(), elem.SendingElementVK) != stickSettingList.end();
 					return false;
 				};
