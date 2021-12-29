@@ -46,5 +46,14 @@ namespace sds
 				<< "LastAction: " << obj.LastAction << "\n"
 				<< "LastSentTime: " << obj.LastSentTime << "\n";
 		}
+		friend bool operator==(const KeyboardKeyMap& lhs, const KeyboardKeyMap& rhs)
+		{
+			return lhs.SendingElementVK == rhs.SendingElementVK
+				&& lhs.MappedToVK == rhs.MappedToVK;
+		}
+		friend bool operator!=(const KeyboardKeyMap& lhs, const KeyboardKeyMap& rhs)
+		{
+			return !(lhs == rhs);
+		}
 	};
 }

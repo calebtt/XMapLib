@@ -12,8 +12,9 @@ void AddTestKeyMappings(sds::KeyboardMapper& mapper);
 class GetExit : public sds::CPPThreadRunner<int>
 {
 	std::atomic<bool> m_exitState = false;
+	const sds::KeyboardMapper& m_mp;
 public:
-	GetExit() : CPPThreadRunner<int>() { startThread(); }
+	GetExit(const sds::KeyboardMapper &m) : CPPThreadRunner<int>(), m_mp(m) { startThread(); }
 	~GetExit() override { stopThread(); }
 	//Returns a bool indicating if the thread should stop.
 	bool operator()() {	return m_exitState; }
@@ -22,6 +23,11 @@ protected:
 	{
 		this->m_is_thread_running = true;
 		std::cin.get(); // block and wait
+		auto mapList = m_mp.GetMaps();
+		std::for_each(begin(mapList), end(mapList), [](const sds::KeyboardKeyMap& theMap)
+			{
+				cout << theMap << endl;
+			});
 		m_exitState = true;
 		this->m_is_thread_running = false;
 	}
@@ -33,17 +39,17 @@ int main()
 	//and the other idles. An input queue thread is the way to go.
 	using namespace sds;
 	using namespace sds::Utilities;
-	GetExit getter;
 	MousePlayerInfo player;
 	KeyboardPlayerInfo kplayer;
 	MouseMapper mouser(player);
 	KeyboardMapper keyer(kplayer);
 	AddTestKeyMappings(keyer);
+	GetExit getter(keyer);
 	std::string err = mouser.SetSensitivity(75); // 75 out of 100
 	Utilities::LogError(err); // won't do anything if the string is empty
 	mouser.SetStick(StickMap::RIGHT_STICK);
-	std::cout << "Press [ENTER] to exit." << std::endl;
-	std::cout << "Xbox controller polling started..." << std::endl;
+	cout << "[Enter] to dump keymap contents and quit." << endl;
+	cout << "Xbox controller polling started..." << endl;
 	do
 	{
 		const bool isControllerConnected = mouser.IsControllerConnected() && keyer.IsControllerConnected();

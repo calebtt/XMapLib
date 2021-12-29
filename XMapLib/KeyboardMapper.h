@@ -69,6 +69,10 @@ namespace sds
 				Start();
 			return er;
 		}
+		std::vector<KeyboardKeyMap> GetMaps() const
+		{
+			return m_mapper.GetMaps();
+		}
 	protected:
 		/// <summary>
 		/// Worker thread, private visibility, gets updated data from ProcessState() function to use.
