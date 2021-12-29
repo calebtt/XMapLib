@@ -11,6 +11,7 @@ namespace sds
 	class KeyboardInputPoller : public CPPThreadRunner<std::vector<XINPUT_KEYSTROKE>>
 	{
 		KeyboardPlayerInfo m_local_player;
+		const int EMPTY_COUNT = 5000;
 	protected:
 		/// <summary>
 		/// Worker thread overriding the base pure virtual workThread.
@@ -19,13 +20,7 @@ namespace sds
 		void workThread() override
 		{
 			this->m_is_thread_running = true;
-			//{
-			//	//zero m_local_state before use
-			//	lock first(m_state_mutex);
-			//	memset(&m_local_state, 0, sizeof(m_local_state));
-			//}
 			XINPUT_KEYSTROKE tempState = {};
-			const int EMPTY_COUNT = 5000;
 			int currentCount = 0;
 			while (!this->m_is_stop_requested)
 			{
@@ -46,8 +41,6 @@ namespace sds
 					}
 				}
 				//std::this_thread::sleep_for(std::chrono::milliseconds(KeyboardSettings::THREAD_DELAY_POLLER));
-				//TODO implement a queue to ensure we aren't dropping keystrokes.
-
 			}
 			this->m_is_thread_running = false;
 		}

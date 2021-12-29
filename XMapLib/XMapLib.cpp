@@ -35,8 +35,6 @@ protected:
 /* Entry Point */
 int main()
 {
-	//TODO I believe there still exists a bug where the single thread that spams the most SendInput calls gets 100% of the calls sent
-	//and the other idles. An input queue thread is the way to go.
 	using namespace sds;
 	using namespace sds::Utilities;
 	MousePlayerInfo player;
