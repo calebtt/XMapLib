@@ -35,7 +35,9 @@ namespace sds
 		KeyboardTranslator& operator=(const KeyboardTranslator& other) = delete;
 		KeyboardTranslator& operator=(KeyboardTranslator&& other) = delete;
 		~KeyboardTranslator() = default;
-
+		/// <summary>
+		/// Process an XINPUT_KEYSTROKE structure.
+		/// </summary>
 		void ProcessKeystroke(const XINPUT_KEYSTROKE &stroke)
 		{
 			//Key update loop
@@ -124,6 +126,7 @@ namespace sds
 		/// Check to see if a different axis of the same thumbstick has been pressed already
 		/// </summary>
 		/// <param name="detail">Newest element being set to keydown state</param>
+		///	<param name="outOvertaken">KeyboardKeyMap set to the keymap being overtaken by the detail</param>
 		/// <returns>true if is overtaking a thumbstick direction already depressed</returns>
 		bool IsOvertaking(const KeyboardKeyMap &detail, KeyboardKeyMap &outOvertaken)
 		{
