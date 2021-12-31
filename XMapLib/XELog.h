@@ -10,7 +10,8 @@
 /// <param name="s"></param>
 namespace sds::Utilities
 {
-	void LogError(std::string_view s)
+	[[msvc::noinline]]
+	inline void LogError(std::string_view s)
 	{
 		if(!s.empty())
 			std::cerr << s << std::endl;

@@ -24,7 +24,7 @@ protected:
 		this->m_is_thread_running = true;
 		std::cin.get(); // block and wait
 		auto mapList = m_mp.GetMaps();
-		std::for_each(begin(mapList), end(mapList), [](const sds::KeyboardKeyMap& theMap)
+		ranges::for_each(ranges::begin(mapList), ranges::end(mapList), [](const sds::KeyboardKeyMap& theMap)
 			{
 				cout << theMap << endl;
 			});

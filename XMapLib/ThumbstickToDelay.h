@@ -25,17 +25,17 @@ namespace sds
 		static void AssertSettings()
 		{
 			//Assertions about the settings values used by this class.
-			if (MouseSettings::MICROSECONDS_MIN_MAX >= MouseSettings::MICROSECONDS_MAX)
+			if constexpr (MouseSettings::MICROSECONDS_MIN_MAX >= MouseSettings::MICROSECONDS_MAX)
 				Utilities::LogError("Exception in ThumbstickToDelay() ctor, MICROSECONDS_MIN_MAX >= MICROSECONDS_MAX");
-			if (MouseSettings::MICROSECONDS_MIN_MAX <= MouseSettings::MICROSECONDS_MIN)
+			if constexpr (MouseSettings::MICROSECONDS_MIN_MAX <= MouseSettings::MICROSECONDS_MIN)
 				Utilities::LogError("Exception in ThumbstickToDelay() ctor, MICROSECONDS_MIN_MAX <= MICROSECONDS_MIN");
-			if (MouseSettings::MICROSECONDS_MIN >= MouseSettings::MICROSECONDS_MAX)
+			if constexpr (MouseSettings::MICROSECONDS_MIN >= MouseSettings::MICROSECONDS_MAX)
 				Utilities::LogError("Exception in ThumbstickToDelay() ctor, MICROSECONDS_MIN >= MICROSECONDS_MAX");
-			if (MouseSettings::SENSITIVITY_MIN >= MouseSettings::SENSITIVITY_MAX)
+			if constexpr (MouseSettings::SENSITIVITY_MIN >= MouseSettings::SENSITIVITY_MAX)
 				Utilities::LogError("Exception in ThumbstickToDelay() ctor, SENSITIVITY_MIN >= SENSITIVITY_MAX");
-			if (MouseSettings::SENSITIVITY_MIN <= 0)
+			if constexpr (MouseSettings::SENSITIVITY_MIN <= 0)
 				Utilities::LogError("Exception in ThumbstickToDelay() ctor, SENSITIVITY_MIN <= 0");
-			if (MouseSettings::SENSITIVITY_MAX > 100)
+			if constexpr (MouseSettings::SENSITIVITY_MAX > 100)
 				Utilities::LogError("Exception in ThumbstickToDelay() ctor, SENSITIVITY_MAX > 100");
 		}
 		void InitFirstPiece(int sensitivity, int xAxisDz, int yAxisDz)
@@ -165,7 +165,6 @@ namespace sds
 			const int ydz = GetDeadzoneActivated(false);
 			x = GetRangedThumbstickValue(x, xdz);
 			y = GetRangedThumbstickValue(y, ydz);
-			//The transformation function applied to consider the value of both axes in the calculation.
 			auto TransformSensitivityValue = [this](const int tx, const int ty, const bool isX)
 			{
 				using namespace Utilities;
