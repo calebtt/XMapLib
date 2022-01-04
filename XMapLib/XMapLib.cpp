@@ -43,7 +43,7 @@ int main()
 	KeyboardMapper keyer(kplayer);
 	AddTestKeyMappings(keyer);
 	GetExit getter(keyer);
-	std::string err = mouser.SetSensitivity(75); // 75 out of 100
+	std::string err = mouser.SetSensitivity(100); // 100 out of 100
 	Utilities::LogError(err); // won't do anything if the string is empty
 	mouser.SetStick(StickMap::RIGHT_STICK);
 	cout << "[Enter] to dump keymap contents and quit." << endl;

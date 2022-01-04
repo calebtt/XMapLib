@@ -159,12 +159,42 @@ namespace sds
 		/// Main func for use.
 		/// </summary>
 		/// <returns>Delay in US</returns>
+		//size_t GetDelayFromThumbstickValue(const int x, const int y) const
+		//{
+		//	/* With help from a friend...
+		//	 * well, then a consise rundown is in order
+		//	 * >1 normalize x and y input (by making the magnitude no more than 1) so that
+		//	 * >2 x=r*cos(a) and y=r*sin(a) becomes x=cos(a) and y=sin(a)
+		//	 * Support Doc: 
+		//	 */
+		//	const int xdz = GetDeadzoneActivated(true);
+		//	const int ydz = GetDeadzoneActivated(false);
+		//	double rx = GetRangedThumbstickValue(x, xdz) / 100.0; //magnitude no more than 1.0
+		//	double ry = GetRangedThumbstickValue(y, ydz) / 100.0;
+		//	if (rx > 1.0 || ry > 1.0)
+		//	{
+		//		Utilities::LogError("ERROR magnitude greater than 1.0");
+		//		Utilities::LogError("XVal: " + std::to_string(rx));
+		//		Utilities::LogError("YVal: " + std::to_string(ry));
+		//	}
+		//	const double mathR = std::sqrt((rx * rx) + (ry * ry));
+		//	const double a = std::atan2(ry,rx);
+		//	rx = std::cos(a);
+		//	ry = std::sin(a);
+		//	rx *= 100.0;
+		//	ry *= 100.0;
+		//	Utilities::LogError("Transformed X: " + std::to_string(rx));
+		//	Utilities::LogError("Transformed Y: " + std::to_string(ry));
+		//	const int txVal = GetMappedValue(m_is_x_axis ? Utilities::ToInt(rx) : Utilities::ToInt(ry));
+		//	return txVal;
+		//}
 		size_t GetDelayFromThumbstickValue(int x, int y) const
 		{
 			const int xdz = GetDeadzoneActivated(true);
 			const int ydz = GetDeadzoneActivated(false);
 			x = GetRangedThumbstickValue(x, xdz);
 			y = GetRangedThumbstickValue(y, ydz);
+			//The transformation function applied to consider the value of both axes in the calculation.
 			auto TransformSensitivityValue = [this](const int tx, const int ty, const bool isX)
 			{
 				using namespace Utilities;

@@ -73,6 +73,10 @@ namespace sds
 		{
 			return m_mapper.GetMaps();
 		}
+		void ClearMaps()
+		{
+			m_mapper.ClearMap();
+		}
 	protected:
 		/// <summary>
 		/// Worker thread, private visibility, gets updated data from ProcessState() function to use.
