@@ -37,6 +37,7 @@ namespace XMapLibSharp
         public static extern void XMapLibSetMouseStick(int whichStick);
         [DllImport(DLL_NAME)]
         public static extern bool XMapLibSetMouseSensitivity(int sens);
-
+        [DllImport(DLL_NAME)]
+        public static extern int XMapLibGetMouseSensitivity();
     }
 }

@@ -11,12 +11,6 @@ namespace XMapLibSharp
 {
     public class XMapLibWrapper
     {
-        public enum StickMap : int
-        {
-            NEITHER = 0,
-            RIGHT = 1,
-            LEFT = 2
-        }
         public struct XMapLibKeymap
         {
             public int VKMappedFrom { get; set; }
@@ -88,6 +82,11 @@ namespace XMapLibSharp
         public bool SetMouseSensitivity(int sens)
         {
             return XMapLibImports.XMapLibSetMouseSensitivity(sens);
+        }
+
+        public int GetMouseSensitivity()
+        {
+            return XMapLibImports.XMapLibGetMouseSensitivity();
         }
     }
 }

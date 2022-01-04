@@ -76,4 +76,8 @@ extern "C"
 	{
 		return StaticInstance::mmp.SetSensitivity(sens).empty();
 	}
+	__declspec(dllexport) inline int XMapLibGetMouseSensitivity()
+	{
+		return StaticInstance::mmp.GetSensitivity();
+	}
 }
