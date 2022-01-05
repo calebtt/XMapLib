@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.btnStick = new System.Windows.Forms.Button();
-            this.btnStop = new System.Windows.Forms.Button();
+            this.btnSensitivityIndicator = new System.Windows.Forms.Button();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
@@ -39,7 +39,7 @@
             this.button2 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.button1 = new System.Windows.Forms.Button();
+            this.btnMouseProcessing = new System.Windows.Forms.Button();
             this.trackBar1 = new System.Windows.Forms.TrackBar();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.tabControl1.SuspendLayout();
@@ -59,16 +59,16 @@
             this.btnStick.UseVisualStyleBackColor = true;
             this.btnStick.Click += new System.EventHandler(this.btnStick_Click);
             // 
-            // btnStop
+            // btnSensitivityIndicator
             // 
-            this.btnStop.Enabled = false;
-            this.btnStop.Location = new System.Drawing.Point(6, 22);
-            this.btnStop.Name = "btnStop";
-            this.btnStop.Size = new System.Drawing.Size(149, 35);
-            this.btnStop.TabIndex = 1;
-            this.btnStop.Text = "Sensitivity: 0/100";
-            this.btnStop.UseVisualStyleBackColor = true;
-            this.btnStop.Click += new System.EventHandler(this.btnStop_Click);
+            this.btnSensitivityIndicator.Enabled = false;
+            this.btnSensitivityIndicator.Location = new System.Drawing.Point(6, 22);
+            this.btnSensitivityIndicator.Name = "btnSensitivityIndicator";
+            this.btnSensitivityIndicator.Size = new System.Drawing.Size(149, 35);
+            this.btnSensitivityIndicator.TabIndex = 1;
+            this.btnSensitivityIndicator.Text = "Sensitivity: 0/100";
+            this.btnSensitivityIndicator.UseVisualStyleBackColor = true;
+            this.btnSensitivityIndicator.Click += new System.EventHandler(this.btnSensitivityIndicator_Click);
             // 
             // tabControl1
             // 
@@ -156,10 +156,10 @@
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.button1);
+            this.groupBox1.Controls.Add(this.btnMouseProcessing);
             this.groupBox1.Controls.Add(this.trackBar1);
             this.groupBox1.Controls.Add(this.btnStick);
-            this.groupBox1.Controls.Add(this.btnStop);
+            this.groupBox1.Controls.Add(this.btnSensitivityIndicator);
             this.groupBox1.Location = new System.Drawing.Point(6, 6);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(330, 187);
@@ -167,15 +167,15 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Mouse Tools";
             // 
-            // button1
+            // btnMouseProcessing
             // 
-            this.button1.Location = new System.Drawing.Point(6, 114);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(318, 62);
-            this.button1.TabIndex = 3;
-            this.button1.Text = "Stop Mouse Processing";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.btnMouseProcessing.Location = new System.Drawing.Point(6, 114);
+            this.btnMouseProcessing.Name = "btnMouseProcessing";
+            this.btnMouseProcessing.Size = new System.Drawing.Size(318, 62);
+            this.btnMouseProcessing.TabIndex = 3;
+            this.btnMouseProcessing.Text = "Stop Mouse Processing";
+            this.btnMouseProcessing.UseVisualStyleBackColor = true;
+            this.btnMouseProcessing.Click += new System.EventHandler(this.btnMouseProcessing_Click);
             // 
             // trackBar1
             // 
@@ -223,12 +223,12 @@
         #endregion
 
         private System.Windows.Forms.Button btnStick;
-        private System.Windows.Forms.Button btnStop;
+        private System.Windows.Forms.Button btnSensitivityIndicator;
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button btnMouseProcessing;
         private System.Windows.Forms.TrackBar trackBar1;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.Button button2;
