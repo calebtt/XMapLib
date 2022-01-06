@@ -45,6 +45,7 @@ namespace sds
 		/// <summary>
 		/// Use this function to establish one stick or the other as the one controlling the mouse movements.
 		/// Set to NEITHER_STICK for no thumbstick mouse movement. Options are RIGHT_STICK, LEFT_STICK, NEITHER_STICK
+		///	This will start processing if the stick is something other than "NEITHER"
 		/// </summary>
 		/// <param name="info"> a StickMap enum</param>
 		void SetStick(const StickMap info)

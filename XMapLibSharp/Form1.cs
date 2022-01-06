@@ -23,6 +23,8 @@ namespace XMapLibSharp
         private const string MSG_CONTROLLER = "Connected";
         private const string MSG_SENSMAX = "/100";
         private const string MSG_SENSBEGIN = "Sensitivity: ";
+        private readonly Color CLR_INFO = Color.Crimson;
+        private readonly Color CLR_NORMAL = Color.LightGray;
         private XMapLibWrapper mapper;
         private StickMap currentStick = StickMap.RIGHT;
         public Form1()
@@ -42,10 +44,19 @@ namespace XMapLibSharp
         {
             bool isConnected = mapper.IsControllerConnected();
             button2.Text = isConnected ? MSG_CONTROLLER : MSG_NOCONTROLLER;
+            if (!isConnected)
+                button2.BackColor = CLR_INFO;
+            else
+                button2.BackColor = CLR_NORMAL;
         }
         private void UpdateMouseSensitivityButton()
         {
             btnSensitivityIndicator.Text = MSG_SENSBEGIN + " " + mapper.GetMouseSensitivity().ToString() + MSG_SENSMAX;
+        }
+        private void UpdateIsMouseRunning()
+        {
+            bool isRunning = mapper.IsMouseRunning();
+            btnMouseProcessing.Text = isRunning ? MSG_STOP_MOUSE : MSG_START_MOUSE;
         }
         private void DoErrorMessage(string msg)
         {
@@ -74,6 +85,7 @@ namespace XMapLibSharp
             currentStick = currentStick.Next();
             btnStick.Text = currentStick.ToString() + " " + MSG_STICK;
             mapper.SetMouseStick(currentStick);
+            UpdateIsMouseRunning();
         }
     }
 }
