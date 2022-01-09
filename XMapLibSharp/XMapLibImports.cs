@@ -27,6 +27,8 @@ namespace XMapLibSharp
         public static extern bool XMapLibAddMap(int vkSender, int vkMapping, bool bUsesRepeat);
         [DllImport(DLL_NAME)]
         public static extern void XMapLibClearMaps();
+        [DllImport(DLL_NAME, CharSet=CharSet.Ansi)]
+        public static extern IntPtr XMapLibGetMaps();
         [DllImport(DLL_NAME)]
         public static extern bool XMapLibIsControllerConnected();
         [DllImport(DLL_NAME)]

@@ -35,13 +35,14 @@
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.tbxMapDetails = new System.Windows.Forms.TextBox();
             this.button2 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.btnMouseProcessing = new System.Windows.Forms.Button();
             this.trackBar1 = new System.Windows.Forms.TrackBar();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.bgWorkThread = new System.ComponentModel.BackgroundWorker();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -106,7 +107,7 @@
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.label2);
-            this.groupBox2.Controls.Add(this.textBox1);
+            this.groupBox2.Controls.Add(this.tbxMapDetails);
             this.groupBox2.Controls.Add(this.button2);
             this.groupBox2.Controls.Add(this.label1);
             this.groupBox2.Location = new System.Drawing.Point(342, 6);
@@ -125,13 +126,13 @@
             this.label2.TabIndex = 3;
             this.label2.Text = "Map Details";
             // 
-            // textBox1
+            // tbxMapDetails
             // 
-            this.textBox1.Location = new System.Drawing.Point(16, 99);
-            this.textBox1.Multiline = true;
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(326, 77);
-            this.textBox1.TabIndex = 2;
+            this.tbxMapDetails.Location = new System.Drawing.Point(16, 99);
+            this.tbxMapDetails.Multiline = true;
+            this.tbxMapDetails.Name = "tbxMapDetails";
+            this.tbxMapDetails.Size = new System.Drawing.Size(326, 77);
+            this.tbxMapDetails.TabIndex = 2;
             // 
             // button2
             // 
@@ -197,6 +198,11 @@
             this.tabPage2.Text = "KeyMaps";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
+            // bgWorkThread
+            // 
+            this.bgWorkThread.WorkerSupportsCancellation = true;
+            this.bgWorkThread.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgWorkThread_DoWork);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -234,7 +240,8 @@
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox tbxMapDetails;
         private System.Windows.Forms.GroupBox groupBox3;
+        private System.ComponentModel.BackgroundWorker bgWorkThread;
     }
 }

@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -14,6 +15,7 @@ namespace XMapLibSharp
 {
     public partial class Form1 : Form
     {
+        private const int DELAY_REDRAW_MS = 500; // half a second
         //private const string ERR_DLL_NOT_FOUND = "XMapLib.dll not found.";
         private const string ERR_NOT_RUNNING = "Started, but not running.";
         private const string MSG_START_MOUSE = "Start Mouse Processing";
@@ -35,6 +37,8 @@ namespace XMapLibSharp
             UpdateMouseSensitivityTrackbar();
             UpdateControllerConnectedButton();
             UpdateMouseSensitivityButton();
+            UpdateIsMouseRunning();
+            UpdateMapStringBox();
         }
         private void UpdateMouseSensitivityTrackbar()
         {
@@ -57,6 +61,12 @@ namespace XMapLibSharp
         {
             bool isRunning = mapper.IsMouseRunning();
             btnMouseProcessing.Text = isRunning ? MSG_STOP_MOUSE : MSG_START_MOUSE;
+        }
+
+        private void UpdateMapStringBox()
+        {
+            string currentMaps = mapper.GetKeyMaps();
+            tbxMapDetails.Text = currentMaps;
         }
         private void DoErrorMessage(string msg)
         {
@@ -86,6 +96,18 @@ namespace XMapLibSharp
             btnStick.Text = currentStick.ToString() + " " + MSG_STICK;
             mapper.SetMouseStick(currentStick);
             UpdateIsMouseRunning();
+        }
+        /// <summary>
+        /// Background GUI thread to update certain statuses, such as is the controller connected.
+        /// </summary>
+        private void bgWorkThread_DoWork(object sender, DoWorkEventArgs e)
+        {
+            while (!bgWorkThread.CancellationPending)
+            {
+                UpdateControllerConnectedButton();
+                Thread.Sleep(DELAY_REDRAW_MS);
+            }
+            
         }
     }
 }

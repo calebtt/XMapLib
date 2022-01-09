@@ -46,6 +46,17 @@ namespace sds
 				<< "LastAction: " << obj.LastAction << "\n"
 				<< "LastSentTime: " << obj.LastSentTime << "\n";
 		}
+		/// <summary>
+		/// Operator<< overload for std::string specialization,
+		///	returns relevant map details.
+		/// </summary>
+		friend std::string& operator<<(std::string& os, const KeyboardKeyMap& obj)
+		{
+			os += "SendingElementVK:" + std::to_string(obj.SendingElementVK) + " ";
+			os += "MappedToVK:" + std::to_string(obj.MappedToVK) + " ";
+			os += "BoolUsesRepeat:" + std::to_string(obj.UsesRepeat);
+			return os;
+		}
 		friend bool operator==(const KeyboardKeyMap& lhs, const KeyboardKeyMap& rhs)
 		{
 			return lhs.SendingElementVK == rhs.SendingElementVK

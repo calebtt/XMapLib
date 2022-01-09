@@ -2,8 +2,10 @@
 using System.CodeDom;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -62,6 +64,16 @@ namespace XMapLibSharp
             }
             int failures = results.Count((e) => { return !e;} );
             return failures == 0;
+        }
+
+        public string GetKeyMaps()
+        {
+            IntPtr p = XMapLibImports.XMapLibGetMaps();
+            if (p != IntPtr.Zero)
+            {
+                return Marshal.PtrToStringAnsi(p);
+            }
+            return "";
         }
         public bool IsControllerConnected()
         {

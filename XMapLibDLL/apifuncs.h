@@ -6,8 +6,9 @@ extern "C"
 {
 	namespace StaticInstance
 	{
-		sds::KeyboardMapper kbd;
-		sds::MouseMapper mmp;
+		inline sds::KeyboardMapper kbd;
+		inline sds::MouseMapper mmp;
+		inline std::string mapInfoFormatted;
 	}
 	__declspec(dllexport) inline void XMapLibInitBoth()
 	{
@@ -42,6 +43,17 @@ extern "C"
 	__declspec(dllexport) inline void XMapLibClearMaps()
 	{
 		StaticInstance::kbd.ClearMaps();
+	}
+	__declspec(dllexport) inline const char * XMapLibGetMaps()
+	{
+		std::vector<sds::KeyboardKeyMap> maps = StaticInstance::kbd.GetMaps();
+		std::string localString;
+		std::for_each(std::begin(maps), std::end(maps), [&localString](const auto& elem)
+			{
+				localString << elem;
+			});
+		StaticInstance::mapInfoFormatted = localString;
+		return StaticInstance::mapInfoFormatted.data();
 	}
 	__declspec(dllexport) inline bool XMapLibIsControllerConnected()
 	{
