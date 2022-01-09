@@ -65,7 +65,6 @@ namespace XMapLibSharp
             int failures = results.Count((e) => { return !e;} );
             return failures == 0;
         }
-
         public string GetKeyMaps()
         {
             IntPtr p = XMapLibImports.XMapLibGetMaps();

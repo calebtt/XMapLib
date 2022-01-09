@@ -20,7 +20,7 @@ namespace XMapLibTest
 			const std::string InputAlphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-=,./`[];\'"
 				+ std::string("!@#$%^&*()_+?{}~");
 			KeyboardMapper mp;
-			auto testMapFunctionTrue = [&mp](const auto s)
+			auto testMapFunction = [&mp](const auto s, const bool testTrue = true)
 			{
 				std::string ert = "Testmap [input]: ";
 				ert += s;
@@ -30,28 +30,19 @@ namespace XMapLibTest
 				std::string composite = ert + ertt;
 				std::wstring errMsg;
 				std::copy(composite.begin(), composite.end(), std::back_inserter(errMsg));
-				Assert::IsTrue(ertt.empty(), errMsg.c_str());
-			};
-			auto testMapFunctionFalse = [&mp](const auto s)
-			{
-				std::string ert = "Testmap [input]: ";
-				ert += s;
-				ert += " [expect result no error message]: ";
-				KeyboardKeyMap key(VK_PAD_DPAD_DOWN, s, true);
-				std::string ertt = mp.AddMap(key);
-				std::string composite = ert + ertt;
-				std::wstring errMsg;
-				std::copy(composite.begin(), composite.end(), std::back_inserter(errMsg));
-				Assert::IsFalse(ertt.empty(), errMsg.c_str());
+				if(testTrue)
+					Assert::IsTrue(ertt.empty(), errMsg.c_str());
+				else
+					Assert::IsFalse(ertt.empty(), errMsg.c_str());
 			};
 			//Test known good string case
-			std::for_each(InputAlphabet.begin(), InputAlphabet.end(), testMapFunctionTrue);
+			std::for_each(InputAlphabet.begin(), InputAlphabet.end(), testMapFunction);
 
 			//test some edge cases and malformed input
-			testMapFunctionFalse((static_cast<char>(0)));
-			testMapFunctionFalse((static_cast<char>(-1)));
-			testMapFunctionFalse((static_cast<char>(256)));
-			testMapFunctionFalse((static_cast<char>(255)));
+			testMapFunction((static_cast<char>(0)), false);
+			testMapFunction((static_cast<char>(-1)), false);
+			testMapFunction((static_cast<char>(256)), false);
+			testMapFunction((static_cast<char>(255)), false);
 			Logger::WriteMessage("End TestSetMapInfo()");
 		}
 	};
