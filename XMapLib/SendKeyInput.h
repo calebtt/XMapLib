@@ -117,7 +117,7 @@ namespace sds::Utilities
 			int ret = 0;
 			if(MapFunctions::IsInMap(vk, m_scancode_store, ret))
 			{
-				return ret;
+				return static_cast<WORD>(ret);
 			}
 			else
 			{

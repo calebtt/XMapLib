@@ -15,8 +15,7 @@ namespace XMapLibSharp
 {
     public partial class Form1 : Form
     {
-        private const int DELAY_REDRAW_MS = 500; // half a second
-        //private const string ERR_DLL_NOT_FOUND = "XMapLib.dll not found.";
+        private const int DELAY_REDRAW_MS = 1000; // a whole second
         private const string ERR_NOT_RUNNING = "Started, but not running.";
         private const string MSG_START_MOUSE = "Start Mouse Processing";
         private const string MSG_STOP_MOUSE = "Stop Mouse Processing";
@@ -39,6 +38,12 @@ namespace XMapLibSharp
             UpdateMouseSensitivityButton();
             UpdateIsMouseRunning();
             UpdateMapStringBox();
+            InitBackgroundWorker();
+        }
+
+        private void InitBackgroundWorker()
+        {
+            bgWorkThread.RunWorkerAsync(SynchronizationContext.Current);
         }
         private void UpdateMouseSensitivityTrackbar()
         {
@@ -102,12 +107,21 @@ namespace XMapLibSharp
         /// </summary>
         private void bgWorkThread_DoWork(object sender, DoWorkEventArgs e)
         {
-            while (!bgWorkThread.CancellationPending)
+            SynchronizationContext? sc = e.Argument as SynchronizationContext;
+            if (sc != null)
             {
-                UpdateControllerConnectedButton();
-                Thread.Sleep(DELAY_REDRAW_MS);
+                while (!bgWorkThread.CancellationPending)
+                {
+                    sc.Send(delegate(object? state) { UpdateControllerConnectedButton(); }, null);
+                    Thread.Sleep(DELAY_REDRAW_MS);
+                }
             }
-            
+            else
+            {
+                StringBuilder sb = new();
+                sb.AppendFormat("Error in {0}, unable to get handle to Sync Context.", nameof(bgWorkThread_DoWork));
+                MessageBox.Show(sb.ToString());
+            }
         }
     }
 }

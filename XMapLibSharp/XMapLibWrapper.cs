@@ -2,6 +2,7 @@
 using System.CodeDom;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Numerics;
@@ -70,7 +71,15 @@ namespace XMapLibSharp
             IntPtr p = XMapLibImports.XMapLibGetMaps();
             if (p != IntPtr.Zero)
             {
-                return Marshal.PtrToStringAnsi(p);
+                string? retVal = Marshal.PtrToStringAnsi(p);
+                if (retVal != null)
+                {
+                    return retVal;
+                }
+                else
+                {
+                    return "";
+                }
             }
             return "";
         }
