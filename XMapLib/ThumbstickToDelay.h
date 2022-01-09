@@ -13,7 +13,7 @@ namespace sds
 	class ThumbstickToDelay
 	{
 		const std::string BAD_DELAY_MSG = "Bad timer delay value, exception.";
-		inline static std::atomic<bool> m_is_deadzone_activated = false;
+		inline static std::atomic<bool> m_is_deadzone_activated = false; //shared between instances
 		float m_alt_deadzone_multiplier = MouseSettings::ALT_DEADZONE_MULT_DEFAULT;
 		int m_axis_sensitivity = MouseSettings::SENSITIVITY_DEFAULT;
 		int m_x_axis_deadzone = MouseSettings::DEADZONE_DEFAULT;
@@ -138,7 +138,7 @@ namespace sds
 		/// <summary>
 		/// Determines if m_is_x_axis axis requires move based on alt deadzone if dz is activated.
 		/// </summary>
-		bool DoesAxisRequireMoveAlt(const int x, const int y)
+		bool DoesAxisRequireMoveAlt(const int x, const int y) const
 		{
 			if (!m_is_deadzone_activated)
 			{
@@ -159,35 +159,6 @@ namespace sds
 		/// Main func for use.
 		/// </summary>
 		/// <returns>Delay in US</returns>
-		//size_t GetDelayFromThumbstickValue(const int x, const int y) const
-		//{
-		//	/* With help from a friend...
-		//	 * well, then a consise rundown is in order
-		//	 * >1 normalize x and y input (by making the magnitude no more than 1) so that
-		//	 * >2 x=r*cos(a) and y=r*sin(a) becomes x=cos(a) and y=sin(a)
-		//	 * Support Doc: 
-		//	 */
-		//	const int xdz = GetDeadzoneActivated(true);
-		//	const int ydz = GetDeadzoneActivated(false);
-		//	double rx = GetRangedThumbstickValue(x, xdz) / 100.0; //magnitude no more than 1.0
-		//	double ry = GetRangedThumbstickValue(y, ydz) / 100.0;
-		//	if (rx > 1.0 || ry > 1.0)
-		//	{
-		//		Utilities::LogError("ERROR magnitude greater than 1.0");
-		//		Utilities::LogError("XVal: " + std::to_string(rx));
-		//		Utilities::LogError("YVal: " + std::to_string(ry));
-		//	}
-		//	const double mathR = std::sqrt((rx * rx) + (ry * ry));
-		//	const double a = std::atan2(ry,rx);
-		//	rx = std::cos(a);
-		//	ry = std::sin(a);
-		//	rx *= 100.0;
-		//	ry *= 100.0;
-		//	Utilities::LogError("Transformed X: " + std::to_string(rx));
-		//	Utilities::LogError("Transformed Y: " + std::to_string(ry));
-		//	const int txVal = GetMappedValue(m_is_x_axis ? Utilities::ToInt(rx) : Utilities::ToInt(ry));
-		//	return txVal;
-		//}
 		size_t GetDelayFromThumbstickValue(int x, int y) const
 		{
 			const int xdz = GetDeadzoneActivated(true);
