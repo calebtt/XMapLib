@@ -27,12 +27,12 @@ namespace XMapLibSharp
         private readonly Color CLR_INFO = Color.Crimson;
         private readonly Color CLR_NORMAL = Color.LightGray;
         private XMapLibWrapper mapper;
-        private StickMap currentStick = StickMap.RIGHT;
+        private XMapLibStickMap currentXMapLibStick = XMapLibStickMap.RIGHT;
         public Form1()
         {
             InitializeComponent();
             mapper = new XMapLibWrapper();
-            mapper.SetMouseStick(currentStick);
+            mapper.SetMouseStick(currentXMapLibStick);
             UpdateMouseSensitivityTrackbar();
             UpdateControllerConnectedButton();
             UpdateMouseSensitivityButton();
@@ -97,9 +97,9 @@ namespace XMapLibSharp
         }
         private void btnStick_Click(object sender, EventArgs e)
         {
-            currentStick = currentStick.Next();
-            btnStick.Text = currentStick.ToString() + " " + MSG_STICK;
-            mapper.SetMouseStick(currentStick);
+            currentXMapLibStick = currentXMapLibStick.Next();
+            btnStick.Text = currentXMapLibStick.ToString() + " " + MSG_STICK;
+            mapper.SetMouseStick(currentXMapLibStick);
             UpdateIsMouseRunning();
         }
         /// <summary>

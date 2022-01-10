@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 
 namespace XMapLibSharp
 {
-    public enum StickMap : int
+    public class XMapLibKeymapPresets
     {
-        NEITHER = 0,
-        RIGHT = 1,
-        LEFT = 2
+        public static void BuildPresetBrowsing()
+        {
+            //
+            
+        }
     }
 }

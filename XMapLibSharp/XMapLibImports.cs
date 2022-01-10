@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace XMapLibSharp
 {
-    public class XMapLibImports
+    internal class XMapLibImports
     {
         private const string DLL_NAME = "XMapLibDLL.dll";
 

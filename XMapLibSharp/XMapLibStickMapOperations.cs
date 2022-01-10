@@ -6,22 +6,22 @@ using System.Threading.Tasks;
 
 namespace XMapLibSharp
 {
-    public static class StickMapOperations
+    public static class XMapLibStickMapOperations
     {
-        public static StickMap Next(this StickMap rhs)
+        public static XMapLibStickMap Next(this XMapLibStickMap rhs)
         {
-            return rhs == StickMap.LEFT ? StickMap.NEITHER : rhs + 1;
+            return rhs == XMapLibStickMap.LEFT ? XMapLibStickMap.NEITHER : rhs + 1;
         }
 
-        public static string ToString(this StickMap rhs)
+        public static string ToString(this XMapLibStickMap rhs)
         {
             switch (rhs)
             {
-                case StickMap.NEITHER:
+                case XMapLibStickMap.NEITHER:
                     return "NEITHER";
-                case StickMap.LEFT:
+                case XMapLibStickMap.LEFT:
                     return "LEFT";
-                case StickMap.RIGHT:
+                case XMapLibStickMap.RIGHT:
                     return "RIGHT";
                 default: 
                     return "ERROR";

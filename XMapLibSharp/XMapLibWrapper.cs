@@ -14,12 +14,6 @@ namespace XMapLibSharp
 {
     public class XMapLibWrapper
     {
-        public struct XMapLibKeymap
-        {
-            public int VKMappedFrom { get; set; }
-            public int VKMappedTo { get; set; }
-            public bool UsesRepeatBehavior { get; set; }
-        }
         public XMapLibWrapper()
         {
             XMapLibImports.XMapLibInitBoth();
@@ -95,15 +89,14 @@ namespace XMapLibSharp
         {
             return XMapLibImports.XMapLibIsKeyboardRunning();
         }
-        public void SetMouseStick(StickMap whichStick)
+        public void SetMouseStick(XMapLibStickMap whichXMapLibStick)
         {
-            XMapLibImports.XMapLibSetMouseStick(Convert.ToInt32(whichStick));
+            XMapLibImports.XMapLibSetMouseStick(Convert.ToInt32(whichXMapLibStick));
         }
         public bool SetMouseSensitivity(int sens)
         {
             return XMapLibImports.XMapLibSetMouseSensitivity(sens);
         }
-
         public int GetMouseSensitivity()
         {
             return XMapLibImports.XMapLibGetMouseSensitivity();
