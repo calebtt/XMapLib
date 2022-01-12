@@ -10,7 +10,7 @@ namespace sds::Utilities::VirtualMap
 	///	Utility function to map a Virtual Keycode to a char
 	///	</summary>
 	/// <returns>printable char value or 0 on error</returns>
-	[[nodiscard]] static char GetCharFromVK(const unsigned int vk) noexcept
+	[[nodiscard]] inline char GetCharFromVK(const unsigned int vk) noexcept
 	{
 		return static_cast<char>(MapVirtualKeyA(vk, MAPVK_VK_TO_CHAR));
 	}
@@ -18,7 +18,7 @@ namespace sds::Utilities::VirtualMap
 	/// Utility function to map a Virtual Keycode to a scancode
 	/// </summary>
 	/// <returns>scancode value or 0 on error</returns>
-	[[nodiscard]] static unsigned short GetScanCodeFromVK(const unsigned int vk) noexcept
+	[[nodiscard]] inline unsigned short GetScanCodeFromVK(const unsigned int vk) noexcept
 	{
 		return static_cast<unsigned short> (MapVirtualKeyA(vk, MAPVK_VK_TO_VSC));
 	}
