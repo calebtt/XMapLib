@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 #include <concepts>
-
+#include <syncstream>
 /// <summary>
 /// One function called to log errors, to "cerr" at the moment.
 ///	Can be disabled easily or redirected here.
@@ -13,7 +13,12 @@ namespace sds::Utilities
 	[[msvc::noinline]]
 	inline void LogError(std::string_view s)
 	{
-		if(!s.empty())
-			std::cerr << s << std::endl;
+		if (!s.empty())
+		{
+			//osyncstream can be used with concurrency to avoid garbled output,
+			//as long as each thread has it's own osyncstream object.
+			std::osyncstream sout(std::cerr);
+			sout << s << std::endl;
+		}
 	}
 }
