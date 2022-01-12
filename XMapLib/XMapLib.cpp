@@ -24,7 +24,7 @@ protected:
 		this->m_is_thread_running = true;
 		std::cin.get(); // block and wait
 		auto mapList = m_mp.GetMaps();
-		ranges::for_each(ranges::begin(mapList), ranges::end(mapList), [](const sds::KeyboardKeyMap& theMap)
+		for_each(begin(mapList), end(mapList), [](const sds::KeyboardKeyMap& theMap)
 			{
 				std::osyncstream ss(std::cout);
 				ss << theMap << endl << endl;
@@ -99,11 +99,10 @@ void AddTestKeyMappings(sds::KeyboardMapper& mapper)
 		KeyboardKeyMap{VK_PAD_X, 0x52, false} // 'r'
 	};
 	std::string errorCondition;
-	ranges::for_each(ranges::begin(buttons), ranges::end(buttons), [&mapper, &errorCondition](const KeyboardKeyMap& m)
+	for_each(begin(buttons), end(buttons), [&mapper, &errorCondition](const KeyboardKeyMap& m)
 		{
 			if (errorCondition.empty())
 			{
-				//cout << "Adding:\n" << m << endl;
 				errorCondition = mapper.AddMap(m);
 			}
 		});
