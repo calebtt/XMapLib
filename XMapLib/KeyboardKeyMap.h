@@ -1,6 +1,7 @@
 #pragma once
 #include "stdafx.h"
 #include "DelayManager.h"
+#include "VirtualMap.h"
 #include <syncstream>
 namespace sds
 {
@@ -55,13 +56,14 @@ namespace sds
 		/// </summary>
 		friend std::ostream& operator<<(std::ostream& os, const KeyboardKeyMap& obj)
 		{
-			const bool isPrintable = std::isprint(static_cast<unsigned char>(obj.MappedToVK));
+			const char printed = Utilities::VirtualMap::GetCharFromVK(obj.MappedToVK);
+			const bool isPrintable = std::isprint(static_cast<unsigned char>(printed));
 			std::osyncstream ss(os);
 			ss << "[KeyboardKeyMap]" << std::endl;
 			ss << "SendingElementVK:" << obj.SendingElementVK << std::endl;
 			ss << "MappedToVK:" << obj.MappedToVK << std::endl;
 			if (isPrintable)
-				ss << "MappedToVK(AKA):" << static_cast<char>(obj.MappedToVK) << std::endl;
+				ss << "MappedToVK(AKA):" << printed << std::endl;
 			ss << "UsesRepeat:" << obj.UsesRepeat << std::endl;
 			ss << "LastAction:" << obj.LastAction << std::endl;
 			ss << obj.LastSentTime << std::endl;
@@ -74,13 +76,14 @@ namespace sds
 		/// </summary>
 		friend std::string& operator<<(std::string& os, const KeyboardKeyMap& obj)
 		{
-			const bool isPrintable = std::isprint(static_cast<unsigned char>(obj.MappedToVK));
+			const char printed = Utilities::VirtualMap::GetCharFromVK(obj.MappedToVK);
+			const bool isPrintable = std::isprint(static_cast<unsigned char>(printed));
 			std::stringstream ss;
 			ss << "[KeyboardKeyMap]" << std::endl;
 			ss << "SendingElementVK:" << obj.SendingElementVK << " ";
 			ss << "MappedToVK:" << obj.MappedToVK << " ";
 			if(isPrintable)
-				ss << "MappedToVK(AKA):" << static_cast<char>(obj.MappedToVK) << std::endl;
+				ss << "MappedToVK(AKA):" << printed << std::endl;
 			ss << "UsesRepeat:" << obj.UsesRepeat << " ";
 			ss << "[/KeyboardKeyMap]" << std::endl;
 			os += ss.str();
