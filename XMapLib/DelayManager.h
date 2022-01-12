@@ -19,13 +19,21 @@ namespace sds::Utilities
 		DelayManager& operator=(const DelayManager& other) = default;
 		DelayManager& operator=(DelayManager&& other) = default;
 		~DelayManager() = default;
+		/// <summary>
+		/// Operator<< overload for std::ostream specialization,
+		///	writes more detailed delay details for debugging.
+		///	Thread-safe, provided all writes to the ostream object
+		///	are wrapped with std::osyncstream!
+		/// </summary>
 		friend std::ostream& operator<<(std::ostream& os, const DelayManager& obj)
 		{
-			return os << "[DelayManager] "
+			std::osyncstream ss(os);
+			ss << "[DelayManager] "
 				<< "m_start_time: " << obj.m_start_time.time_since_epoch() << "\n"
 				<< "m_duration (microseconds): " << obj.m_duration << "\n"
 				<< "m_has_fired: " << obj.m_has_fired
 				<< " [/DelayManager]";
+			return os;
 		}
 		/// <summary>
 		/// Check for elapsed.

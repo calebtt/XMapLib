@@ -1,7 +1,7 @@
 #pragma once
 #include "stdafx.h"
 #include "DelayManager.h"
-
+#include <syncstream>
 namespace sds
 {
 	/// <summary>
@@ -35,26 +35,47 @@ namespace sds
 		KeyboardKeyMap& operator=(const KeyboardKeyMap& other) = default;
 		KeyboardKeyMap& operator=(KeyboardKeyMap&& other) = default;
 		~KeyboardKeyMap() = default;
+		/// <summary>
+		/// Operator<< overload for std::ostream specialization,
+		///	writes enum class:int value as decimal int value.
+		///	Thread-safe, provided all writes to the ostream object
+		///	are wrapped with std::osyncstream!
+		/// </summary>
 		friend std::ostream& operator<<(std::ostream& os, const ActionType& obj)
 		{
-			return os << static_cast<int>(obj);
+			std::osyncstream ss(os);
+			ss << static_cast<int>(obj);
+			return os;
 		}
+		/// <summary>
+		/// Operator<< overload for std::ostream specialization,
+		///	writes more detailed map details for debugging.
+		///	Thread-safe, provided all writes to the ostream object
+		///	are wrapped with std::osyncstream!
+		/// </summary>
 		friend std::ostream& operator<<(std::ostream& os, const KeyboardKeyMap& obj)
 		{
-			return os << "SendingElementVK: " << obj.SendingElementVK << "\n"
-				<< "MappedToVK: " << obj.MappedToVK << " AKA: " << std::quoted(std::string("") + static_cast<char>(obj.MappedToVK)) << "\n"
-				<< "LastAction: " << obj.LastAction << "\n"
-				<< "LastSentTime: " << obj.LastSentTime << "\n";
+			std::osyncstream ss(os);
+			ss << "SendingElementVK:" << obj.SendingElementVK << " ";
+			ss << "MappedToVK:" << obj.MappedToVK << " ";
+			ss << "MappedToVK(AKA):" << static_cast<char>(obj.MappedToVK) << " ";
+			ss << "UsesRepeat:" << obj.UsesRepeat << " ";
+			ss << "LastAction:" << obj.LastAction << " ";
+			ss << "LastSentTime:" << obj.LastSentTime << " ";
+			return os;
 		}
 		/// <summary>
 		/// Operator<< overload for std::string specialization,
-		///	returns relevant map details.
+		///	writes relevant map details to the std::string.
 		/// </summary>
 		friend std::string& operator<<(std::string& os, const KeyboardKeyMap& obj)
 		{
-			os += "SendingElementVK:" + std::to_string(obj.SendingElementVK) + " ";
-			os += "MappedToVK:" + std::to_string(obj.MappedToVK) + " ";
-			os += "BoolUsesRepeat:" + std::to_string(obj.UsesRepeat);
+			std::stringstream ss;
+			ss << "SendingElementVK:" << obj.SendingElementVK << " ";
+			ss << "MappedToVK:" << obj.MappedToVK << " ";
+			ss << "MappedToVK(AKA):" << static_cast<char>(obj.MappedToVK) << " ";
+			ss << "UsesRepeat:" << obj.UsesRepeat << " ";
+			os += ss.str();
 			return os;
 		}
 		friend bool operator==(const KeyboardKeyMap& lhs, const KeyboardKeyMap& rhs)
