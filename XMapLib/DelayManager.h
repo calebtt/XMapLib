@@ -28,11 +28,11 @@ namespace sds::Utilities
 		friend std::ostream& operator<<(std::ostream& os, const DelayManager& obj)
 		{
 			std::osyncstream ss(os);
-			ss << "[DelayManager] "
-				<< "m_start_time: " << obj.m_start_time.time_since_epoch() << "\n"
-				<< "m_duration (microseconds): " << obj.m_duration << "\n"
-				<< "m_has_fired: " << obj.m_has_fired
-				<< " [/DelayManager]";
+			ss << "[DelayManager]" << std::endl
+				<< "m_start_time:" << obj.m_start_time.time_since_epoch() << std::endl
+				<< "m_duration (microseconds):" << obj.m_duration << std::endl
+				<< "m_has_fired:" << obj.m_has_fired << std::endl
+				<< "[/DelayManager]";
 			return os;
 		}
 		/// <summary>

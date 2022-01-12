@@ -38,7 +38,7 @@ namespace sds::Utilities
 			if (m_auto_disable_numlock)
 			{
 				const SHORT NumLockState = GetKeyState(VK_NUMLOCK);
-				std::bitset<sizeof(SHORT)> bits(NumLockState);
+				std::bitset<1> bits(NumLockState); // only need lowest order bit
 				//if the low order bit is 1, it is toggled in the ON position
 				if (bits[0])
 				{

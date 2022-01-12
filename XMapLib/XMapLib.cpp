@@ -26,7 +26,8 @@ protected:
 		auto mapList = m_mp.GetMaps();
 		ranges::for_each(ranges::begin(mapList), ranges::end(mapList), [](const sds::KeyboardKeyMap& theMap)
 			{
-				cout << theMap << endl;
+				std::osyncstream ss(std::cout);
+				ss << theMap << endl << endl;
 			});
 		m_exitState = true;
 		this->m_is_thread_running = false;
@@ -46,21 +47,22 @@ int main()
 	std::string err = mouser.SetSensitivity(75); // 75 out of 100
 	Utilities::LogError(err); // won't do anything if the string is empty
 	mouser.SetStick(StickMap::RIGHT_STICK);
-	cout << "[Enter] to dump keymap contents and quit." << endl;
-	cout << "Xbox controller polling started..." << endl;
+	std::osyncstream ss(std::cout); // async cout wrapper
+	ss << "[Enter] to dump keymap contents and quit." << endl;
+	ss << "Xbox controller polling started..." << endl;
 	do
 	{
 		const bool isControllerConnected = mouser.IsControllerConnected() && keyer.IsControllerConnected();
 		const bool isThreadRunning = mouser.IsRunning() && keyer.IsRunning();
 		if (!isThreadRunning && isControllerConnected)
 		{
-			std::cout << "Controller reported as: " << "Connected." << std::endl;
+			ss << "Controller reported as: " << "Connected." << std::endl;
 			keyer.Start();
 			mouser.Start();
 		}
 		if ((!isControllerConnected) && isThreadRunning)
 		{
-			std::cout << "Controller reported as: " << "Disconnected." << std::endl;
+			ss << "Controller reported as: " << "Disconnected." << std::endl;
 			keyer.Stop();
 			mouser.Stop();
 		}
@@ -105,8 +107,9 @@ void AddTestKeyMappings(sds::KeyboardMapper& mapper)
 				errorCondition = mapper.AddMap(m);
 			}
 		});
+	std::osyncstream ss(std::cout);
 	if (!errorCondition.empty())
-		cout << "Added buttons until error: " << errorCondition << endl;
+		ss << "Added buttons until error: " << errorCondition << endl;
 	else
-		cout << "Added: " << buttons.size() << " key mappings." << endl;
+		ss << "Added: " << buttons.size() << " key mappings." << endl;
 }

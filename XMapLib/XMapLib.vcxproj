@@ -168,6 +168,7 @@
     <ClInclude Include="StickMap.h" />
     <ClInclude Include="ThumbstickToDelay.h" />
     <ClInclude Include="Utilities.h" />
+    <ClInclude Include="VirtualMap.h" />
     <ClInclude Include="XELog.h" />
     <ClInclude Include="KeyboardInputPoller.h" />
     <ClInclude Include="KeyboardMapper.h" />

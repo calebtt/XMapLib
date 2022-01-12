@@ -55,13 +55,17 @@ namespace sds
 		/// </summary>
 		friend std::ostream& operator<<(std::ostream& os, const KeyboardKeyMap& obj)
 		{
+			const bool isPrintable = std::isprint(static_cast<unsigned char>(obj.MappedToVK));
 			std::osyncstream ss(os);
-			ss << "SendingElementVK:" << obj.SendingElementVK << " ";
-			ss << "MappedToVK:" << obj.MappedToVK << " ";
-			ss << "MappedToVK(AKA):" << static_cast<char>(obj.MappedToVK) << " ";
-			ss << "UsesRepeat:" << obj.UsesRepeat << " ";
-			ss << "LastAction:" << obj.LastAction << " ";
-			ss << "LastSentTime:" << obj.LastSentTime << " ";
+			ss << "[KeyboardKeyMap]" << std::endl;
+			ss << "SendingElementVK:" << obj.SendingElementVK << std::endl;
+			ss << "MappedToVK:" << obj.MappedToVK << std::endl;
+			if (isPrintable)
+				ss << "MappedToVK(AKA):" << static_cast<char>(obj.MappedToVK) << std::endl;
+			ss << "UsesRepeat:" << obj.UsesRepeat << std::endl;
+			ss << "LastAction:" << obj.LastAction << std::endl;
+			ss << obj.LastSentTime << std::endl;
+			ss << "[/KeyboardKeyMap]";
 			return os;
 		}
 		/// <summary>
@@ -70,11 +74,15 @@ namespace sds
 		/// </summary>
 		friend std::string& operator<<(std::string& os, const KeyboardKeyMap& obj)
 		{
+			const bool isPrintable = std::isprint(static_cast<unsigned char>(obj.MappedToVK));
 			std::stringstream ss;
+			ss << "[KeyboardKeyMap]" << std::endl;
 			ss << "SendingElementVK:" << obj.SendingElementVK << " ";
 			ss << "MappedToVK:" << obj.MappedToVK << " ";
-			ss << "MappedToVK(AKA):" << static_cast<char>(obj.MappedToVK) << " ";
+			if(isPrintable)
+				ss << "MappedToVK(AKA):" << static_cast<char>(obj.MappedToVK) << std::endl;
 			ss << "UsesRepeat:" << obj.UsesRepeat << " ";
+			ss << "[/KeyboardKeyMap]" << std::endl;
 			os += ss.str();
 			return os;
 		}
