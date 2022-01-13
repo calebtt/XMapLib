@@ -9,19 +9,33 @@
 using namespace std;
 void AddTestKeyMappings(sds::KeyboardMapper& mapper);
 
-class GetExit : public sds::CPPThreadRunner<int>
+class GetterExit
 {
+	std::unique_ptr<std::thread> workerThread;
 	std::atomic<bool> m_exitState = false;
 	const sds::KeyboardMapper& m_mp;
 public:
-	GetExit(const sds::KeyboardMapper &m) : CPPThreadRunner<int>(), m_mp(m) { startThread(); }
-	~GetExit() override { stopThread(); }
+	GetterExit(const sds::KeyboardMapper& m) : m_mp(m) { startThread(); }
+	~GetterExit() { stopThread(); }
 	//Returns a bool indicating if the thread should stop.
-	bool operator()() {	return m_exitState; }
+	bool operator()() { return m_exitState; }
 protected:
-	void workThread() override
+	void stopThread()
 	{
-		this->m_is_thread_running = true;
+		if (workerThread)
+		{
+			if (workerThread->joinable())
+			{
+				workerThread->join();
+			}
+		}
+	}
+	void startThread()
+	{
+		workerThread = std::make_unique<std::thread>([this]() { workThread(); });
+	}
+	void workThread()
+	{
 		std::cin.get(); // block and wait
 		std::cin.clear();
 		std::osyncstream ss(std::cerr);
@@ -31,7 +45,6 @@ protected:
 				ss << theMap << endl << endl;
 			});
 		m_exitState = true;
-		this->m_is_thread_running = false;
 	}
 };
 /* Entry Point */
@@ -44,7 +57,7 @@ int main()
 	MouseMapper mouser(player);
 	KeyboardMapper keyer(kplayer);
 	AddTestKeyMappings(keyer);
-	GetExit getter(keyer);
+	GetterExit getter(keyer);
 	std::string err = mouser.SetSensitivity(75); // 75 out of 100
 	Utilities::LogError(err); // won't do anything if the string is empty
 	mouser.SetStick(StickMap::RIGHT_STICK);
