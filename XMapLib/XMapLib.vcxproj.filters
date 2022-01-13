@@ -104,5 +104,8 @@
     <ClInclude Include="VirtualMap.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
+    <ClInclude Include="CPPLambdaRunner.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
