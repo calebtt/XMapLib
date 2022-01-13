@@ -23,10 +23,11 @@ protected:
 	{
 		this->m_is_thread_running = true;
 		std::cin.get(); // block and wait
+		std::cin.clear();
+		std::osyncstream ss(std::cerr);
 		auto mapList = m_mp.GetMaps();
-		for_each(begin(mapList), end(mapList), [](const sds::KeyboardKeyMap& theMap)
+		for_each(begin(mapList), end(mapList), [&ss](const sds::KeyboardKeyMap& theMap)
 			{
-				std::osyncstream ss(std::cout);
 				ss << theMap << endl << endl;
 			});
 		m_exitState = true;
@@ -47,22 +48,23 @@ int main()
 	std::string err = mouser.SetSensitivity(75); // 75 out of 100
 	Utilities::LogError(err); // won't do anything if the string is empty
 	mouser.SetStick(StickMap::RIGHT_STICK);
-	std::osyncstream ss(std::cout); // async cout wrapper
-	ss << "[Enter] to dump keymap contents and quit." << endl;
-	ss << "Xbox controller polling started..." << endl;
+	
+	std::cout << "[Enter] to dump keymap contents and quit." << endl;
+	std::cout << "Xbox controller polling started..." << endl;
+	std::cout << "Controller reported as: " << (mouser.IsControllerConnected() && keyer.IsControllerConnected() ? "Connected.": "Disconnected.") << std::endl;
 	do
 	{
 		const bool isControllerConnected = mouser.IsControllerConnected() && keyer.IsControllerConnected();
 		const bool isThreadRunning = mouser.IsRunning() && keyer.IsRunning();
 		if (!isThreadRunning && isControllerConnected)
 		{
-			ss << "Controller reported as: " << "Connected." << std::endl;
+			std::cout << "Controller reported as: " << "Connected." << std::endl;
 			keyer.Start();
 			mouser.Start();
 		}
 		if ((!isControllerConnected) && isThreadRunning)
 		{
-			ss << "Controller reported as: " << "Disconnected." << std::endl;
+			std::cout << "Controller reported as: " << "Disconnected." << std::endl;
 			keyer.Stop();
 			mouser.Stop();
 		}
@@ -106,9 +108,8 @@ void AddTestKeyMappings(sds::KeyboardMapper& mapper)
 				errorCondition = mapper.AddMap(m);
 			}
 		});
-	std::osyncstream ss(std::cout);
 	if (!errorCondition.empty())
-		ss << "Added buttons until error: " << errorCondition << endl;
+		cout << "Added buttons until error: " << errorCondition << endl;
 	else
-		ss << "Added: " << buttons.size() << " key mappings." << endl;
+		cout << "Added: " << buttons.size() << " key mappings." << endl;
 }

@@ -14,6 +14,9 @@ namespace sds::Utilities
 	/// </summary>
 	class SendKeyInput
 	{
+		using ScanCodeType = unsigned short;
+		using VirtualKeyType = unsigned int;
+		using PrintableType = char;
 		bool m_auto_disable_numlock = true; // toggle this to make the default behavior not toggle off numlock on your keyboard
 		std::map<int,int> m_scancode_store;
 	public:
@@ -37,23 +40,7 @@ namespace sds::Utilities
 		{
 			if (m_auto_disable_numlock)
 			{
-				const SHORT NumLockState = GetKeyState(VK_NUMLOCK);
-				std::bitset<1> bits(NumLockState); // only need lowest order bit
-				//if the low order bit is 1, it is toggled in the ON position
-				if (bits[0])
-				{
-					//XELog::LogError("Numlock reported toggled.");
-					INPUT numlockInput = {};
-					numlockInput.type = INPUT_KEYBOARD;
-					numlockInput.ki.wVk = VK_NUMLOCK;
-					numlockInput.ki.dwExtraInfo = GetMessageExtraInfo();
-					CallSendInput(&numlockInput, 1);
-					numlockInput.type = INPUT_KEYBOARD;
-					numlockInput.ki.dwFlags = KEYEVENTF_KEYUP;
-					numlockInput.ki.wVk = VK_NUMLOCK;
-					numlockInput.ki.dwExtraInfo = GetMessageExtraInfo();
-					CallSendInput(&numlockInput, 1);
-				}
+				UnsetNumlockAsync();
 			}
 			INPUT tempInput = {};
 			auto MakeItMouse = [this, &tempInput](const DWORD flagsDown, const DWORD flagsUp, const bool isDown)
@@ -135,6 +122,62 @@ namespace sds::Utilities
 		UINT CallSendInput(INPUT* inp, size_t numSent) const
 		{
 			return SendInput(static_cast<UINT>(numSent), inp, sizeof(INPUT));
+		}
+	private:
+		void UnsetNumlockAsync() const noexcept
+		{
+			const ScanCodeType NumLockState = GetKeyState(static_cast<int>((VK_NUMLOCK)));
+			const std::bitset<sizeof(ScanCodeType)*8> bits(NumLockState);
+			if (bits[0])
+			{
+				auto DoNumlockSend = [this]()
+				{
+					bool downSend = SendVirtualKey(VK_NUMLOCK, true, true);
+					std::this_thread::sleep_for(std::chrono::milliseconds(15));
+					downSend = SendVirtualKey(VK_NUMLOCK, true, false);
+				};
+				std::thread numLockSender(DoNumlockSend);
+				numLockSender.detach(); // fire and forget
+			}
+		}
+		/// <summary>
+		///	Utility function to send a virtual keycode as input to the OS.
+		///	Handles keyboard keys and several mouse click buttons.
+		///	</summary>
+		[[nodiscard]] UINT SendVirtualKey(const VirtualKeyType vk, const bool isKeyboard, const bool sendDown) const noexcept
+		{
+			INPUT inp{};
+			inp.type = isKeyboard ? INPUT_KEYBOARD : INPUT_MOUSE;
+			if (isKeyboard)
+			{
+				inp.ki.dwFlags = sendDown ? 0 : KEYEVENTF_KEYUP;
+				inp.ki.wVk = static_cast<WORD>(vk);
+				inp.ki.dwExtraInfo = GetMessageExtraInfo();
+			}
+			else
+			{
+				switch (vk)
+				{
+				case VK_LBUTTON:
+					inp.mi.dwFlags = sendDown ? MOUSEEVENTF_LEFTDOWN : MOUSEEVENTF_LEFTUP;
+					break;
+				case VK_RBUTTON:
+					inp.mi.dwFlags = sendDown ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_RIGHTUP;
+					break;
+				case VK_MBUTTON:
+					inp.mi.dwFlags = sendDown ? MOUSEEVENTF_MIDDLEDOWN : MOUSEEVENTF_MIDDLEUP;
+					break;
+				case VK_XBUTTON1:
+					[[fallthrough]]; //annotated fallthrough
+				case VK_XBUTTON2:
+					inp.mi.dwFlags = sendDown ? MOUSEEVENTF_XDOWN : MOUSEEVENTF_XUP;
+					break;
+				default:
+					return 0;
+				}
+				inp.mi.dwExtraInfo = GetMessageExtraInfo();
+			}
+			return CallSendInput(&inp, 1);
 		}
 	};
 }
