@@ -1,7 +1,5 @@
 #pragma once
 #include <iostream>
-#include <string>
-#include <concepts>
 #include <syncstream>
 /// <summary>
 /// One function called to log errors, to "cerr" at the moment.
