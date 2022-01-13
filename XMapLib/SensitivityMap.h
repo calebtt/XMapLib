@@ -2,8 +2,6 @@
 #include "stdafx.h"
 #include "Utilities.h"
 #include <cmath>
-#include <numeric>
-
 namespace sds
 {
 	struct SensitivityMap
