@@ -1,9 +1,4 @@
 #pragma once
-#include "stdafx.h"
-#include <thread>
-#include <mutex>
-#include <functional>
-#include <vector>
 #include "CPPLambdaRunner.h"
 
 namespace sds

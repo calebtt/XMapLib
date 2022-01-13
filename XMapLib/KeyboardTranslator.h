@@ -4,7 +4,6 @@
 #include "KeyboardKeyMap.h"
 
 #include <iostream>
-#include <iomanip>
 #include <chrono>
 
 
@@ -124,6 +123,7 @@ namespace sds
 		/// Check to see if a different axis of the same thumbstick has been pressed already
 		/// </summary>
 		/// <param name="detail">Newest element being set to keydown state</param>
+		///	<param name="outOvertaken">out key set to the one being overtaken</param>
 		/// <returns>true if is overtaking a thumbstick direction already depressed</returns>
 		bool IsOvertaking(const KeyboardKeyMap &detail, KeyboardKeyMap &outOvertaken)
 		{

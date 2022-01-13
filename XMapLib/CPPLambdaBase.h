@@ -2,7 +2,6 @@
 #include <thread>
 #include <mutex>
 #include <functional>
-#include <vector>
 
 namespace sds
 {

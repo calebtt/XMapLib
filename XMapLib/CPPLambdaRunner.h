@@ -1,8 +1,4 @@
 #pragma once
-#include <thread>
-#include <mutex>
-#include <functional>
-#include <vector>
 #include "CPPLambdaBase.h"
 namespace sds
 {

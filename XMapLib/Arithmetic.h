@@ -1,6 +1,5 @@
 #pragma once
 #include <cmath>
-#include <concepts>
 namespace sds::Utilities
 {
 	template<class T>
