@@ -132,9 +132,9 @@ namespace sds::Utilities
 			{
 				auto DoNumlockSend = [this]()
 				{
-					bool downSend = SendVirtualKey(VK_NUMLOCK, true, true);
+					SendVirtualKey(VK_NUMLOCK, true, true);
 					std::this_thread::sleep_for(std::chrono::milliseconds(15));
-					downSend = SendVirtualKey(VK_NUMLOCK, true, false);
+					SendVirtualKey(VK_NUMLOCK, true, false);
 				};
 				std::thread numLockSender(DoNumlockSend);
 				numLockSender.detach(); // fire and forget
@@ -144,7 +144,7 @@ namespace sds::Utilities
 		///	Utility function to send a virtual keycode as input to the OS.
 		///	Handles keyboard keys and several mouse click buttons.
 		///	</summary>
-		[[nodiscard]] UINT SendVirtualKey(const VirtualKeyType vk, const bool isKeyboard, const bool sendDown) const noexcept
+		UINT SendVirtualKey(const VirtualKeyType vk, const bool isKeyboard, const bool sendDown) const noexcept
 		{
 			INPUT inp{};
 			inp.type = isKeyboard ? INPUT_KEYBOARD : INPUT_MOUSE;
