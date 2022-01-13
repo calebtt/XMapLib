@@ -103,7 +103,7 @@ namespace sds
 		/// <param name="player">MousePlayerInfo struct full of deadzone information</param>
 		/// <param name="whichStick">StickMap enum denoting which thumbstick</param>
 		/// <param name="isX">is it for the X axis?</param>
-		ThumbstickToDelay(const int sensitivity, const MousePlayerInfo &player, StickMap whichStick, const bool isX) : m_is_x_axis(isX)
+		ThumbstickToDelay(const int sensitivity, const MousePlayerInfo &player, StickMap whichStick, const bool isX) noexcept : m_is_x_axis(isX)
 		{
 			AssertSettings();
 			//error checking mousemap stick setting
