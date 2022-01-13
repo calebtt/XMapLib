@@ -87,7 +87,7 @@ namespace sds::Utilities
 				else
 					tempInput.ki.dwFlags = KEYEVENTF_KEYUP | KEYEVENTF_SCANCODE;
 				tempInput.ki.wScan = scanCode;
-				UINT ret = CallSendInput(&tempInput, 1);
+				const UINT ret = CallSendInput(&tempInput, 1);
 				if (ret == 0)
 					Utilities::LogError("SendInput returned 0");
 			}
@@ -108,7 +108,7 @@ namespace sds::Utilities
 			}
 			else
 			{
-				const WORD scan = static_cast<WORD> (MapVirtualKeyExA(vk, MAPVK_VK_TO_VSC, 0));
+				const WORD scan = static_cast<WORD> (MapVirtualKeyExA(vk, MAPVK_VK_TO_VSC, nullptr));
 				m_scancode_store[vk] = scan;
 				return scan;
 			}

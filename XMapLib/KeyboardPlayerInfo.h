@@ -9,15 +9,16 @@ namespace sds
 	/// </summary>
 	struct KeyboardPlayerInfo
 	{
+		using PidType = int;
 		//ISO CPP guidelines C.45 followed here: https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rc-default
-		std::atomic<int> player_id = 0;
+		std::atomic<PidType> player_id = 0;
 		//default ctor
 		KeyboardPlayerInfo() = default;
 		//copy constructor
 		KeyboardPlayerInfo(const KeyboardPlayerInfo &sp)
 		{
 			//temporary copies must be made to copy atomic to atomic
-			int pid = sp.player_id;
+			const PidType pid = sp.player_id;
 			player_id = pid;
 		}
 		//assignment
@@ -26,7 +27,7 @@ namespace sds
 			if (this == &sp)
 				return *this;
 			//temporary copies must be made to copy atomic to atomic
-			int pid= sp.player_id;
+			const PidType pid= sp.player_id;
 			player_id = pid;
 			return *this;
 		}

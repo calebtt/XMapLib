@@ -117,13 +117,13 @@ namespace sds
 				workRunning = m_workThread->IsRunning();
 			return m_poller.IsRunning() && workRunning;
 		}
-		void Start()
+		void Start() const noexcept
 		{
 			m_poller.Start();
 			if(m_workThread != nullptr)
 				m_workThread->StartThread();
 		}
-		void Stop()
+		void Stop() const noexcept
 		{
 			m_poller.Stop();
 			if(m_workThread != nullptr)
@@ -134,7 +134,7 @@ namespace sds
 		/// Worker thread, private visibility, gets updated data from ProcessState() function to use.
 		/// Accesses the std::atomic m_thread_x and m_thread_y members.
 		/// </summary>
-		void workThread(sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2& mut, int& protectedData)
+		void workThread(sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2&, int&)
 		{
 			ThumbstickToDelay xThread(this->GetSensitivity(), m_local_player, m_stickmap_info, true);
 			ThumbstickToDelay yThread(this->GetSensitivity(), m_local_player, m_stickmap_info, false);

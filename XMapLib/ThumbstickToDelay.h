@@ -48,7 +48,7 @@ namespace sds
 			m_x_axis_deadzone = xAxisDz;
 			m_y_axis_deadzone = yAxisDz;
 		}
-		constexpr int RangeBindValue(const int user_sens, const int sens_min, const int sens_max) const
+		constexpr int RangeBindValue(const int user_sens, const int sens_min, const int sens_max) const noexcept
 		{
 			//bounds check result
 			if (user_sens > sens_max)
@@ -57,7 +57,7 @@ namespace sds
 				return sens_min;
 			return user_sens;
 		}
-		bool IsBeyondDeadzone(const int val, const bool isX) const
+		bool IsBeyondDeadzone(const int val, const bool isX) const noexcept
 		{
 			using namespace Utilities;
 			auto GetDeadzoneCurrent = [this](const bool isItX)
@@ -69,7 +69,7 @@ namespace sds
 					|| ToFloat(val) < -ToFloat(GetDeadzoneCurrent(isX)));
 			return move;
 		}
-		bool IsBeyondAltDeadzone(const int val, const bool isItX) const
+		bool IsBeyondAltDeadzone(const int val, const bool isItX) const noexcept
 		{
 			using namespace Utilities;
 			auto GetDeadzoneCurrent = [this](const bool isTheX)
@@ -82,7 +82,7 @@ namespace sds
 			return move;
 		}
 		//Returns the dz for the axis, or the alternate if the dz is already activated.
-		int GetDeadzoneActivated(const bool isX) const
+		int GetDeadzoneActivated(const bool isX) const noexcept
 		{
 			using namespace Utilities;
 			int dz = 0;
@@ -111,8 +111,8 @@ namespace sds
 				whichStick = StickMap::RIGHT_STICK;
 			//error checking axisDeadzone arg range, because it might crash the program if the
 			//delay returned is some silly value
-			int cdx = whichStick == StickMap::LEFT_STICK ? player.left_x_dz : player.right_x_dz;
-			int cdy = whichStick == StickMap::LEFT_STICK ? player.left_y_dz : player.right_y_dz;
+			const int cdx = whichStick == StickMap::LEFT_STICK ? player.left_x_dz : player.right_x_dz;
+			const int cdy = whichStick == StickMap::LEFT_STICK ? player.left_y_dz : player.right_y_dz;
 			InitFirstPiece(sensitivity, cdx, cdy);
 			m_shared_sensitivity_map = m_sensitivity_mapper.BuildSensitivityMap(m_axis_sensitivity,
 				MouseSettings::SENSITIVITY_MIN,
@@ -138,7 +138,7 @@ namespace sds
 		/// <summary>
 		/// Determines if m_is_x_axis axis requires move based on alt deadzone if dz is activated.
 		/// </summary>
-		bool DoesAxisRequireMoveAlt(const int x, const int y) const
+		bool DoesAxisRequireMoveAlt(const int x, const int y) const noexcept
 		{
 			if (!m_is_deadzone_activated)
 			{
@@ -159,7 +159,7 @@ namespace sds
 		/// Main func for use.
 		/// </summary>
 		/// <returns>Delay in US</returns>
-		size_t GetDelayFromThumbstickValue(int x, int y) const
+		size_t GetDelayFromThumbstickValue(int x, int y) const noexcept
 		{
 			const int xdz = GetDeadzoneActivated(true);
 			const int ydz = GetDeadzoneActivated(false);
@@ -181,7 +181,7 @@ namespace sds
 			const int txVal = GetMappedValue(m_is_x_axis ? x : y);
 			return txVal;
 		}
-		int GetMappedValue(int keyValue) const
+		int GetMappedValue(int keyValue) const noexcept
 		{
 			keyValue = RangeBindValue(keyValue, MouseSettings::SENSITIVITY_MIN, MouseSettings::SENSITIVITY_MAX);
 			//error checking to make sure the value is in the map
@@ -210,7 +210,7 @@ namespace sds
 		/// <param name="thumbstick">thumbstick value between short minimum and short maximum</param>
 		/// <param name="axisDeadzone">positive deadzone value to use for the axis value</param>
 		/// <returns>positive value between (inclusive) SENSITIVITY_MIN and SENSITIVITY_MAX, or SENSITIVITY_MIN for thumbstick less than deadzone</returns>
-		int GetRangedThumbstickValue(int thumbstick, int axisDeadzone) const
+		int GetRangedThumbstickValue(int thumbstick, int axisDeadzone) const noexcept
 		{
 			thumbstick = RangeBindValue(thumbstick, MouseSettings::SMin, MouseSettings::SMax);
 			if (thumbstick == 0)

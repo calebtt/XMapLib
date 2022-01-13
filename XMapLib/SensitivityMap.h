@@ -72,11 +72,11 @@ namespace sds
 		/// <param name="us_delay_min">minimum delay in microseconds for the range of minimum delay values</param>
 		/// <param name="us_delay_max">maximum delay in microseconds for the range of minimum delay values</param>
 		/// <returns>sensitivity adjusted minimum microsecond delay </returns>
-		int SensitivityToMinimum(const int user_sens, 
+		[[nodiscard]] int SensitivityToMinimum(const int user_sens, 
 			const int sens_min, 
 			const int sens_max, 
 			const int us_delay_min, 
-			const int us_delay_max) const
+			const int us_delay_max) const noexcept
 		{
 			using namespace sds::Utilities;
 			//arg error checking
@@ -92,7 +92,7 @@ namespace sds
 				delayVec.push_back(ToDub(us_delay_min) + (ToDub(j) * step));
 			//adapt user_sens and sensitivityRange to vector indexes
 			const int elementIndex = sens_max - user_sens;
-			return static_cast<int>(delayVec.at(elementIndex));
+			return static_cast<int>(delayVec[elementIndex]);
 		}
 	};
 }

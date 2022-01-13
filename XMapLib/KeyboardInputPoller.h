@@ -28,7 +28,7 @@ namespace sds
 			InitWorkThread();
 			Start();
 		}
-		explicit KeyboardInputPoller(KeyboardPlayerInfo& p) : m_local_player(p) { InitWorkThread(); Start(); }
+		explicit KeyboardInputPoller(const KeyboardPlayerInfo& p) : m_local_player(p) { InitWorkThread(); Start(); }
 		KeyboardInputPoller(const KeyboardInputPoller& other) = delete;
 		KeyboardInputPoller(KeyboardInputPoller&& other) = delete;
 		KeyboardInputPoller& operator=(const KeyboardInputPoller& other) = delete;
@@ -41,14 +41,14 @@ namespace sds
 		{
 			Stop();
 		}
-		std::vector<XINPUT_KEYSTROKE> getAndClearStates()
+		std::vector<XINPUT_KEYSTROKE> getAndClearStates() const
 		{
 			return m_workThread->GetAndClearCurrentStates();
 		}
 		/// <summary>
 		/// Start polling for updated XINPUT_STATE info.
 		/// </summary>
-		void Start() noexcept
+		void Start() const noexcept
 		{
 			if (m_workThread)
 				m_workThread->StartThread();
@@ -56,7 +56,7 @@ namespace sds
 		/// <summary>
 		/// Stop input polling.
 		/// </summary>
-		void Stop() noexcept
+		void Stop() const noexcept
 		{
 			if (m_workThread)
 				m_workThread->StopThread();
@@ -111,7 +111,7 @@ namespace sds
 			int currentCount = 0;
 			while (!stopCondition)
 			{
-				tempState = { 0 };
+				tempState={};
 				const DWORD error = XInputGetKeystroke(m_local_player.player_id, 0, &tempState);
 				if (error == ERROR_SUCCESS)
 				{

@@ -17,8 +17,8 @@ namespace sds
 	class CPPLambdaRunner : public CPPLambdaBase<InternalData>
 	{
 	public:
-		using LambdaType = CPPLambdaBase<InternalData>::LambdaType;
-		using ScopedLockType = CPPLambdaBase<InternalData>::ScopedLockType;
+		using LambdaType = typename CPPLambdaBase<InternalData>::LambdaType;
+		using ScopedLockType = typename CPPLambdaBase<InternalData>::ScopedLockType;
 
 		CPPLambdaRunner(LambdaType lambdaToRun) : CPPLambdaBase<InternalData>((lambdaToRun)) { }
 		/// <summary>

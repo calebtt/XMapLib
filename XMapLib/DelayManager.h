@@ -25,7 +25,7 @@ namespace sds::Utilities
 		///	Thread-safe, provided all writes to the ostream object
 		///	are wrapped with std::osyncstream!
 		/// </summary>
-		friend std::ostream& operator<<(std::ostream& os, const DelayManager& obj)
+		friend std::ostream& operator<<(std::ostream& os, const DelayManager& obj) noexcept
 		{
 			std::osyncstream ss(os);
 			ss << "[DelayManager]" << std::endl
@@ -38,7 +38,7 @@ namespace sds::Utilities
 		/// <summary>
 		/// Check for elapsed.
 		/// </summary>
-		bool IsElapsed()
+		bool IsElapsed() noexcept
 		{
 			if (std::chrono::high_resolution_clock::now() > (m_start_time + std::chrono::microseconds(m_duration)))
 			{
@@ -47,7 +47,7 @@ namespace sds::Utilities
 			}
 			return false;
 		}
-		void Reset(size_t microsec_delay)
+		void Reset(size_t microsec_delay) noexcept
 		{
 			m_start_time = std::chrono::high_resolution_clock::now();
 			m_has_fired = false;

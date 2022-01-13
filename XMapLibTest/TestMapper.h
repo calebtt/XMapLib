@@ -3,10 +3,9 @@
 #include "CppUnitTest.h"
 #include "../XMapLib/KeyboardMapper.h"
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
 namespace XMapLibTest
 {
+	using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 	TEST_CLASS(TestMapper)
 	{
 	public:
@@ -25,8 +24,8 @@ namespace XMapLibTest
 				std::string ert = "Testmap [input]: ";
 				ert += s;
 				ert += " [expect result no error message]: ";
-				KeyboardKeyMap key(VK_PAD_DPAD_DOWN, s, true);
-				std::string ertt = mp.AddMap(key);
+				const KeyboardKeyMap key(VK_PAD_DPAD_DOWN, s, true);
+				const std::string ertt = mp.AddMap(key);
 				std::string composite = ert + ertt;
 				std::wstring errMsg;
 				std::copy(composite.begin(), composite.end(), std::back_inserter(errMsg));

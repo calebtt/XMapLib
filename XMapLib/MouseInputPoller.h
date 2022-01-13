@@ -27,7 +27,7 @@ namespace sds
 			InitWorkThread();
 			Start();
 		}
-		explicit MouseInputPoller(MousePlayerInfo &p) : m_local_player(p)
+		explicit MouseInputPoller(const MousePlayerInfo &p) : m_local_player(p)
 		{
 			InitWorkThread();
 			Start();
@@ -44,7 +44,7 @@ namespace sds
 		{
 			Stop();
 		}
-		XINPUT_STATE GetUpdatedState() noexcept
+		XINPUT_STATE GetUpdatedState() const noexcept
 		{
 			if (m_workThread)
 				return m_workThread->GetCurrentState();
@@ -53,7 +53,7 @@ namespace sds
 		/// <summary>
 		/// Start polling for updated XINPUT_STATE info.
 		/// </summary>
-		void Start()
+		void Start() const noexcept
 		{
 			if (m_workThread)
 				m_workThread->StartThread();
@@ -61,7 +61,7 @@ namespace sds
 		/// <summary>
 		/// Stop input polling.
 		/// </summary>
-		void Stop()
+		void Stop() const noexcept
 		{
 			if (m_workThread)
 				m_workThread->StopThread();
@@ -100,18 +100,18 @@ namespace sds
 		/// Worker thread overriding the base pure virtual workThread.
 		///	Updates "local_state" with mutex protection.
 		/// </summary>
-		void workThread(sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2& mut, InternalType& protectedData)
+		void workThread(sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2& mut, InternalType& protectedData) const noexcept
 		{
 			{
 				//zero local_state before use
 				lock first(mut);
-				protectedData = { 0 };
+				protectedData = {};
 			}
-			XINPUT_STATE tempState = {};
+			XINPUT_STATE tempState{};
 			DWORD lastPacket = 0;
 			while (!stopCondition)
 			{
-				tempState = { 0 };
+				tempState = {};
 				const DWORD error = XInputGetState(m_local_player.player_id, &tempState);
 				if (error == ERROR_SUCCESS)
 				{

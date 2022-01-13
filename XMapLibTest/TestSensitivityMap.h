@@ -3,10 +3,9 @@
 #include "CppUnitTest.h"
 #include "../XMapLib/SensitivityMap.h"
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
 namespace XMapLibTest
 {
+	using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 	TEST_CLASS(TestSensitivityMap)
 	{
 		const int SENS_MIN = 1;

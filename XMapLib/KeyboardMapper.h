@@ -61,12 +61,12 @@ namespace sds
 		{
 			return m_poller.IsRunning() && m_workThread->IsRunning();
 		}
-		void Start()
+		void Start() const noexcept
 		{
 			m_poller.Start();
 			m_workThread->StartThread();
 		}
-		void Stop()
+		void Stop() const noexcept
 		{
 			m_poller.Stop();
 			m_workThread->StopThread();
@@ -93,7 +93,7 @@ namespace sds
 		/// Worker thread, protected visibility.
 		/// Accesses the std::atomic m_threadX and m_threadY members.
 		/// </summary>
-		void workThread(auto& stopCondition, auto& mut, auto& protectedData)
+		void workThread(auto& stopCondition, auto&, auto&)
 		{
 			//thread main loop
 			while (!stopCondition)

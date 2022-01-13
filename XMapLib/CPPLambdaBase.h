@@ -28,7 +28,7 @@ namespace sds
 		using LambdaType = std::function<void(std::atomic<bool>&, std::mutex&, InternalData&)>;
 		using ScopedLockType = std::lock_guard<std::mutex>;
 
-		CPPLambdaBase(LambdaType lambdaToRun) : m_lambda((lambdaToRun)) { }
+		CPPLambdaBase(LambdaType lambdaToRun) : m_lambda(std::move(lambdaToRun)) { }
 		CPPLambdaBase(const CPPLambdaBase& other) = delete;
 		CPPLambdaBase(CPPLambdaBase&& other) = delete;
 		CPPLambdaBase& operator=(const CPPLambdaBase& other) = delete;

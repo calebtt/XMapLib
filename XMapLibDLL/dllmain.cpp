@@ -11,6 +11,9 @@ BOOL APIENTRY DllMain( HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpRese
     case DLL_THREAD_DETACH:
     case DLL_PROCESS_DETACH:
         break;
+    default:
+        //error!
+        break;
     }
     return TRUE;
 }

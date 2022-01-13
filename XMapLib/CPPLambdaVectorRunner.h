@@ -19,8 +19,8 @@ namespace sds
 	class CPPLambdaVectorRunner : public CPPLambdaBase<InternalData>
 	{
 	public:
-		using LambdaType = CPPLambdaBase<InternalData>::LambdaType;
-		using ScopedLockType = CPPLambdaBase<InternalData>::ScopedLockType;
+		using LambdaType = typename CPPLambdaBase<InternalData>::LambdaType;
+		using ScopedLockType = typename CPPLambdaBase<InternalData>::ScopedLockType;
 
 		CPPLambdaVectorRunner(LambdaType lambdaToRun) : CPPLambdaBase<InternalData>((lambdaToRun)) { }
 		void AddState(const InternalData& state)

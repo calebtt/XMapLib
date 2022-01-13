@@ -53,10 +53,7 @@ namespace XMapLibSharp
         {
             bool isConnected = mapper.IsControllerConnected();
             button2.Text = isConnected ? MSG_CONTROLLER : MSG_NOCONTROLLER;
-            if (!isConnected)
-                button2.BackColor = CLR_INFO;
-            else
-                button2.BackColor = CLR_NORMAL;
+            button2.BackColor = isConnected ? CLR_NORMAL : CLR_INFO;
         }
         private void UpdateMouseSensitivityButton()
         {

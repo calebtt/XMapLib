@@ -53,7 +53,7 @@ namespace sds
 			m_is_y_moving = isYMoving;
 		}
 	protected:
-		void workThread(sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2& mut, InternalType& protectedData)
+		void workThread(sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2&, InternalType&) const noexcept
 		{
 			using namespace std::chrono;
 			Utilities::SendMouseInput keySend;
