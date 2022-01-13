@@ -58,7 +58,7 @@ namespace XMapLibTest
 			Logger::WriteMessage(std::wstring(L"Begin " + TestName).c_str());
 			const int localdz = DefaultDeadzone;
 			const int localSensMax = SensMax;
-			auto testValues = [&localSensMax, &localdz](const int thumbValueX, const int thumbValueY, const bool isX, const size_t comparison, const int within = 100)
+			auto testValues = [&localSensMax](const int thumbValueX, const int thumbValueY, const bool isX, const size_t comparison, const int within = 100)
 			{
 				const sds::MousePlayerInfo pl;
 				const sds::StickMap mp = sds::StickMap::RIGHT_STICK;
