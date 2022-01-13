@@ -156,8 +156,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Arithmetic.h" />
+    <ClInclude Include="CPPLambdaBase.h" />
     <ClInclude Include="CPPLambdaRunner.h" />
-    <ClInclude Include="CPPThreadRunner.h" />
+    <ClInclude Include="CPPLambdaVectorRunner.h" />
     <ClInclude Include="DelayManager.h" />
     <ClInclude Include="MapFunctions.h" />
     <ClInclude Include="MouseInputPoller.h" />

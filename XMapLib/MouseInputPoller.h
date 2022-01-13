@@ -10,13 +10,16 @@ namespace sds
 	/// </summary>
 	class MouseInputPoller
 	{
+		using InternalType = XINPUT_STATE;
+		using LambdaRunnerType = sds::CPPLambdaRunner<InternalType>;
+		using lock = LambdaRunnerType::ScopedLockType;
 		MousePlayerInfo m_local_player;
-		std::unique_ptr<sds::CPPLambdaRunner<XINPUT_STATE>> m_workThread;
+		std::unique_ptr<sds::CPPLambdaRunner<InternalType>> m_workThread;
 		void InitWorkThread() noexcept
 		{
 			m_workThread =
-				std::make_unique<sds::CPPLambdaRunner<XINPUT_STATE>>
-				([this](sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2& mut, XINPUT_STATE& protectedData) { workThread(stopCondition, mut, protectedData); });
+				std::make_unique<sds::CPPLambdaRunner<InternalType>>
+				([this](sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2& mut, auto& protectedData) { workThread(stopCondition, mut, protectedData); });
 		}
 	public:
 		MouseInputPoller()
@@ -67,7 +70,7 @@ namespace sds
 		/// Gets the running status of the worker thread
 		/// </summary>
 		/// <returns> true if thread is running, false otherwise</returns>
-		bool IsRunning() const
+		bool IsRunning() const noexcept
 		{
 			if(m_workThread)
 				return m_workThread->IsRunning();
@@ -77,7 +80,7 @@ namespace sds
 		/// Returns status of XINPUT library detecting a controller.
 		/// </summary>
 		/// <returns> true if controller is connected, false otherwise</returns>
-		bool IsControllerConnected() const
+		bool IsControllerConnected() const noexcept
 		{
 			XINPUT_STATE ss{};
 			return XInputGetState(m_local_player.player_id, &ss) == ERROR_SUCCESS;
@@ -87,7 +90,7 @@ namespace sds
 		/// overload that uses the player_id value in a MousePlayerInfo struct
 		/// </summary>
 		/// <returns> true if controller is connected, false otherwise</returns>
-		bool IsControllerConnected(const MousePlayerInfo &p) const
+		bool IsControllerConnected(const MousePlayerInfo &p) const noexcept
 		{
 			XINPUT_STATE ss{};
 			return XInputGetState(p.player_id, &ss) == ERROR_SUCCESS;
@@ -97,9 +100,8 @@ namespace sds
 		/// Worker thread overriding the base pure virtual workThread.
 		///	Updates "local_state" with mutex protection.
 		/// </summary>
-		void workThread(sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2& mut, XINPUT_STATE& protectedData)
+		void workThread(sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2& mut, InternalType& protectedData)
 		{
-			using lock = CPPLambdaRunner<XINPUT_STATE>::ScopedLockType;
 			{
 				//zero local_state before use
 				lock first(mut);

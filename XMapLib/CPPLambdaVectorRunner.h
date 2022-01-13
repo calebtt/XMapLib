@@ -1,9 +1,11 @@
 #pragma once
+#include "stdafx.h"
 #include <thread>
 #include <mutex>
 #include <functional>
 #include <vector>
-#include "CPPLambdaBase.h"
+#include "CPPLambdaRunner.h"
+
 namespace sds
 {
 	/// <summary>
@@ -14,29 +16,24 @@ namespace sds
 	///	Instantiation requires a lambda of a certain form: function{void(atomic{bool}&, mutex&, InternalData&)}
 	/// </summary>
 	template <class InternalData>
-	class CPPLambdaRunner : public CPPLambdaBase<InternalData>
+	class CPPLambdaVectorRunner : public CPPLambdaBase<InternalData>
 	{
 	public:
 		using LambdaType = CPPLambdaBase<InternalData>::LambdaType;
 		using ScopedLockType = CPPLambdaBase<InternalData>::ScopedLockType;
 
-		CPPLambdaRunner(LambdaType lambdaToRun) : CPPLambdaBase<InternalData>((lambdaToRun)) { }
-		/// <summary>
-		/// Utility function to update the InternalData with mutex locking thread safety.
-		/// </summary>
-		/// <param name="state">InternalData obj to be copied to the internal one.</param>
-		void UpdateState(const InternalData& state)
+		CPPLambdaVectorRunner(LambdaType lambdaToRun) : CPPLambdaBase<InternalData>((lambdaToRun)) { }
+		void AddState(const InternalData& state)
 		{
 			ScopedLockType tempLock(this->m_state_mutex);
-			this->m_local_state = state;
+			this->m_local_state.push_back(state);
 		}
-		/// <summary>
-		/// Returns a copy of the internal InternalData obj with mutex locking thread safety.
-		/// </summary>
-		InternalData GetCurrentState()
+		auto GetAndClearCurrentStates()
 		{
 			ScopedLockType tempLock(this->m_state_mutex);
-			return this->m_local_state;
+			auto temp = this->m_local_state;
+			this->m_local_state.clear();
+			return temp;
 		}
 	};
 }
