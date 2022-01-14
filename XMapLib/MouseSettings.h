@@ -48,15 +48,15 @@ namespace sds
 		static_assert(MICROSECONDS_MIN < MICROSECONDS_MAX);
 		static_assert(MICROSECONDS_MIN_MAX < MICROSECONDS_MAX);
 		static_assert(MICROSECONDS_MIN_MAX > MICROSECONDS_MIN);
-		static bool IsValidSensitivityValue(int newSens)
+		static constexpr bool IsValidSensitivityValue(int newSens) noexcept
 		{
 			return (newSens <= SENSITIVITY_MAX) && (newSens >= SENSITIVITY_MIN);
 		}
-		static bool IsValidDeadzoneValue(int dz)
+		static constexpr bool IsValidDeadzoneValue(int dz) noexcept
 		{
 			return (dz <= DEADZONE_MAX) && (dz >= DEADZONE_MIN);
 		}
-		static bool IsValidThumbstickValue(int thumb)
+		static constexpr bool IsValidThumbstickValue(int thumb) noexcept
 		{
 			return (thumb <= SMax) && (thumb >= SMin);
 		}

@@ -52,6 +52,7 @@
             // 
             // btnStick
             // 
+            this.btnStick.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnStick.Location = new System.Drawing.Point(161, 22);
             this.btnStick.Name = "btnStick";
             this.btnStick.Size = new System.Drawing.Size(163, 35);
@@ -62,13 +63,15 @@
             // 
             // btnSensitivityIndicator
             // 
+            this.btnSensitivityIndicator.BackColor = System.Drawing.Color.Aquamarine;
             this.btnSensitivityIndicator.Enabled = false;
+            this.btnSensitivityIndicator.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSensitivityIndicator.Location = new System.Drawing.Point(6, 22);
             this.btnSensitivityIndicator.Name = "btnSensitivityIndicator";
             this.btnSensitivityIndicator.Size = new System.Drawing.Size(149, 35);
             this.btnSensitivityIndicator.TabIndex = 1;
             this.btnSensitivityIndicator.Text = "Sensitivity: 0/100";
-            this.btnSensitivityIndicator.UseVisualStyleBackColor = true;
+            this.btnSensitivityIndicator.UseVisualStyleBackColor = false;
             this.btnSensitivityIndicator.Click += new System.EventHandler(this.btnSensitivityIndicator_Click);
             // 
             // tabControl1
@@ -128,6 +131,8 @@
             // 
             // tbxMapDetails
             // 
+            this.tbxMapDetails.BackColor = System.Drawing.Color.Aquamarine;
+            this.tbxMapDetails.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tbxMapDetails.Location = new System.Drawing.Point(16, 99);
             this.tbxMapDetails.Multiline = true;
             this.tbxMapDetails.Name = "tbxMapDetails";
@@ -138,6 +143,7 @@
             // 
             this.button2.BackColor = System.Drawing.Color.Gainsboro;
             this.button2.Enabled = false;
+            this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button2.ForeColor = System.Drawing.SystemColors.ControlText;
             this.button2.Location = new System.Drawing.Point(155, 25);
             this.button2.Name = "button2";
@@ -170,6 +176,7 @@
             // 
             // btnMouseProcessing
             // 
+            this.btnMouseProcessing.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnMouseProcessing.Location = new System.Drawing.Point(6, 114);
             this.btnMouseProcessing.Name = "btnMouseProcessing";
             this.btnMouseProcessing.Size = new System.Drawing.Size(318, 62);
