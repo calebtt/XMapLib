@@ -1,6 +1,8 @@
 #pragma once
 #include "stdafx.h"
 #include "DelayManager.h"
+#include "VirtualMap.h"
+#include <syncstream>
 
 namespace sds
 {
@@ -35,16 +37,58 @@ namespace sds
 		KeyboardKeyMap& operator=(const KeyboardKeyMap& other) = default;
 		KeyboardKeyMap& operator=(KeyboardKeyMap&& other) = default;
 		~KeyboardKeyMap() = default;
+		/// <summary>
+		/// Operator<< overload for std::ostream specialization,
+		///	writes enum class:int value as decimal int value.
+		///	Thread-safe, provided all writes to the ostream object
+		///	are wrapped with std::osyncstream!
+		/// </summary>
 		friend std::ostream& operator<<(std::ostream& os, const ActionType& obj)
 		{
-			return os << static_cast<int>(obj);
+			std::osyncstream ss(os);
+			ss << static_cast<int>(obj);
+			return os;
 		}
+		/// <summary>
+		/// Operator<< overload for std::ostream specialization,
+		///	writes more detailed map details for debugging.
+		///	Thread-safe, provided all writes to the ostream object
+		///	are wrapped with std::osyncstream!
+		/// </summary>
 		friend std::ostream& operator<<(std::ostream& os, const KeyboardKeyMap& obj)
 		{
-			return os << "SendingElementVK: " << obj.SendingElementVK << "\n"
-				<< "MappedToVK: " << obj.MappedToVK << " AKA: " << std::quoted(std::string("") + static_cast<char>(obj.MappedToVK)) << "\n"
-				<< "LastAction: " << obj.LastAction << "\n"
-				<< "LastSentTime: " << obj.LastSentTime << "\n";
+			const char printed = Utilities::VirtualMap::GetCharFromVK(obj.MappedToVK);
+			const bool isPrintable = std::isprint(static_cast<unsigned char>(printed));
+			std::osyncstream ss(os);
+			ss << "[KeyboardKeyMap]" << std::endl;
+			ss << "SendingElementVK:" << obj.SendingElementVK << std::endl;
+			ss << "MappedToVK:" << obj.MappedToVK << std::endl;
+			if (isPrintable)
+				ss << "MappedToVK(AKA):" << printed << std::endl;
+			ss << "UsesRepeat:" << obj.UsesRepeat << std::endl;
+			ss << "LastAction:" << obj.LastAction << std::endl;
+			ss << obj.LastSentTime << std::endl;
+			ss << "[/KeyboardKeyMap]";
+			return os;
+		}
+		/// <summary>
+		/// Operator<< overload for std::string specialization,
+		///	writes relevant map details to the std::string.
+		/// </summary>
+		friend std::string& operator<<(std::string& os, const KeyboardKeyMap& obj)
+		{
+			const char printed = Utilities::VirtualMap::GetCharFromVK(obj.MappedToVK);
+			const bool isPrintable = std::isprint(static_cast<unsigned char>(printed));
+			std::stringstream ss;
+			ss << "[KeyboardKeyMap]" << std::endl;
+			ss << "SendingElementVK:" << obj.SendingElementVK << " ";
+			ss << "MappedToVK:" << obj.MappedToVK << " ";
+			if(isPrintable)
+				ss << "MappedToVK(AKA):" << printed << std::endl;
+			ss << "UsesRepeat:" << obj.UsesRepeat << " ";
+			ss << "[/KeyboardKeyMap]" << std::endl;
+			os += ss.str();
+			return os;
 		}
 		friend bool operator==(const KeyboardKeyMap& lhs, const KeyboardKeyMap& rhs)
 		{

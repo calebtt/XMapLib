@@ -1,5 +1,4 @@
 #pragma once
-#include "stdafx.h"
 namespace sds
 {
 	/// <summary>
@@ -7,8 +6,8 @@ namespace sds
 	/// </summary>
 	enum class StickMap : int
 	{
-		NEITHER_STICK,
-		RIGHT_STICK,
-		LEFT_STICK
+		NEITHER_STICK = 0,
+		RIGHT_STICK = 1,
+		LEFT_STICK = 2
 	};
 }

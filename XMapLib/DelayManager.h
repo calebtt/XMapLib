@@ -19,18 +19,26 @@ namespace sds::Utilities
 		DelayManager& operator=(const DelayManager& other) = default;
 		DelayManager& operator=(DelayManager&& other) = default;
 		~DelayManager() = default;
-		friend std::ostream& operator<<(std::ostream& os, const DelayManager& obj)
+		/// <summary>
+		/// Operator<< overload for std::ostream specialization,
+		///	writes more detailed delay details for debugging.
+		///	Thread-safe, provided all writes to the ostream object
+		///	are wrapped with std::osyncstream!
+		/// </summary>
+		friend std::ostream& operator<<(std::ostream& os, const DelayManager& obj) noexcept
 		{
-			return os << "[DelayManager] "
-				<< "m_start_time: " << obj.m_start_time.time_since_epoch() << "\n"
-				<< "m_duration (microseconds): " << obj.m_duration << "\n"
-				<< "m_has_fired: " << obj.m_has_fired
-				<< " [/DelayManager]";
+			std::osyncstream ss(os);
+			ss << "[DelayManager]" << std::endl
+				<< "m_start_time:" << obj.m_start_time.time_since_epoch() << std::endl
+				<< "m_duration (microseconds):" << obj.m_duration << std::endl
+				<< "m_has_fired:" << obj.m_has_fired << std::endl
+				<< "[/DelayManager]";
+			return os;
 		}
 		/// <summary>
 		/// Check for elapsed.
 		/// </summary>
-		bool IsElapsed()
+		bool IsElapsed() noexcept
 		{
 			if (std::chrono::high_resolution_clock::now() > (m_start_time + std::chrono::microseconds(m_duration)))
 			{
@@ -39,7 +47,7 @@ namespace sds::Utilities
 			}
 			return false;
 		}
-		void Reset(size_t microsec_delay)
+		void Reset(size_t microsec_delay) noexcept
 		{
 			m_start_time = std::chrono::high_resolution_clock::now();
 			m_has_fired = false;

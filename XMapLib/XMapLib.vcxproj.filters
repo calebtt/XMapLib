@@ -83,9 +83,6 @@
     <ClInclude Include="MouseMapper.h">
       <Filter>Header Files\Mouse</Filter>
     </ClInclude>
-    <ClInclude Include="CPPThreadRunner.h">
-      <Filter>Header Files\Utilities</Filter>
-    </ClInclude>
     <ClInclude Include="SendKeyInput.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
@@ -99,6 +96,18 @@
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
     <ClInclude Include="SendMouseInput.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="VirtualMap.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="CPPLambdaRunner.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="CPPLambdaVectorRunner.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="CPPLambdaBase.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
   </ItemGroup>

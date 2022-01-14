@@ -8,47 +8,30 @@ namespace sds
 	/// Polls for input from the XInput library in it's worker thread function.
 	/// Values are used in MouseMapper, the main class for use.
 	/// </summary>
-	class MouseInputPoller : public CPPThreadRunner<XINPUT_STATE>
+	class MouseInputPoller
 	{
+		using InternalType = XINPUT_STATE;
+		using LambdaRunnerType = sds::CPPLambdaRunner<InternalType>;
+		using lock = LambdaRunnerType::ScopedLockType;
 		MousePlayerInfo m_local_player;
-	protected:
-		/// <summary>
-		/// Worker thread overriding the base pure virtual workThread.
-		///	Updates "local_state" with mutex protection.
-		/// </summary>
-		void workThread() override
+		std::unique_ptr<sds::CPPLambdaRunner<InternalType>> m_workThread;
+		void InitWorkThread() noexcept
 		{
-			this->m_is_thread_running = true;
-			{
-				//zero local_state before use
-				lock first(m_state_mutex);
-				memset(&m_local_state, 0, sizeof(XINPUT_STATE));
-			}
-			XINPUT_STATE tempState = {};
-			DWORD lastPacket = 0;
-			while( !this->m_is_stop_requested)
-			{
-				memset(&tempState, 0, sizeof(XINPUT_STATE));
-				const DWORD error = XInputGetState(m_local_player.player_id, &tempState);
-				if (error == ERROR_SUCCESS)
-				{
-					if(tempState.dwPacketNumber != lastPacket)
-					{
-						lastPacket = tempState.dwPacketNumber;
-						lock second(m_state_mutex);
-						m_local_state = tempState;
-					}
-				}
-				std::this_thread::sleep_for(std::chrono::milliseconds(MouseSettings::THREAD_DELAY_POLLER));
-			}
-			this->m_is_thread_running = false;
+			m_workThread =
+				std::make_unique<sds::CPPLambdaRunner<InternalType>>
+				([this](sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2& mut, auto& protectedData) { workThread(stopCondition, mut, protectedData); });
 		}
 	public:
 		MouseInputPoller()
 		{
+			InitWorkThread();
 			Start();
 		}
-		explicit MouseInputPoller(MousePlayerInfo &p) : m_local_player(p) { }
+		explicit MouseInputPoller(const MousePlayerInfo &p) : m_local_player(p)
+		{
+			InitWorkThread();
+			Start();
+		}
 		MouseInputPoller(const MouseInputPoller& other) = delete;
 		MouseInputPoller(MouseInputPoller&& other) = delete;
 		MouseInputPoller& operator=(const MouseInputPoller& other) = delete;
@@ -57,44 +40,49 @@ namespace sds
 		/// Destructor override, ensures the running thread function is stopped
 		/// inside of this class and not the base.
 		/// </summary>
-		~MouseInputPoller() override
+		~MouseInputPoller()
 		{
 			Stop();
 		}
-		XINPUT_STATE GetUpdatedState()
+		XINPUT_STATE GetUpdatedState() const noexcept
 		{
-			return getCurrentState();
+			if (m_workThread)
+				return m_workThread->GetCurrentState();
+			return XINPUT_STATE{};
 		}
 		/// <summary>
 		/// Start polling for updated XINPUT_STATE info.
 		/// </summary>
-		void Start()
+		void Start() const noexcept
 		{
-			this->startThread();
+			if (m_workThread)
+				m_workThread->StartThread();
 		}
 		/// <summary>
 		/// Stop input polling.
 		/// </summary>
-		void Stop()
+		void Stop() const noexcept
 		{
-			this->stopThread();
+			if (m_workThread)
+				m_workThread->StopThread();
 		}
 		/// <summary>
 		/// Gets the running status of the worker thread
 		/// </summary>
 		/// <returns> true if thread is running, false otherwise</returns>
-		bool IsRunning() const
+		bool IsRunning() const noexcept
 		{
-			return this->m_is_thread_running;
+			if(m_workThread)
+				return m_workThread->IsRunning();
+			return false;
 		}
 		/// <summary>
 		/// Returns status of XINPUT library detecting a controller.
 		/// </summary>
 		/// <returns> true if controller is connected, false otherwise</returns>
-		bool IsControllerConnected() const
+		bool IsControllerConnected() const noexcept
 		{
-			XINPUT_STATE ss = {};
-			memset(&ss, 0, sizeof(XINPUT_STATE));
+			XINPUT_STATE ss{};
 			return XInputGetState(m_local_player.player_id, &ss) == ERROR_SUCCESS;
 		}
 		/// <summary>
@@ -102,11 +90,40 @@ namespace sds
 		/// overload that uses the player_id value in a MousePlayerInfo struct
 		/// </summary>
 		/// <returns> true if controller is connected, false otherwise</returns>
-		bool IsControllerConnected(const MousePlayerInfo &p) const
+		bool IsControllerConnected(const MousePlayerInfo &p) const noexcept
 		{
-			XINPUT_STATE ss = {};
-			memset(&ss, 0, sizeof(ss));
+			XINPUT_STATE ss{};
 			return XInputGetState(p.player_id, &ss) == ERROR_SUCCESS;
+		}
+	protected:
+		/// <summary>
+		/// Worker thread overriding the base pure virtual workThread.
+		///	Updates "local_state" with mutex protection.
+		/// </summary>
+		void workThread(sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2& mut, InternalType& protectedData) const noexcept
+		{
+			{
+				//zero local_state before use
+				lock first(mut);
+				protectedData = {};
+			}
+			XINPUT_STATE tempState{};
+			DWORD lastPacket = 0;
+			while (!stopCondition)
+			{
+				tempState = {};
+				const DWORD error = XInputGetState(m_local_player.player_id, &tempState);
+				if (error == ERROR_SUCCESS)
+				{
+					if (tempState.dwPacketNumber != lastPacket)
+					{
+						lastPacket = tempState.dwPacketNumber;
+						lock second(mut);
+						protectedData = tempState;
+					}
+				}
+				std::this_thread::sleep_for(std::chrono::milliseconds(MouseSettings::THREAD_DELAY_POLLER));
+			}
 		}
 	};
 

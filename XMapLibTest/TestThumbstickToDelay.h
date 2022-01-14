@@ -5,10 +5,9 @@
 #include "../XMapLib/ThumbstickToDelay.h"
 #include "../XMapLib/MouseSettings.h"
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
 namespace XMapLibTest
 {
+	using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 	TEST_CLASS(TestThumbstickToDelay)
 	{
 		const int Sens = 100;
@@ -24,9 +23,9 @@ namespace XMapLibTest
 			const std::wstring TestName = L"TestGetRangedThumbstickValue()";
 			Logger::WriteMessage(std::wstring(L"Begin " + TestName).c_str());
 
-			sds::MousePlayerInfo pl;
-			const sds::StickMap mp = sds::StickMap::RIGHT_STICK;
-			sds::ThumbstickToDelay delay(Sens,pl,mp, true);
+			constexpr sds::MousePlayerInfo pl;
+			constexpr sds::StickMap mp = sds::StickMap::RIGHT_STICK;
+			const sds::ThumbstickToDelay delay(Sens,pl,mp, true);
 
 			auto testValues = [&delay](const int thumbstick, const int deadzone, const int comparison, std::wstring msg = L"Tested ")
 			{
@@ -59,7 +58,7 @@ namespace XMapLibTest
 			Logger::WriteMessage(std::wstring(L"Begin " + TestName).c_str());
 			const int localdz = DefaultDeadzone;
 			const int localSensMax = SensMax;
-			auto testValues = [&localSensMax, &localdz](const int thumbValueX, const int thumbValueY, const bool isX, const size_t comparison, const int within = 100)
+			auto testValues = [&localSensMax](const int thumbValueX, const int thumbValueY, const bool isX, const size_t comparison, const int within = 100)
 			{
 				const sds::MousePlayerInfo pl;
 				const sds::StickMap mp = sds::StickMap::RIGHT_STICK;

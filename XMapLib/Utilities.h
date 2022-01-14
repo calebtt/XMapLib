@@ -1,6 +1,7 @@
 #pragma once
 #include "XELog.h"
-#include "CPPThreadRunner.h"
+#include "CPPLambdaRunner.h"
+#include "CPPLambdaVectorRunner.h"
 #include "SendKeyInput.h"
 #include "SendMouseInput.h"
 #include "Arithmetic.h"

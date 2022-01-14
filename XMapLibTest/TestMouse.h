@@ -3,10 +3,9 @@
 #include "CppUnitTest.h"
 #include "../XMapLib/MouseMapper.h"
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
 namespace XMapLibTest
 {
+	using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 	TEST_CLASS(TestMouse)
 	{
 
