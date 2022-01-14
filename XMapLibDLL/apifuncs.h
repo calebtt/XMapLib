@@ -72,7 +72,7 @@ extern "C"
 		//ensure same underlying integral type, and that sds::StickMap is still an enum
 		using StickType = std::underlying_type<sds::StickMap>::type;
 		static_assert(std::is_enum_v<sds::StickMap>, "ensure sds::StickMap is still an enum");
-		static_assert(std::is_same_v<StickType, decltype(whichStick)>, "ensure interface type and enum underlying type are the same");
+		static_assert(std::is_same_v<StickType, decltype(whichStick)>, "ensure interface type and sds::StickMap enum underlying type are the same");
 		//pass along the (possibly arbitrary) value to the MouseMapper.
 		StaticInstance::mmp.SetStick(static_cast<sds::StickMap>(whichStick));
 	}
