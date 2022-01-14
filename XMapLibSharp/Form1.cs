@@ -131,5 +131,13 @@ namespace XMapLibSharp
                 ShowErrorMessage("e.Argument is null.");
             }
         }
+
+        private void trackBar1_ValueChanged(object sender, EventArgs e)
+        {
+            int val = trackBar1.Value;
+            mapper.SetMouseSensitivity(val);
+            UpdateMouseSensitivityButton();
+            UpdateIsMouseRunning();
+        }
     }
 }

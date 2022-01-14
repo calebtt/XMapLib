@@ -194,6 +194,7 @@
             this.trackBar1.Size = new System.Drawing.Size(318, 45);
             this.trackBar1.TabIndex = 2;
             this.trackBar1.Value = 1;
+            this.trackBar1.ValueChanged += new System.EventHandler(this.trackBar1_ValueChanged);
             // 
             // tabPage2
             // 
