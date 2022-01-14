@@ -104,31 +104,28 @@ namespace XMapLibSharp
         /// </summary>
         private void bgWorkThread_DoWork(object sender, DoWorkEventArgs e)
         {
-            void ShowErrorMessage(string msg)
+            static void ShowErrorMessage(string msg)
             {
                 StringBuilder sb = new();
                 sb.AppendFormat("Error in {0}, unable to get handle to Sync Context. {1}", nameof(bgWorkThread_DoWork), msg);
                 MessageBox.Show(sb.ToString());
             }
-            if (e.Argument != null)
+            if ((e.Argument as SynchronizationContext) != null)
             {
-                if ((e.Argument as SynchronizationContext) != null)
+                SynchronizationContext sc = (SynchronizationContext)e.Argument;
+                while (!bgWorkThread.CancellationPending)
                 {
-                    SynchronizationContext sc = (SynchronizationContext)e.Argument;
-                    while (!bgWorkThread.CancellationPending)
-                    {
-                        sc.Send(delegate (object? state) { UpdateControllerConnectedButton(); }, null);
-                        Thread.Sleep(DELAY_REDRAW_MS);
-                    }
+                    sc.Send(delegate (object? state) { UpdateControllerConnectedButton(); }, null);
+                    Thread.Sleep(DELAY_REDRAW_MS);
                 }
-                else
-                {
-                    ShowErrorMessage("e.Argument is not a SynchronizationContext!");
-                }
+            }
+            else if (e.Argument != null)
+            {
+                ShowErrorMessage("e.Argument is not a SynchronizationContext!");
             }
             else
             {
-                ShowErrorMessage("e.Argument is null.");
+                ShowErrorMessage("e.Argument is null!");
             }
         }
 
