@@ -1,7 +1,7 @@
 #pragma once
 #include "../XMapLib/MouseMapper.h"
 #include "../XMapLib/KeyboardMapper.h"
-
+#include "helperfuncs.h"
 extern "C"
 {
 	namespace StaticInstance
@@ -69,20 +69,12 @@ extern "C"
 	}
 	__declspec(dllexport) inline void XMapLibSetMouseStick(int whichStick)
 	{
-		switch(whichStick)
-		{
-		case 0:
-			StaticInstance::mmp.SetStick(sds::StickMap::NEITHER_STICK);
-			break;
-		case 1:
-			StaticInstance::mmp.SetStick(sds::StickMap::RIGHT_STICK);
-			break;
-		case 2:
-			StaticInstance::mmp.SetStick(sds::StickMap::LEFT_STICK);
-			break;
-		default:
-			break;
-		}
+		//ensure same underlying integral type, and that sds::StickMap is still an enum
+		using StickType = std::underlying_type<sds::StickMap>::type;
+		static_assert(std::is_enum_v<sds::StickMap>, "ensure sds::StickMap is still an enum");
+		static_assert(std::is_same_v<StickType, decltype(whichStick)>, "ensure interface type and enum underlying type are the same");
+		//pass along the (possibly arbitrary) value to the MouseMapper.
+		StaticInstance::mmp.SetStick(static_cast<sds::StickMap>(whichStick));
 	}
 	__declspec(dllexport) inline bool XMapLibSetMouseSensitivity(int sens)
 	{
@@ -92,4 +84,5 @@ extern "C"
 	{
 		return StaticInstance::mmp.GetSensitivity();
 	}
+
 }

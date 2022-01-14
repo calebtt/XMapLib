@@ -59,6 +59,7 @@ namespace sds
 		/// Use this function to establish one stick or the other as the one controlling the mouse movements.
 		/// Set to NEITHER_STICK for no thumbstick mouse movement. Options are RIGHT_STICK, LEFT_STICK, NEITHER_STICK
 		///	This will start processing if the stick is something other than "NEITHER"
+		///	**Arbitrary values outside of the enum constants will not be processed successfully.**
 		/// </summary>
 		/// <param name="info"> a StickMap enum</param>
 		void SetStick(const StickMap info)
@@ -160,24 +161,21 @@ namespace sds
 		/// <summary>
 		/// Updates local values with XINPUT_STATE info from the MouseInputPoller
 		/// </summary>
-		void ProcessState(const XINPUT_STATE& state)
+		void ProcessState(const XINPUT_STATE& state) noexcept
 		{
 			if (m_stickmap_info == StickMap::NEITHER_STICK)
 				return;
-			int tsx, tsy;
 			if (m_stickmap_info == StickMap::RIGHT_STICK)
 			{
-				tsx = state.Gamepad.sThumbRX;
-				tsy = state.Gamepad.sThumbRY;
+				//Give worker thread new values.
+				m_thread_x = state.Gamepad.sThumbRX;
+				m_thread_y = state.Gamepad.sThumbRY;
 			}
-			else
+			else if(m_stickmap_info == StickMap::LEFT_STICK)
 			{
-				tsx = state.Gamepad.sThumbLX;
-				tsy = state.Gamepad.sThumbLY;
+				m_thread_x = state.Gamepad.sThumbLX;
+				m_thread_y = state.Gamepad.sThumbLY;
 			}
-			//Give worker thread new values.
-			m_thread_x = static_cast<SHORT>(tsx);
-			m_thread_y = static_cast<SHORT>(tsy);
 		}
 	};
 }
