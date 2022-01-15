@@ -11,14 +11,14 @@ namespace sds
 	class MouseInputPoller
 	{
 		using InternalType = XINPUT_STATE;
-		using LambdaRunnerType = sds::CPPLambdaRunner<InternalType>;
+		using LambdaRunnerType = sds::CPPRunnerGeneric<InternalType>;
 		using lock = LambdaRunnerType::ScopedLockType;
 		MousePlayerInfo m_local_player;
-		std::unique_ptr<sds::CPPLambdaRunner<InternalType>> m_workThread;
+		std::unique_ptr<LambdaRunnerType> m_workThread;
 		void InitWorkThread() noexcept
 		{
 			m_workThread =
-				std::make_unique<sds::CPPLambdaRunner<InternalType>>
+				std::make_unique<LambdaRunnerType>
 				([this](sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2& mut, auto& protectedData) { workThread(stopCondition, mut, protectedData); });
 		}
 	public:

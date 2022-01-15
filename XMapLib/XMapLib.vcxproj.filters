@@ -101,13 +101,7 @@
     <ClInclude Include="VirtualMap.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="CPPLambdaRunner.h">
-      <Filter>Header Files\Utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="CPPLambdaVectorRunner.h">
-      <Filter>Header Files\Utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="CPPLambdaBase.h">
+    <ClInclude Include="CPPRunnerGeneric.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
   </ItemGroup>
