@@ -12,7 +12,7 @@ namespace sds
 	class KeyboardMapper
 	{
 		using InternalType = int;
-		using LambdaRunnerType = sds::CPPLambdaVectorRunner<InternalType>;
+		using LambdaRunnerType = sds::CPPRunnerGeneric<InternalType>;
 		using lock = LambdaRunnerType::ScopedLockType;
 		sds::KeyboardPlayerInfo m_localPlayerInfo;
 		sds::KeyboardInputPoller m_poller;

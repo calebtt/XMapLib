@@ -121,12 +121,16 @@
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <EnableModules>false</EnableModules>
       <ExceptionHandling>Sync</ExceptionHandling>
+      <BrowseInformation>true</BrowseInformation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>xinput.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <Bscmake>
+      <PreserveSbr>true</PreserveSbr>
+    </Bscmake>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -156,9 +160,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Arithmetic.h" />
-    <ClInclude Include="CPPLambdaBase.h" />
-    <ClInclude Include="CPPLambdaRunner.h" />
-    <ClInclude Include="CPPLambdaVectorRunner.h" />
+    <ClInclude Include="CPPRunnerGeneric.h" />
     <ClInclude Include="DelayManager.h" />
     <ClInclude Include="MapFunctions.h" />
     <ClInclude Include="MouseInputPoller.h" />

@@ -14,18 +14,20 @@ namespace sds
 	/// </summary>
 	class MouseMapper
 	{
-	private:
+		using InternalType = int;
+		using LambdaRunnerType = sds::CPPRunnerGeneric<InternalType>;
+		using lock = LambdaRunnerType::ScopedLockType;
 		std::atomic<StickMap> m_stickmap_info = StickMap::NEITHER_STICK;
 		std::atomic<SHORT> m_thread_x = 0;
 		std::atomic<SHORT> m_thread_y = 0;
 		std::atomic<int> m_mouse_sensitivity = MouseSettings::SENSITIVITY_DEFAULT;
 		sds::MousePlayerInfo m_local_player;
 		sds::MouseInputPoller m_poller;
-		std::unique_ptr<sds::CPPLambdaRunner<int>> m_workThread;
+		std::unique_ptr<LambdaRunnerType> m_workThread;
 		void InitWorkThread() noexcept
 		{
 			m_workThread =
-				std::make_unique<sds::CPPLambdaRunner<int>>
+				std::make_unique<LambdaRunnerType>
 				([this](sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2& mut, int& protectedData) { workThread(stopCondition, mut, protectedData); });
 		}
 	public:

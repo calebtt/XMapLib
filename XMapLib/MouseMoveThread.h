@@ -11,7 +11,7 @@ namespace sds
 	class MouseMoveThread
 	{
 		using InternalType = int;
-		using LambdaRunnerType = sds::CPPLambdaRunner<InternalType>;
+		using LambdaRunnerType = sds::CPPRunnerGeneric<InternalType>;
 		using lock = LambdaRunnerType::ScopedLockType;
 		std::atomic<size_t> m_x_axis_delay = 1;
 		std::atomic<size_t> m_y_axis_delay = 1;
