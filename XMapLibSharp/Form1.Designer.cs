@@ -136,6 +136,7 @@
             this.tbxMapDetails.Location = new System.Drawing.Point(16, 99);
             this.tbxMapDetails.Multiline = true;
             this.tbxMapDetails.Name = "tbxMapDetails";
+            this.tbxMapDetails.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.tbxMapDetails.Size = new System.Drawing.Size(326, 77);
             this.tbxMapDetails.TabIndex = 2;
             // 

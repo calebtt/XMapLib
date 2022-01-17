@@ -57,7 +57,7 @@ namespace XMapLibSharp
             {
                 results[i] = AddKeymap(details[i]);
             }
-            int failures = results.Count((e) => { return !e;} );
+            int failures = results.Count(e => !e );
             return failures == 0;
         }
         public string GetKeyMaps()
@@ -72,10 +72,10 @@ namespace XMapLibSharp
                 }
                 else
                 {
-                    return "";
+                    return string.Empty;
                 }
             }
-            return "";
+            return string.Empty;
         }
         public bool IsControllerConnected()
         {

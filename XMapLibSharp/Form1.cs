@@ -37,13 +37,20 @@ namespace XMapLibSharp
             UpdateControllerConnectedButton();
             UpdateMouseSensitivityButton();
             UpdateIsMouseRunning();
-            UpdateMapStringBox();
             InitBackgroundWorker();
+            InitMapString();
+            UpdateMapStringBox();
         }
 
         private void InitBackgroundWorker()
         {
             bgWorkThread.RunWorkerAsync(SynchronizationContext.Current);
+        }
+
+        private void InitMapString()
+        {
+            var ret = XMapLibKeymapPresets.BuildPresetBrowsing();
+            mapper.AddKeymaps(ret);
         }
         private void UpdateMouseSensitivityTrackbar()
         {
