@@ -7,7 +7,7 @@ using System.Windows.Forms;
 
 namespace XMapLibSharp
 {
-    public class XMapLibKeymapPresets
+    public static class XMapLibKeymapPresets
     {
         public static List<XMapLibKeymap> BuildPresetBrowsing()
         {
