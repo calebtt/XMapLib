@@ -140,10 +140,10 @@ namespace sds
 				auto TestFunc = [&stickSettingList, &detail](const KeyboardKeyMap& elem)
 				{
 					if ((elem.LastAction == InpType::KEYDOWN || elem.LastAction == InpType::KEYREPEAT) && elem.SendingElementVK != detail.SendingElementVK)
-						return std::find(stickSettingList.begin(), stickSettingList.end(), elem.SendingElementVK) != stickSettingList.end();
+						return std::ranges::find(stickSettingList, elem.SendingElementVK) != stickSettingList.end();
 					return false;
 				};
-				const auto mpit = std::find_if(m_map_token_info.begin(), m_map_token_info.end(), TestFunc);
+				const auto mpit = std::ranges::find_if(m_map_token_info, TestFunc);
 				if (mpit == m_map_token_info.end())
 					return false;
 				outOvertaken = *mpit;
