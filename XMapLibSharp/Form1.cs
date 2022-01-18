@@ -26,7 +26,7 @@ namespace XMapLibSharp
         private const string MSG_SENSBEGIN = "Sensitivity: ";
         private readonly Color CLR_INFO = Color.BurlyWood;
         private readonly Color CLR_NORMAL = Color.DarkSeaGreen;
-        private XMapLibWrapper mapper;
+        private readonly XMapLibWrapper mapper;
         private XMapLibStickMap currentXMapLibStick = XMapLibStickMap.RIGHT;
         public Form1()
         {

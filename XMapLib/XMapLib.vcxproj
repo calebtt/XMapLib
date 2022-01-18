@@ -145,6 +145,7 @@
       <EnableModules>true</EnableModules>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <ExceptionHandling>Sync</ExceptionHandling>
+      <BrowseInformation>true</BrowseInformation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -153,6 +154,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>xinput.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <Bscmake>
+      <PreserveSbr>true</PreserveSbr>
+    </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
