@@ -99,11 +99,10 @@ namespace sds
 			while (!stopCondition)
 			{
 				const std::vector<XINPUT_KEYSTROKE> states = m_poller.getAndClearStates();
-				std::for_each(states.begin(), states.end(), [this](auto& cur)
-					{
-						m_translator.ProcessKeystroke(cur);
-					});
-				//m_translator.ProcessKeystroke(m_poller.GetUpdatedState());
+				for(const auto &cur: states)
+				{
+					m_translator.ProcessKeystroke(cur);
+				}
 				std::this_thread::sleep_for(std::chrono::milliseconds(KeyboardSettings::THREAD_DELAY_POLLER));
 			}
 		}

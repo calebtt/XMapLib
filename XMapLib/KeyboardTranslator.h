@@ -42,13 +42,13 @@ namespace sds
 			//Key repeat loop
 			KeyRepeatLoop();
 			//search the map for a matching virtual key and send it
-			std::for_each(m_map_token_info.begin(), m_map_token_info.end(), [this, &stroke](auto &w)
+			for(auto &w: m_map_token_info)
+			{
+				if (w.SendingElementVK == stroke.VirtualKey)
 				{
-					if (w.SendingElementVK == stroke.VirtualKey)
-					{
-						this->Normal(w, stroke);
-					}
-				});
+					this->Normal(w, stroke);
+				}
+			}
 		}
 		std::string AddKeyMap(KeyboardKeyMap w)
 		{
@@ -71,25 +71,25 @@ namespace sds
 		{
 			//If enough time has passed, reset the key for use again, provided it uses the key-repeat behavior--
 			//otherwise reset it immediately.
-			std::for_each(m_map_token_info.begin(), m_map_token_info.end(), [](auto& e)
-				{
-					const bool DoUpdate = (e.LastAction == InpType::KEYUP && e.LastSentTime.IsElapsed()) && e.UsesRepeat;
-					const bool DoImmediate = e.LastAction == InpType::KEYUP && !e.UsesRepeat;
-					if (DoUpdate || DoImmediate)
-						e.LastAction = InpType::NONE;
-				});
+			for(auto &e: m_map_token_info)
+			{
+				const bool DoUpdate = (e.LastAction == InpType::KEYUP && e.LastSentTime.IsElapsed()) && e.UsesRepeat;
+				const bool DoImmediate = e.LastAction == InpType::KEYUP && !e.UsesRepeat;
+				if (DoUpdate || DoImmediate)
+					e.LastAction = InpType::NONE;
+			}
 		}
 		void KeyRepeatLoop()
 		{
-			std::for_each(m_map_token_info.begin(), m_map_token_info.end(), [this](auto& w)
+			for(auto &w: m_map_token_info)
+			{
+				using AT = sds::KeyboardKeyMap::ActionType;
+				if (w.UsesRepeat && (((w.LastAction == AT::KEYDOWN) || (w.LastAction == AT::KEYREPEAT))))
 				{
-					using AT = sds::KeyboardKeyMap::ActionType;
-					if(w.UsesRepeat && (((w.LastAction == AT::KEYDOWN) || (w.LastAction == AT::KEYREPEAT))))
-					{
-						if (w.LastSentTime.IsElapsed())
-							this->SendTheKey(w, true, AT::KEYREPEAT);
-					}
-				});
+					if (w.LastSentTime.IsElapsed())
+						this->SendTheKey(w, true, AT::KEYREPEAT);
+				}
+			}
 		}
 		/// <summary>
 		/// Normal keypress simulation logic. 
