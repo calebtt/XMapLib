@@ -74,7 +74,7 @@ namespace XMapLibSharp
 
         private void UpdateMapStringBox()
         {
-            string currentMaps = mapper.GetKeyMaps();
+            mapper.GetKeyMaps(out var currentMaps);
             tbxMapDetails.Text = currentMaps;
         }
         private void DoErrorMessage(string msg)

@@ -67,15 +67,16 @@ namespace XMapLibSharp
             int failures = results.Count(e => !e );
             return failures == 0;
         }
-        public List<XMapLibKeymap> GetKeyMaps()
+        public List<XMapLibKeymap> GetKeyMaps(out string mapsAsString)
         {
-            //TODO build a list of key maps and return that instead.
+            mapsAsString = String.Empty;
             IntPtr p = XMapLibImports.XMapLibGetMaps();
             if (p != IntPtr.Zero)
             {
                 string? retVal = Marshal.PtrToStringAnsi(p);
                 if (retVal != null)
                 {
+                    mapsAsString = new string(retVal);
                     //parse strings, build list
                     string removedWs = System.Text.RegularExpressions.Regex.Replace(retVal, REGEX_WS_PATTERN, " ");
                     List<string> tokens = new();
@@ -87,14 +88,17 @@ namespace XMapLibSharp
                     List<XMapLibKeymap> outMaps = new();
                     try
                     {
-                        for (int i = 0; i < tokens.Count; i+=4)
+                        for (int i = 0; i < tokens.Count; i++)
                         {
                             if (tokens[i] == TOK_STARTMAP)
                             {
+                                string[] akaStrings = tokens[i + 3].Split();
                                 XMapLibKeymap mp = new();
                                 mp.VKMappedFrom = Int32.Parse(tokens[i + 1].Split()[1]);
                                 mp.VKMappedTo = Int32.Parse(tokens[i + 2].Split()[1]);
-                                mp.UsesRepeatBehavior = Boolean.Parse(tokens[i + 3].Split()[1]);
+                                if (akaStrings.Length > 1)
+                                    mp.VKMappedToAKA = Char.Parse(akaStrings[1]);
+                                mp.UsesRepeatBehavior = Boolean.Parse(tokens[i + 4].Split()[1]);
                                 outMaps.Add(mp);
                             }
                         }
