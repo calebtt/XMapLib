@@ -57,12 +57,10 @@ extern "C"
 	__declspec(dllexport) inline const char * XMapLibGetMaps()
 	{
 		StaticInstance::LockType tempLock(StaticInstance::accessBlocker);
-		std::vector<sds::KeyboardKeyMap> maps = StaticInstance::kbd.GetMaps();
+		const std::vector<sds::KeyboardKeyMap> maps = StaticInstance::kbd.GetMaps();
 		std::string localString;
-		std::for_each(std::begin(maps), std::end(maps), [&localString](const auto& elem)
-			{
-				localString << elem;
-			});
+		for (const auto &lmp : maps)
+			localString << lmp;
 		StaticInstance::mapInfoFormatted = localString;
 		return StaticInstance::mapInfoFormatted.data();
 	}

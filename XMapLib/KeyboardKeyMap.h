@@ -60,33 +60,32 @@ namespace sds
 			const char printed = Utilities::VirtualMap::GetCharFromVK(obj.MappedToVK);
 			const bool isPrintable = std::isprint(static_cast<unsigned char>(printed));
 			std::osyncstream ss(os);
-			ss << "[KeyboardKeyMap]" << std::endl;
-			ss << "SendingElementVK:" << obj.SendingElementVK << std::endl;
-			ss << "MappedToVK:" << obj.MappedToVK << std::endl;
-			if (isPrintable)
-				ss << "MappedToVK(AKA):" << printed << std::endl;
-			ss << "UsesRepeat:" << obj.UsesRepeat << std::endl;
-			ss << "LastAction:" << obj.LastAction << std::endl;
-			ss << obj.LastSentTime << std::endl;
-			ss << "[/KeyboardKeyMap]";
+			ss << "[KeyboardKeyMap]" << " ";
+			ss << "SendingElementVK:" << obj.SendingElementVK << " ";
+			ss << "MappedToVK:" << obj.MappedToVK << " ";
+			ss << "MappedToVK(AKA):" << (isPrintable ? printed : ' ') << " ";
+			ss << "UsesRepeat:" << obj.UsesRepeat << " ";
+			ss << "LastAction:" << obj.LastAction << " ";
+			ss << obj.LastSentTime << " ";
+			ss << "[/KeyboardKeyMap]" << " ";
 			return os;
 		}
 		/// <summary>
 		/// Operator<< overload for std::string specialization,
 		///	writes relevant map details to the std::string.
+		///	NOTE: Changing this will break the DLL API which depends on this format.
 		/// </summary>
 		friend std::string& operator<<(std::string& os, const KeyboardKeyMap& obj)
 		{
 			const char printed = Utilities::VirtualMap::GetCharFromVK(obj.MappedToVK);
 			const bool isPrintable = std::isprint(static_cast<unsigned char>(printed));
 			std::stringstream ss;
-			ss << "[KeyboardKeyMap]" << std::endl;
+			ss << "[KeyboardKeyMap]" << " ";
 			ss << "SendingElementVK:" << obj.SendingElementVK << " ";
 			ss << "MappedToVK:" << obj.MappedToVK << " ";
-			if(isPrintable)
-				ss << "MappedToVK(AKA):" << printed << std::endl;
+			ss << "MappedToVK(AKA):" << (isPrintable? printed : ' ') << " ";
 			ss << "UsesRepeat:" << obj.UsesRepeat << " ";
-			ss << "[/KeyboardKeyMap]" << std::endl;
+			ss << "[/KeyboardKeyMap]" << " ";
 			os += ss.str();
 			return os;
 		}
