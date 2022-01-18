@@ -66,7 +66,7 @@ namespace XMapLibSharp
             if (p != IntPtr.Zero)
             {
                 string? retVal = Marshal.PtrToStringAnsi(p);
-                return retVal ?? String.Empty;
+                return retVal ?? string.Empty;
             }
             return string.Empty;
         }
