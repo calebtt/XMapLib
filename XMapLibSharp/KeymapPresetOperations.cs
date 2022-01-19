@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,11 +8,69 @@ using System.Windows.Forms;
 
 namespace XMapLibSharp
 {
-    public static class XMapLibKeymapPresets
+    /// <summary>A somewhat over-encompassing class for use by the main GUI form to work with presets and their buttons.
+    /// It should support common operations such as determining the selected status of a button, changing the selected status,
+    /// as well as building the buttons to be added to the form. </summary>
+    public static class KeymapPresetOperations
     {
+        private const int Width = 175;
+        const int Height = 70;
+        const float FontSizePresetButton = 8.5f;
+        const string PRESET_BROWSING = "Browsing";
+        const string MSG_PRESET_SELECTED = "\n*SELECTED*";
+        public static void ChangeButtonTextForSelected(Button prButton, bool makeSelected)
+        {
+            if (makeSelected)
+            {
+                if(!IsButtonTextSelected(prButton))
+                    prButton.Text += MSG_PRESET_SELECTED;
+            }
+            else
+            {
+                if (IsButtonTextSelected(prButton))
+                {
+                    string temp = prButton.Text;
+                    int index = temp.IndexOf(MSG_PRESET_SELECTED);
+                    prButton.Text = temp[..index];
+                }
+            }
+        }
+
+        public static bool IsButtonTextSelected(Button prButton)
+        {
+            string temp = prButton.Text;
+            int index = temp.IndexOf(MSG_PRESET_SELECTED);
+            return (index != -1);
+        }
+
+        //A strong association between these values is kind of nice to have.
+        public static List<KeymapPreset> BuildPresetButtons()
+        {
+            static Button BuildPresetButton(string presetName)
+            {
+                Button tb1 = new();
+                Font f = new(FontFamily.GenericMonospace, FontSizePresetButton);
+                tb1.Text = "[" + presetName + "]";
+                tb1.Font = f;
+                tb1.BackColor = Color.Aquamarine;
+                //tb1.Margin = new(100);
+                //tb1.Padding = new Padding(100);
+                tb1.MaximumSize = new(Width, Height);
+                tb1.MinimumSize = new(Width, Height);
+                tb1.FlatStyle = FlatStyle.Flat;
+                tb1.Visible = true;
+                tb1.TextAlign = ContentAlignment.MiddleCenter;
+                //tb1.Dock = DockStyle.Fill;
+                return tb1;
+            }
+            List<KeymapPreset> presetButtons = new();
+            presetButtons.Add(new() { ButtonForPresetSection = BuildPresetButton(PRESET_BROWSING), KeymapName = PRESET_BROWSING, Keymaps = BuildPresetBrowsing()});
+            presetButtons.Add(new() { ButtonForPresetSection = BuildPresetButton(PRESET_BROWSING), KeymapName = PRESET_BROWSING, Keymaps = BuildPresetBrowsing() });
+            presetButtons.Add(new() { ButtonForPresetSection = BuildPresetButton(PRESET_BROWSING), KeymapName = PRESET_BROWSING, Keymaps = BuildPresetBrowsing() });
+            return presetButtons;
+        }
         public static List<XMapLibKeymap> BuildPresetBrowsing()
         {
-            //
             List<XMapLibKeymap> mp = new()
             {
                 new() { UsesRepeatBehavior = true, VKMappedFrom = (int) ControllerButtons.VK_PAD_DPAD_DOWN, VKMappedTo = (int) Keys.Down },

@@ -128,8 +128,8 @@ namespace sds
 		bool IsOvertaking(const KeyboardKeyMap &detail, KeyboardKeyMap &outOvertaken)
 		{
 			//Is detail a thumbstick direction map, and if so, which thumbstick.
-			const auto leftAxisIterator = std::find(KeyboardSettings::THUMBSTICK_L_VK_LIST.begin(), KeyboardSettings::THUMBSTICK_L_VK_LIST.end(), detail.SendingElementVK);
-			const auto rightAxisIterator = std::find(KeyboardSettings::THUMBSTICK_R_VK_LIST.begin(), KeyboardSettings::THUMBSTICK_R_VK_LIST.end(), detail.SendingElementVK);
+			const auto leftAxisIterator = std::ranges::find(KeyboardSettings::THUMBSTICK_L_VK_LIST, detail.SendingElementVK);
+			const auto rightAxisIterator = std::ranges::find(KeyboardSettings::THUMBSTICK_R_VK_LIST, detail.SendingElementVK);
 			const bool leftStick = leftAxisIterator != KeyboardSettings::THUMBSTICK_L_VK_LIST.end();
 			const bool rightStick = rightAxisIterator != KeyboardSettings::THUMBSTICK_R_VK_LIST.end();
 			//find a key-down'd or repeat'd direction of the same thumbstick

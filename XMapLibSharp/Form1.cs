@@ -17,6 +17,7 @@ namespace XMapLibSharp
     {
         private const int DELAY_REDRAW_MS = 1000; // a whole second
         private const string ERR_NOT_RUNNING = "Started, but not running.";
+        private const string ERR_PRESET_BUTTON_STATUS = "Error toggling preset button selected status.";
         private const string MSG_START_MOUSE = "Start Mouse Processing";
         private const string MSG_STOP_MOUSE = "Stop Mouse Processing";
         private const string MSG_STICK = "Stick";
@@ -28,6 +29,7 @@ namespace XMapLibSharp
         private readonly Color CLR_NORMAL = Color.DarkSeaGreen;
         private readonly XMapLibWrapper mapper;
         private XMapLibStickMap currentXMapLibStick = XMapLibStickMap.RIGHT;
+        private Button? currentSelectedPresetButton = null;
         public Form1()
         {
             InitializeComponent();
@@ -39,17 +41,30 @@ namespace XMapLibSharp
             UpdateIsMouseRunning();
             InitBackgroundWorker();
             InitMapString();
+            InitPresetButtons();
             UpdateMapStringBox();
+            //TODO add event handler for preset buttons, it needs a handle to the XMapLibWrapper and probably the form too.
         }
-
+        private void InitPresetButtons()
+        {
+            var but = KeymapPresetOperations.BuildPresetButtons();
+            //assumes at least one preset is built
+            foreach (KeymapPreset pr in but)
+            {
+                this.flwPresetButtons.Controls.Add(pr.ButtonForPresetSection);
+            }
+            if (this.flwPresetButtons.Controls[0] is Button btn)
+            {
+                KeymapPresetOperations.ChangeButtonTextForSelected(btn, true);
+            }
+        }
         private void InitBackgroundWorker()
         {
             bgWorkThread.RunWorkerAsync(SynchronizationContext.Current);
         }
-
         private void InitMapString()
         {
-            var ret = XMapLibKeymapPresets.BuildPresetBrowsing();
+            var ret = KeymapPresetOperations.BuildPresetBrowsing();
             mapper.AddKeymaps(ret);
         }
         private void UpdateMouseSensitivityTrackbar()
@@ -71,11 +86,15 @@ namespace XMapLibSharp
             bool isRunning = mapper.IsMouseRunning();
             btnMouseProcessing.Text = isRunning ? MSG_STOP_MOUSE : MSG_START_MOUSE;
         }
-
         private void UpdateMapStringBox()
         {
             mapper.GetKeyMaps(out var currentMaps);
             tbxMapDetails.Text = currentMaps;
+        }
+        private void TogglePresetButtonStatus(Button prButton)
+        {
+            KeymapPresetOperations.ChangeButtonTextForSelected(prButton,
+                !KeymapPresetOperations.IsButtonTextSelected(prButton));
         }
         private void DoErrorMessage(string msg)
         {
@@ -106,9 +125,7 @@ namespace XMapLibSharp
             mapper.SetMouseStick(currentXMapLibStick);
             UpdateIsMouseRunning();
         }
-        /// <summary>
-        /// Background GUI thread to update certain statuses, such as is the controller connected.
-        /// </summary>
+        /// <summary> Background GUI thread to update certain statuses, such as is the controller connected. </summary>
         private void bgWorkThread_DoWork(object sender, DoWorkEventArgs e)
         {
             static void ShowErrorMessage(string msg)
@@ -117,9 +134,8 @@ namespace XMapLibSharp
                 sb.AppendFormat("Error in {0}, unable to get handle to Sync Context. {1}", nameof(bgWorkThread_DoWork), msg);
                 MessageBox.Show(sb.ToString());
             }
-            if ((e.Argument as SynchronizationContext) != null)
+            if (e.Argument is SynchronizationContext sc)
             {
-                SynchronizationContext sc = (SynchronizationContext)e.Argument;
                 while (!bgWorkThread.CancellationPending)
                 {
                     sc.Send(delegate (object? state) { UpdateControllerConnectedButton(); }, null);
