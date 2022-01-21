@@ -83,7 +83,7 @@ extern "C"
 	{
 		StaticInstance::LockType tempLock(StaticInstance::accessBlocker);
 		//ensure same underlying integral type, and that sds::StickMap is still an enum
-		using StickType = std::underlying_type<sds::StickMap>::type;
+		using StickType = std::underlying_type_t<sds::StickMap>;
 		static_assert(std::is_enum_v<sds::StickMap>, "ensure sds::StickMap is still an enum");
 		static_assert(std::is_same_v<StickType, decltype(whichStick)>, "ensure interface type and sds::StickMap enum underlying type are the same");
 		//pass along the (possibly arbitrary) value to the MouseMapper.
