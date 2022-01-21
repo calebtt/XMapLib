@@ -10,7 +10,7 @@ namespace sds
 	{
 		using PidType = int;
 		//ISO CPP guidelines C.45 followed here: https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rc-default
-		std::atomic<PidType> player_id = 0;
+		std::atomic<PidType> player_id{ 0 };
 		//default ctor
 		KeyboardPlayerInfo() = default;
 		//copy constructor

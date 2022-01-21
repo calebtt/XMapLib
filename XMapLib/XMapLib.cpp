@@ -12,7 +12,7 @@ void AddTestKeyMappings(sds::KeyboardMapper& mapper, std::osyncstream &ss);
 class GetterExit
 {
 	std::unique_ptr<std::thread> workerThread;
-	std::atomic<bool> m_exitState = false;
+	std::atomic<bool> m_exitState{ false };
 	const sds::KeyboardMapper& m_mp;
 public:
 	GetterExit(const sds::KeyboardMapper& m) : m_mp(m) { startThread(); }

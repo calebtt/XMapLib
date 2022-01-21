@@ -30,7 +30,7 @@ namespace XMapLibSharp
                 if (IsButtonTextSelected(prButton))
                 {
                     string temp = prButton.Text;
-                    int index = temp.IndexOf(MSG_PRESET_SELECTED);
+                    int index = temp.IndexOf(MSG_PRESET_SELECTED, StringComparison.Ordinal);
                     prButton.Text = temp[..index];
                 }
             }
@@ -39,7 +39,7 @@ namespace XMapLibSharp
         public static bool IsButtonTextSelected(Button prButton)
         {
             string temp = prButton.Text;
-            int index = temp.IndexOf(MSG_PRESET_SELECTED);
+            int index = temp.IndexOf(MSG_PRESET_SELECTED, StringComparison.Ordinal);
             return (index != -1);
         }
 
