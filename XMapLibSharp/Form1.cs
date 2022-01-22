@@ -98,10 +98,6 @@ namespace XMapLibSharp
             KeymapPresetOperations.ChangeButtonTextForSelected(prButton,
                 !KeymapPresetOperations.IsButtonTextSelected(prButton));
         }
-        private void DoErrorMessage(string msg)
-        {
-            MessageBox.Show(msg);
-        }
         private void btnSensitivityIndicator_Click(object sender, EventArgs e)
         {
 
