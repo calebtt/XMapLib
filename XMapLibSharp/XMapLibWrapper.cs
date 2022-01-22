@@ -97,8 +97,14 @@ namespace XMapLibSharp
                                 mp.VKMappedFrom = Int32.Parse(tokens[i + 1].Split()[1]);
                                 mp.VKMappedTo = Int32.Parse(tokens[i + 2].Split()[1]);
                                 if (akaStrings.Length > 1)
-                                    mp.VKMappedToAKA = Char.Parse(akaStrings[1]);
-                                mp.UsesRepeatBehavior = Boolean.Parse(tokens[i + 4].Split()[1]);
+                                {
+                                    if(akaStrings[1].Length > 0)
+                                        mp.VKMappedToAKA = Char.Parse(akaStrings[1]);
+                                }
+                                string[] repeatStrings = tokens[i+4].Split();
+                                if(repeatStrings.Length >1)
+                                    if (repeatStrings[1].Length > 0)
+                                        mp.UsesRepeatBehavior = Boolean.Parse(repeatStrings[1]);
                                 outMaps.Add(mp);
                             }
                         }

@@ -29,7 +29,8 @@ namespace XMapLibSharp
         private readonly Color CLR_NORMAL = Color.DarkSeaGreen;
         private readonly XMapLibWrapper mapper;
         private XMapLibStickMap currentXMapLibStick = XMapLibStickMap.RIGHT;
-        private Button? currentSelectedPresetButton = null;
+        //private Button? currentSelectedPresetButton = null;
+        private List<KeymapPreset> presets = new();
         public Form1()
         {
             InitializeComponent();
@@ -47,11 +48,12 @@ namespace XMapLibSharp
         }
         private void InitPresetButtons()
         {
-            var but = KeymapPresetOperations.BuildPresetButtons();
+            presets = KeymapPresetOperations.BuildPresetButtons();
             //assumes at least one preset is built
-            foreach (KeymapPreset pr in but)
+            foreach (KeymapPreset pr in presets)
             {
                 this.flwPresetButtons.Controls.Add(pr.ButtonForPresetSection);
+                pr.ButtonForPresetSection.Click += ButtonForPresetSection_Click;
             }
             if (this.flwPresetButtons.Controls[0] is Button btn)
             {
@@ -151,13 +153,20 @@ namespace XMapLibSharp
                 ShowErrorMessage("e.Argument is null!");
             }
         }
-
         private void trackBar1_ValueChanged(object sender, EventArgs e)
         {
             int val = trackBar1.Value;
             mapper.SetMouseSensitivity(val);
             UpdateMouseSensitivityButton();
             UpdateIsMouseRunning();
+        }
+        private void ButtonForPresetSection_Click(object? sender, EventArgs e)
+        {
+            if (sender is Button b)
+            {
+                bool unselect = KeymapPresetOperations.IsButtonTextSelected(b);
+                KeymapPresetOperations.ChangeButtonTextForSelected(b, !unselect);
+            }
         }
     }
 }

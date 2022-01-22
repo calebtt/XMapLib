@@ -84,7 +84,7 @@ namespace sds
 			ss << "SendingElementVK:" << obj.SendingElementVK << " ";
 			ss << "MappedToVK:" << obj.MappedToVK << " ";
 			ss << "MappedToVK(AKA):" << (isPrintable? printed : ' ') << " ";
-			ss << "UsesRepeat:" << obj.UsesRepeat << " ";
+			ss << "UsesRepeat:" << std::boolalpha << obj.UsesRepeat << " ";
 			ss << "[/KeyboardKeyMap]" << " ";
 			os += ss.str();
 			return os;
