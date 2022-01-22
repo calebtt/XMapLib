@@ -44,7 +44,6 @@ namespace XMapLibSharp
             InitMapString();
             InitPresetButtons();
             UpdateMapStringBox();
-            //TODO add event handler for preset buttons, it needs a handle to the XMapLibWrapper and probably the form too.
         }
         private void InitPresetButtons()
         {
@@ -164,8 +163,28 @@ namespace XMapLibSharp
         {
             if (sender is Button b)
             {
-                bool unselect = KeymapPresetOperations.IsButtonTextSelected(b);
-                KeymapPresetOperations.ChangeButtonTextForSelected(b, !unselect);
+                bool isButtonTextSelected = KeymapPresetOperations.IsButtonTextSelected(b);
+                //if is selected, do nothing, otherwise..
+                if (!isButtonTextSelected)
+                {
+                    //set each button to not selected.
+                    foreach (var p in presets)
+                    {
+                        if (KeymapPresetOperations.IsButtonTextSelected(p.ButtonForPresetSection))
+                            KeymapPresetOperations.ChangeButtonTextForSelected(p.ButtonForPresetSection, false);
+                    }
+                    //select sending button
+                    KeymapPresetOperations.ChangeButtonTextForSelected(b, !isButtonTextSelected);
+                    //find button in preset list, change keymaps over.
+                    mapper.ClearKeyMaps();
+                    foreach (var p in presets)
+                    {
+                        if (p.ButtonForPresetSection == b)
+                        {
+                            mapper.AddKeymaps(p.Keymaps);
+                        }
+                    }
+                }
             }
         }
     }
