@@ -13,6 +13,8 @@ using System.Windows.Forms;
 
 namespace XMapLibSharp
 {
+    /* If the file is a bit long, try using the outlining feature of VS to collapse the member functions (methods) to definitions.
+     right click -> outlining -> collapse to definitions */
     public partial class Form1 : Form
     {
         private const int DELAY_REDRAW_MS = 1000; // a whole second
@@ -29,7 +31,6 @@ namespace XMapLibSharp
         private readonly Color CLR_NORMAL = Color.DarkSeaGreen;
         private readonly XMapLibWrapper mapper;
         private XMapLibStickMap currentXMapLibStick = XMapLibStickMap.RIGHT;
-        //private Button? currentSelectedPresetButton = null;
         private List<KeymapPreset> presets = new();
         public Form1()
         {
