@@ -42,7 +42,6 @@ namespace XMapLibSharp
             UpdateMouseSensitivityButton();
             UpdateIsMouseRunning();
             InitBackgroundWorker();
-            InitMapString();
             InitPresetButtons();
             UpdateMapStringBox();
         }
@@ -55,6 +54,10 @@ namespace XMapLibSharp
                 this.flwPresetButtons.Controls.Add(pr.ButtonForPresetSection);
                 pr.ButtonForPresetSection.Click += ButtonForPresetSection_Click;
             }
+            //adding keymaps for button to mapper
+            mapper.ClearKeyMaps();
+            mapper.AddKeymaps(presets[0].Keymaps);
+            //activating first button in the list
             if (this.flwPresetButtons.Controls[0] is Button btn)
             {
                 KeymapPresetOperations.ChangeButtonTextForSelected(btn, true);
@@ -63,11 +66,6 @@ namespace XMapLibSharp
         private void InitBackgroundWorker()
         {
             bgWorkThread.RunWorkerAsync(SynchronizationContext.Current);
-        }
-        private void InitMapString()
-        {
-            var ret = KeymapPresetOperations.BuildPresetBrowsing();
-            mapper.AddKeymaps(ret);
         }
         private void UpdateMouseSensitivityTrackbar()
         {
