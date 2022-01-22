@@ -14,6 +14,13 @@ namespace XMapLibSharp
 {
     public class XMapLibWrapper
     {
+        private const string TOK_STARTMAP = "[KeyboardKeyMap]";
+        //private const string TOK_ENDMAP = "[/KeyboardKeyMap]";
+        //private const string TOK_SENDING_VK = "SendingElementVK";
+        //private const string TOK_MAPPEDTO_VK = "MappedToVK";
+        //private const string TOK_USES_REPEAT = "UsesRepeat";
+        private const string REGEX_WS_PATTERN = @"\s+";
+        private const string VALUE_DELIMITER = ":";
         public XMapLibWrapper()
         {
             XMapLibImports.XMapLibInitBoth();
@@ -57,25 +64,60 @@ namespace XMapLibSharp
             {
                 results[i] = AddKeymap(details[i]);
             }
-            int failures = results.Count((e) => { return !e;} );
+            int failures = results.Count(e => !e );
             return failures == 0;
         }
-        public string GetKeyMaps()
+        public List<XMapLibKeymap> GetKeyMaps(out string mapsAsString)
         {
+            mapsAsString = String.Empty;
             IntPtr p = XMapLibImports.XMapLibGetMaps();
             if (p != IntPtr.Zero)
             {
                 string? retVal = Marshal.PtrToStringAnsi(p);
                 if (retVal != null)
                 {
-                    return retVal;
-                }
-                else
-                {
-                    return "";
+                    mapsAsString = new string(retVal);
+                    //parse strings, build list
+                    string removedWs = System.Text.RegularExpressions.Regex.Replace(retVal, REGEX_WS_PATTERN, " ");
+                    List<string> tokens = new();
+                    foreach (string s in removedWs.Split(' '))
+                    {
+                        string temp = s.Replace(VALUE_DELIMITER, " ");// replacing value delimiter from tokens
+                        tokens.Add(temp); // adding tokens to list
+                    }
+                    List<XMapLibKeymap> outMaps = new();
+                    try
+                    {
+                        for (int i = 0; i < tokens.Count; i++)
+                        {
+                            if (tokens[i] == TOK_STARTMAP)
+                            {
+                                string[] akaStrings = tokens[i + 3].Split();
+                                XMapLibKeymap mp = new();
+                                mp.VKMappedFrom = Int32.Parse(tokens[i + 1].Split()[1]);
+                                mp.VKMappedTo = Int32.Parse(tokens[i + 2].Split()[1]);
+                                if (akaStrings.Length > 1)
+                                {
+                                    if(akaStrings[1].Length > 0)
+                                        mp.VKMappedToAKA = Char.Parse(akaStrings[1]);
+                                }
+                                string[] repeatStrings = tokens[i+4].Split();
+                                if(repeatStrings.Length >1)
+                                    if (repeatStrings[1].Length > 0)
+                                        mp.UsesRepeatBehavior = Boolean.Parse(repeatStrings[1]);
+                                outMaps.Add(mp);
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        return new List<XMapLibKeymap>();
+                    }
+                    return outMaps;
                 }
             }
-            return "";
+
+            return new List<XMapLibKeymap>();
         }
         public bool IsControllerConnected()
         {

@@ -13,10 +13,13 @@ using System.Windows.Forms;
 
 namespace XMapLibSharp
 {
+    /* If the file is a bit long, try using the outlining feature of VS to collapse the member functions (methods) to definitions.
+     right click -> outlining -> collapse to definitions */
     public partial class Form1 : Form
     {
         private const int DELAY_REDRAW_MS = 1000; // a whole second
         private const string ERR_NOT_RUNNING = "Started, but not running.";
+        private const string ERR_PRESET_BUTTON_STATUS = "Error toggling preset button selected status.";
         private const string MSG_START_MOUSE = "Start Mouse Processing";
         private const string MSG_STOP_MOUSE = "Stop Mouse Processing";
         private const string MSG_STICK = "Stick";
@@ -26,8 +29,9 @@ namespace XMapLibSharp
         private const string MSG_SENSBEGIN = "Sensitivity: ";
         private readonly Color CLR_INFO = Color.BurlyWood;
         private readonly Color CLR_NORMAL = Color.DarkSeaGreen;
-        private XMapLibWrapper mapper;
+        private readonly XMapLibWrapper mapper;
         private XMapLibStickMap currentXMapLibStick = XMapLibStickMap.RIGHT;
+        private List<KeymapPreset> presets = new();
         public Form1()
         {
             InitializeComponent();
@@ -37,10 +41,28 @@ namespace XMapLibSharp
             UpdateControllerConnectedButton();
             UpdateMouseSensitivityButton();
             UpdateIsMouseRunning();
-            UpdateMapStringBox();
             InitBackgroundWorker();
+            InitPresetButtons();
+            UpdateMapStringBox();
         }
-
+        private void InitPresetButtons()
+        {
+            presets = KeymapPresetOperations.BuildPresetButtons();
+            //assumes at least one preset is built
+            foreach (KeymapPreset pr in presets)
+            {
+                this.flwPresetButtons.Controls.Add(pr.ButtonForPresetSection);
+                pr.ButtonForPresetSection.Click += ButtonForPresetSection_Click;
+            }
+            //adding keymaps for button to mapper
+            mapper.ClearKeyMaps();
+            mapper.AddKeymaps(presets[0].Keymaps);
+            //activating first button in the list
+            if (this.flwPresetButtons.Controls[0] is Button btn)
+            {
+                KeymapPresetOperations.ChangeButtonTextForSelected(btn, true);
+            }
+        }
         private void InitBackgroundWorker()
         {
             bgWorkThread.RunWorkerAsync(SynchronizationContext.Current);
@@ -64,15 +86,15 @@ namespace XMapLibSharp
             bool isRunning = mapper.IsMouseRunning();
             btnMouseProcessing.Text = isRunning ? MSG_STOP_MOUSE : MSG_START_MOUSE;
         }
-
         private void UpdateMapStringBox()
         {
-            string currentMaps = mapper.GetKeyMaps();
+            mapper.GetKeyMaps(out var currentMaps);
             tbxMapDetails.Text = currentMaps;
         }
-        private void DoErrorMessage(string msg)
+        private void TogglePresetButtonStatus(Button prButton)
         {
-            MessageBox.Show(msg);
+            KeymapPresetOperations.ChangeButtonTextForSelected(prButton,
+                !KeymapPresetOperations.IsButtonTextSelected(prButton));
         }
         private void btnSensitivityIndicator_Click(object sender, EventArgs e)
         {
@@ -99,9 +121,7 @@ namespace XMapLibSharp
             mapper.SetMouseStick(currentXMapLibStick);
             UpdateIsMouseRunning();
         }
-        /// <summary>
-        /// Background GUI thread to update certain statuses, such as is the controller connected.
-        /// </summary>
+        /// <summary> Background GUI thread to update certain statuses, such as is the controller connected. </summary>
         private void bgWorkThread_DoWork(object sender, DoWorkEventArgs e)
         {
             static void ShowErrorMessage(string msg)
@@ -110,9 +130,8 @@ namespace XMapLibSharp
                 sb.AppendFormat("Error in {0}, unable to get handle to Sync Context. {1}", nameof(bgWorkThread_DoWork), msg);
                 MessageBox.Show(sb.ToString());
             }
-            if ((e.Argument as SynchronizationContext) != null)
+            if (e.Argument is SynchronizationContext sc)
             {
-                SynchronizationContext sc = (SynchronizationContext)e.Argument;
                 while (!bgWorkThread.CancellationPending)
                 {
                     sc.Send(delegate (object? state) { UpdateControllerConnectedButton(); }, null);
@@ -128,13 +147,40 @@ namespace XMapLibSharp
                 ShowErrorMessage("e.Argument is null!");
             }
         }
-
         private void trackBar1_ValueChanged(object sender, EventArgs e)
         {
             int val = trackBar1.Value;
             mapper.SetMouseSensitivity(val);
             UpdateMouseSensitivityButton();
             UpdateIsMouseRunning();
+        }
+        private void ButtonForPresetSection_Click(object? sender, EventArgs e)
+        {
+            if (sender is Button b)
+            {
+                bool isButtonTextSelected = KeymapPresetOperations.IsButtonTextSelected(b);
+                //if is selected, do nothing, otherwise..
+                if (!isButtonTextSelected)
+                {
+                    //set each button to not selected.
+                    foreach (var p in presets)
+                    {
+                        if (KeymapPresetOperations.IsButtonTextSelected(p.ButtonForPresetSection))
+                            KeymapPresetOperations.ChangeButtonTextForSelected(p.ButtonForPresetSection, false);
+                    }
+                    //select sending button
+                    KeymapPresetOperations.ChangeButtonTextForSelected(b, !isButtonTextSelected);
+                    //find button in preset list, change keymaps over.
+                    mapper.ClearKeyMaps();
+                    foreach (var p in presets)
+                    {
+                        if (p.ButtonForPresetSection == b)
+                        {
+                            mapper.AddKeymaps(p.Keymaps);
+                        }
+                    }
+                }
+            }
         }
     }
 }

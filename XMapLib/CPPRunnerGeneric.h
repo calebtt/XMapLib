@@ -29,9 +29,9 @@ namespace sds
 			StopThread();
 		}
 	protected:
-		LambdaType m_lambda;
+		const LambdaType m_lambda;
 		InternalData m_local_state{}; // default constructed type InternalData
-		std::atomic<bool> m_is_stop_requested = false;
+		std::atomic<bool> m_is_stop_requested{ false };
 		std::unique_ptr<std::thread> m_local_thread;
 		std::mutex m_state_mutex;
 	public:

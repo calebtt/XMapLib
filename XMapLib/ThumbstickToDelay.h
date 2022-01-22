@@ -13,7 +13,7 @@ namespace sds
 	class ThumbstickToDelay
 	{
 		const std::string BAD_DELAY_MSG = "Bad timer delay value, exception.";
-		inline static std::atomic<bool> m_is_deadzone_activated = false; //shared between instances
+		inline static std::atomic<bool> m_is_deadzone_activated{ false }; //shared between instances
 		float m_alt_deadzone_multiplier = MouseSettings::ALT_DEADZONE_MULT_DEFAULT;
 		int m_axis_sensitivity = MouseSettings::SENSITIVITY_DEFAULT;
 		int m_x_axis_deadzone = MouseSettings::DEADZONE_DEFAULT;

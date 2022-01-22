@@ -42,13 +42,13 @@ namespace sds
 			//Key repeat loop
 			KeyRepeatLoop();
 			//search the map for a matching virtual key and send it
-			std::for_each(m_map_token_info.begin(), m_map_token_info.end(), [this, &stroke](auto &w)
+			for(auto &w: m_map_token_info)
+			{
+				if (w.SendingElementVK == stroke.VirtualKey)
 				{
-					if (w.SendingElementVK == stroke.VirtualKey)
-					{
-						this->Normal(w, stroke);
-					}
-				});
+					this->Normal(w, stroke);
+				}
+			}
 		}
 		std::string AddKeyMap(KeyboardKeyMap w)
 		{
@@ -71,25 +71,25 @@ namespace sds
 		{
 			//If enough time has passed, reset the key for use again, provided it uses the key-repeat behavior--
 			//otherwise reset it immediately.
-			std::for_each(m_map_token_info.begin(), m_map_token_info.end(), [](auto& e)
-				{
-					const bool DoUpdate = (e.LastAction == InpType::KEYUP && e.LastSentTime.IsElapsed()) && e.UsesRepeat;
-					const bool DoImmediate = e.LastAction == InpType::KEYUP && !e.UsesRepeat;
-					if (DoUpdate || DoImmediate)
-						e.LastAction = InpType::NONE;
-				});
+			for(auto &e: m_map_token_info)
+			{
+				const bool DoUpdate = (e.LastAction == InpType::KEYUP && e.LastSentTime.IsElapsed()) && e.UsesRepeat;
+				const bool DoImmediate = e.LastAction == InpType::KEYUP && !e.UsesRepeat;
+				if (DoUpdate || DoImmediate)
+					e.LastAction = InpType::NONE;
+			}
 		}
 		void KeyRepeatLoop()
 		{
-			std::for_each(m_map_token_info.begin(), m_map_token_info.end(), [this](auto& w)
+			for(auto &w: m_map_token_info)
+			{
+				using AT = sds::KeyboardKeyMap::ActionType;
+				if (w.UsesRepeat && (((w.LastAction == AT::KEYDOWN) || (w.LastAction == AT::KEYREPEAT))))
 				{
-					using AT = sds::KeyboardKeyMap::ActionType;
-					if(w.UsesRepeat && (((w.LastAction == AT::KEYDOWN) || (w.LastAction == AT::KEYREPEAT))))
-					{
-						if (w.LastSentTime.IsElapsed())
-							this->SendTheKey(w, true, AT::KEYREPEAT);
-					}
-				});
+					if (w.LastSentTime.IsElapsed())
+						this->SendTheKey(w, true, AT::KEYREPEAT);
+				}
+			}
 		}
 		/// <summary>
 		/// Normal keypress simulation logic. 
@@ -128,8 +128,8 @@ namespace sds
 		bool IsOvertaking(const KeyboardKeyMap &detail, KeyboardKeyMap &outOvertaken)
 		{
 			//Is detail a thumbstick direction map, and if so, which thumbstick.
-			const auto leftAxisIterator = std::find(KeyboardSettings::THUMBSTICK_L_VK_LIST.begin(), KeyboardSettings::THUMBSTICK_L_VK_LIST.end(), detail.SendingElementVK);
-			const auto rightAxisIterator = std::find(KeyboardSettings::THUMBSTICK_R_VK_LIST.begin(), KeyboardSettings::THUMBSTICK_R_VK_LIST.end(), detail.SendingElementVK);
+			const auto leftAxisIterator = std::ranges::find(KeyboardSettings::THUMBSTICK_L_VK_LIST, detail.SendingElementVK);
+			const auto rightAxisIterator = std::ranges::find(KeyboardSettings::THUMBSTICK_R_VK_LIST, detail.SendingElementVK);
 			const bool leftStick = leftAxisIterator != KeyboardSettings::THUMBSTICK_L_VK_LIST.end();
 			const bool rightStick = rightAxisIterator != KeyboardSettings::THUMBSTICK_R_VK_LIST.end();
 			//find a key-down'd or repeat'd direction of the same thumbstick
@@ -140,10 +140,10 @@ namespace sds
 				auto TestFunc = [&stickSettingList, &detail](const KeyboardKeyMap& elem)
 				{
 					if ((elem.LastAction == InpType::KEYDOWN || elem.LastAction == InpType::KEYREPEAT) && elem.SendingElementVK != detail.SendingElementVK)
-						return std::find(stickSettingList.begin(), stickSettingList.end(), elem.SendingElementVK) != stickSettingList.end();
+						return std::ranges::find(stickSettingList, elem.SendingElementVK) != stickSettingList.end();
 					return false;
 				};
-				const auto mpit = std::find_if(m_map_token_info.begin(), m_map_token_info.end(), TestFunc);
+				const auto mpit = std::ranges::find_if(m_map_token_info, TestFunc);
 				if (mpit == m_map_token_info.end())
 					return false;
 				outOvertaken = *mpit;
