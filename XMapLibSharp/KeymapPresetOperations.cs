@@ -18,6 +18,7 @@ namespace XMapLibSharp
         const float FontSizePresetButton = 8.5f;
         const string PRESET_BROWSING = "Browsing";
         const string PRESET_GAMING = "Gaming";
+        const string PRESET_MOVIE = "Movie";
         const string MSG_PRESET_SELECTED = "\n*SELECTED*";
         public static void ChangeButtonTextForSelected(Button prButton, bool makeSelected)
         {
@@ -64,6 +65,7 @@ namespace XMapLibSharp
             List<KeymapPreset> presetButtons = new();
             presetButtons.Add(new() { ButtonForPresetSection = BuildPresetButton(PRESET_BROWSING), KeymapName = PRESET_BROWSING, Keymaps = BuildPresetBrowsing()});
             presetButtons.Add(new() { ButtonForPresetSection = BuildPresetButton(PRESET_GAMING), KeymapName = PRESET_BROWSING, Keymaps = BuildPresetGaming() });
+            presetButtons.Add(new() { ButtonForPresetSection = BuildPresetButton(PRESET_MOVIE), KeymapName = PRESET_BROWSING, Keymaps = BuildPresetMovie() });
             return presetButtons;
         }
         public static List<XMapLibKeymap> BuildPresetBrowsing()
@@ -126,6 +128,28 @@ namespace XMapLibSharp
                 new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_START, VKMappedTo = (int)Keys.Escape },
                 new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_LSHOULDER, VKMappedTo = (int)Keys.Q },
                 new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_RSHOULDER, VKMappedTo = (int)Keys.E },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_X, VKMappedTo = (int)Keys.R }
+            };
+            return mp;
+        }
+        public static List<XMapLibKeymap> BuildPresetMovie()
+        {
+            List<XMapLibKeymap> mp = new()
+            {
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_DPAD_DOWN, VKMappedTo = (int)Keys.VolumeDown },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_DPAD_UP, VKMappedTo = (int)Keys.VolumeUp },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_DPAD_LEFT, VKMappedTo = (int)Keys.Left },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_DPAD_RIGHT, VKMappedTo = (int)Keys.Right },
+                new() { UsesRepeatBehavior = false, VKMappedFrom = (int)ControllerButtons.VK_PAD_LTRIGGER, VKMappedTo = (int)Keys.RButton },
+                new() { UsesRepeatBehavior = false, VKMappedFrom = (int)ControllerButtons.VK_PAD_RTRIGGER, VKMappedTo = (int)Keys.LButton },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_LTHUMB_UP, VKMappedTo = (int)Keys.PageUp },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_LTHUMB_LEFT, VKMappedTo = (int)Keys.BrowserBack },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_LTHUMB_DOWN, VKMappedTo = (int)Keys.PageDown},
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_LTHUMB_RIGHT, VKMappedTo = (int)Keys.BrowserForward },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_LSHOULDER, VKMappedTo = (int)Keys.MediaPlayPause },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_RSHOULDER, VKMappedTo = (int)Keys.VolumeMute },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_A, VKMappedTo = (int)Keys.Space },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_B, VKMappedTo = (int)Keys.E },
                 new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_X, VKMappedTo = (int)Keys.R }
             };
             return mp;
