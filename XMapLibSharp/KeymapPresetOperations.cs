@@ -88,6 +88,8 @@ namespace XMapLibSharp
                 new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_LTHUMB_DOWNLEFT, VKMappedTo = (int)Keys.A },
                 new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_LTHUMB_DOWNRIGHT, VKMappedTo = (int)Keys.S },
                 new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_LTHUMB_DOWNRIGHT, VKMappedTo = (int)Keys.D },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_LSHOULDER, VKMappedTo = (int)Keys.BrowserBack },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_RSHOULDER, VKMappedTo = (int)Keys.BrowserForward },
                 new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_A, VKMappedTo = (int)Keys.Space },
                 new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_B, VKMappedTo = (int)Keys.E },
                 new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_X, VKMappedTo = (int)Keys.R }
