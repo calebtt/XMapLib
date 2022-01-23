@@ -22,7 +22,7 @@ namespace XMapLibSharp
         VK_PAD_DPAD_DOWN = 0x5811,
         VK_PAD_DPAD_LEFT = 0x5812,
         VK_PAD_DPAD_RIGHT = 0x5813,
-        VK__PAD_START = 0x5814,
+        VK_PAD_START = 0x5814,
         VK_PAD_BACK = 0x5815,
         VK_PAD_LTHUMB_PRESS = 0x5816,
         VK_PAD_RTHUMB_PRESS = 0x5817,

@@ -17,6 +17,7 @@ namespace XMapLibSharp
         const int Height = 70;
         const float FontSizePresetButton = 8.5f;
         const string PRESET_BROWSING = "Browsing";
+        const string PRESET_GAMING = "Gaming";
         const string MSG_PRESET_SELECTED = "\n*SELECTED*";
         public static void ChangeButtonTextForSelected(Button prButton, bool makeSelected)
         {
@@ -65,8 +66,7 @@ namespace XMapLibSharp
             }
             List<KeymapPreset> presetButtons = new();
             presetButtons.Add(new() { ButtonForPresetSection = BuildPresetButton(PRESET_BROWSING), KeymapName = PRESET_BROWSING, Keymaps = BuildPresetBrowsing()});
-            presetButtons.Add(new() { ButtonForPresetSection = BuildPresetButton(PRESET_BROWSING), KeymapName = PRESET_BROWSING, Keymaps = BuildPresetBrowsing() });
-            presetButtons.Add(new() { ButtonForPresetSection = BuildPresetButton(PRESET_BROWSING), KeymapName = PRESET_BROWSING, Keymaps = BuildPresetBrowsing() });
+            presetButtons.Add(new() { ButtonForPresetSection = BuildPresetButton(PRESET_GAMING), KeymapName = PRESET_BROWSING, Keymaps = BuildPresetGaming() });
             return presetButtons;
         }
         public static List<XMapLibKeymap> BuildPresetBrowsing()
@@ -93,6 +93,40 @@ namespace XMapLibSharp
                 new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_LTHUMB_DOWNRIGHT, VKMappedTo = (int)Keys.D },
                 new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_A, VKMappedTo = (int)Keys.Space },
                 new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_B, VKMappedTo = (int)Keys.E },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_X, VKMappedTo = (int)Keys.R }
+            };
+            return mp;
+        }
+        public static List<XMapLibKeymap> BuildPresetGaming()
+        {
+            List<XMapLibKeymap> mp = new()
+            {
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_DPAD_DOWN, VKMappedTo = (int)Keys.Down },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_DPAD_UP, VKMappedTo = (int)Keys.Up },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_DPAD_LEFT, VKMappedTo = (int)Keys.Left },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_DPAD_RIGHT, VKMappedTo = (int)Keys.Right },
+                new() { UsesRepeatBehavior = false, VKMappedFrom = (int)ControllerButtons.VK_PAD_LTRIGGER, VKMappedTo = (int)Keys.RButton },
+                new() { UsesRepeatBehavior = false, VKMappedFrom = (int)ControllerButtons.VK_PAD_RTRIGGER, VKMappedTo = (int)Keys.LButton },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_LTHUMB_UP, VKMappedTo = (int)Keys.W },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_LTHUMB_LEFT, VKMappedTo = (int)Keys.A },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_LTHUMB_DOWN, VKMappedTo = (int)Keys.S },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_LTHUMB_RIGHT, VKMappedTo = (int)Keys.D },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_LTHUMB_UPLEFT, VKMappedTo = (int)Keys.W },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_LTHUMB_UPLEFT, VKMappedTo = (int)Keys.A },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_LTHUMB_UPRIGHT, VKMappedTo = (int)Keys.W },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_LTHUMB_UPRIGHT, VKMappedTo = (int)Keys.D },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_LTHUMB_DOWNLEFT, VKMappedTo = (int)Keys.S },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_LTHUMB_DOWNLEFT, VKMappedTo = (int)Keys.A },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_LTHUMB_DOWNRIGHT, VKMappedTo = (int)Keys.S },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_LTHUMB_DOWNRIGHT, VKMappedTo = (int)Keys.D },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_A, VKMappedTo = (int)Keys.Space },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_B, VKMappedTo = (int)Keys.F },
+                new() { UsesRepeatBehavior = false, VKMappedFrom = (int)ControllerButtons.VK_PAD_Y, VKMappedTo = (int)Keys.G},
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_RTHUMB_PRESS, VKMappedTo = (int)Keys.C },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_LTHUMB_PRESS, VKMappedTo = (int)Keys.LShiftKey },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_START, VKMappedTo = (int)Keys.Escape },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_LSHOULDER, VKMappedTo = (int)Keys.Q },
+                new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_RSHOULDER, VKMappedTo = (int)Keys.E },
                 new() { UsesRepeatBehavior = true, VKMappedFrom = (int)ControllerButtons.VK_PAD_X, VKMappedTo = (int)Keys.R }
             };
             return mp;
