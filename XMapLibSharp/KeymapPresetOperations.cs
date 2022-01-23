@@ -54,14 +54,11 @@ namespace XMapLibSharp
                 tb1.Text = "[" + presetName + "]";
                 tb1.Font = f;
                 tb1.BackColor = Color.Aquamarine;
-                //tb1.Margin = new(100);
-                //tb1.Padding = new Padding(100);
                 tb1.MaximumSize = new(Width, Height);
                 tb1.MinimumSize = new(Width, Height);
                 tb1.FlatStyle = FlatStyle.Flat;
                 tb1.Visible = true;
                 tb1.TextAlign = ContentAlignment.MiddleCenter;
-                //tb1.Dock = DockStyle.Fill;
                 return tb1;
             }
             List<KeymapPreset> presetButtons = new();
