@@ -17,4 +17,4 @@ the project has access to the entire .NET framework for GUI work while keeping t
 To set the mapping details <b><a href="https://github.com/calebtt/XMapLib/blob/master/XMapLib/KeyboardKeyMap.h">KeyboardKeyMap</a></b> encapsulates the information comprising a controller key to keyboard/mouse key mapping.
 <p>Also, please see the <b><a href="https://github.com/calebtt/XMapLib/blob/master/XMapLib/XMapLib.cpp">Example</a></b></p>
 
-<b><p>The DLL API exposed from XMapLibDLL is described totally in apifuncs.h in the DLL project.</b>
+<b><p>The DLL API exposed from XMapLibDLL is described totally in <a href="https://github.com/calebtt/XMapLib/blob/master/XMapLibDLL/apifuncs.h">apifuncs.h</a> in the DLL project.</b>
