@@ -34,7 +34,7 @@ the project has access to the entire .NET framework for GUI work while keeping t
     <li>it is a real time system (or very close)</li>
     <li>lots and lots of object oriented programming</li>
     </ul>
-<a href="https://ibb.co/vmjctWD"><img src="https://i.ibb.co/ZKMfZrN/XMap-Lib-uml.jpg" alt="XMap-Lib-uml" border="0"></a>
+    <a href="https://ibb.co/kBvqrRX"><img src="https://i.ibb.co/g9htX5J/XMap-Lib-uml3.png" alt="XMapLib-uml" border="0"></a>
 
   <b>The main classes for use in the native C++ XMapLib project are :</b>
  <ul>
