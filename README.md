@@ -15,6 +15,25 @@ the project has access to the entire .NET framework for GUI work while keeping t
 <a href="https://ibb.co/x28d2WX"><img src="https://i.ibb.co/0nVvnTm/XMap-Lib-gui1.jpg" alt="XMap-Lib-gui1" border="0"></a>
 
   <b><p>A high level code diagram of the XMapLib project code (native C++)</b>
+  <p>The project utilizes
+  <ul>
+    <li>C++ templates</li>
+    <li>Template SFINAE</li>
+    <li>constexpr</li>
+    <li>unit testing with Microsoft <a href="https://docs.microsoft.com/en-us/visualstudio/test/how-to-use-microsoft-test-framework-for-cpp?view=vs-2022">CppUnitTestingFramework</a></li>
+    <li>multi-threading, many threads running concurrently and interacting</li> 
+    <li>concurrency synchronization objects, like mutexes and RAII scoped locks</li>
+    <li>C++ standard atomics</li>
+    <li>lambdas, and passing lambdas as arguments</li>
+    <li>usage of several Windows API functions including the XInput lib</li>
+    <li>operator overloads</li>
+    <li>input simulation</li>
+    <li>C++ pointer wrappers like unique_ptr</li>
+    <li>if-constexpr to do compile-time decisions instead of run-time</li>
+    <li>STL containers and algorithms</li>
+    <li>it is a real time system (or very close)</li>
+    <li>lots and lots of object oriented programming</li>
+    </ul>
 <a href="https://ibb.co/vmjctWD"><img src="https://i.ibb.co/ZKMfZrN/XMap-Lib-uml.jpg" alt="XMap-Lib-uml" border="0"></a>
 
   <b>The main classes for use in the native C++ XMapLib project are :</b>
