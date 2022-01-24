@@ -7,7 +7,7 @@
 
 namespace XMapLibTest::TemplatesForTest
 {
-	bool IsWithin(const auto result, const auto testVal, const auto within)
+	constexpr bool IsWithin(const auto result, const auto testVal, const auto within)
 	{
 		return ((result > (testVal - within)) && (result < (testVal + within)));
 	}

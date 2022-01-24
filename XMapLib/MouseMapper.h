@@ -134,7 +134,7 @@ namespace sds
 		}
 	protected:
 		/// <summary>
-		/// Worker thread, private visibility, gets updated data from ProcessState() function to use.
+		/// Worker thread, protected visibility, gets updated data from ProcessState() function to use.
 		/// Accesses the std::atomic m_thread_x and m_thread_y members.
 		/// </summary>
 		void workThread(sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2&, int&)
