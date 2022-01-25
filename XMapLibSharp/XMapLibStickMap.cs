@@ -8,8 +8,8 @@ namespace XMapLibSharp
 {
     public enum XMapLibStickMap : int
     {
-        NEITHER = 0,
-        RIGHT = 1,
-        LEFT = 2
+        Neither = 0,
+        Right = 1,
+        Left = 2
     }
 }

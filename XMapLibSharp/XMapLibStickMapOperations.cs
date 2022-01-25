@@ -10,18 +10,18 @@ namespace XMapLibSharp
     {
         public static XMapLibStickMap Next(this XMapLibStickMap rhs)
         {
-            return rhs == XMapLibStickMap.LEFT ? XMapLibStickMap.NEITHER : rhs + 1;
+            return rhs == XMapLibStickMap.Left ? XMapLibStickMap.Neither : rhs + 1;
         }
 
         public static string ToString(this XMapLibStickMap rhs)
         {
             switch (rhs)
             {
-                case XMapLibStickMap.NEITHER:
+                case XMapLibStickMap.Neither:
                     return "NEITHER";
-                case XMapLibStickMap.LEFT:
+                case XMapLibStickMap.Left:
                     return "LEFT";
-                case XMapLibStickMap.RIGHT:
+                case XMapLibStickMap.Right:
                     return "RIGHT";
                 default: 
                     return "ERROR";

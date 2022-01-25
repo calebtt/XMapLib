@@ -17,27 +17,27 @@ namespace XMapLibSharp
      right click -> outlining -> collapse to definitions */
     public partial class Form1 : Form
     {
-        private const int DELAY_REDRAW_MS = 1000; // a whole second
-        private const string ERR_NOT_RUNNING = "Started, but not running.";
-        private const string ERR_PRESET_BUTTON_STATUS = "Error toggling preset button selected status.";
-        private const string MSG_START_MOUSE = "Start Mouse Processing";
-        private const string MSG_STOP_MOUSE = "Stop Mouse Processing";
-        private const string MSG_STICK = "Stick";
-        private const string MSG_NOCONTROLLER = "Not Connected";
-        private const string MSG_CONTROLLER = "Connected";
-        private const string MSG_SENSMAX = "/100";
-        private const string MSG_SENSBEGIN = "Sensitivity: ";
-        private readonly Color CLR_INFO = Color.BurlyWood;
-        private readonly Color CLR_NORMAL = Color.DarkSeaGreen;
-        private readonly XMapLibWrapper mapper;
-        private XMapLibStickMap currentXMapLibStick = XMapLibStickMap.RIGHT;
-        private List<KeymapPreset> presets = new();
-        private List<XMapLibKeymap> currentKeymaps = new();
+        private const int DelayRedrawMs = 1000; // a whole second
+        private const string ErrNotRunning = "Started, but not running.";
+        private const string ErrPresetButtonStatus = "Error toggling preset button selected status.";
+        private const string MsgStartMouse = "Start Mouse Processing";
+        private const string MsgStopMouse = "Stop Mouse Processing";
+        private const string MsgStick = "Stick";
+        private const string MsgNocontroller = "Not Connected";
+        private const string MsgController = "Connected";
+        private const string MsgSensmax = "/100";
+        private const string MsgSensbegin = "Sensitivity: ";
+        private readonly Color _clrInfo = Color.BurlyWood;
+        private readonly Color _clrNormal = Color.DarkSeaGreen;
+        private readonly XMapLibWrapper _mapper;
+        private XMapLibStickMap _currentXMapLibStick = XMapLibStickMap.Right;
+        private List<KeymapPreset> _presets = new();
+        private List<XMapLibKeymap> _currentKeymaps = new();
         public Form1()
         {
             InitializeComponent();
-            mapper = new XMapLibWrapper();
-            mapper.SetMouseStick(currentXMapLibStick);
+            _mapper = new XMapLibWrapper();
+            _mapper.SetMouseStick(_currentXMapLibStick);
             UpdateMouseSensitivityTrackbar();
             UpdateControllerConnectedButton();
             UpdateMouseSensitivityButton();
@@ -45,21 +45,26 @@ namespace XMapLibSharp
             InitBackgroundWorker();
             InitPresetButtons();
             UpdateMapStringBox();
-            this.dataGridView1.DataSource = currentKeymaps;
+            InitDataGridView();
+        }
+
+        private void InitDataGridView()
+        {
+            this.dataGridView1.DataSource = _currentKeymaps;
         }
         private void InitPresetButtons()
         {
-            presets = KeymapPresetOperations.BuildPresetButtons();
+            _presets = KeymapPresetOperations.BuildPresetButtons();
             //assumes at least one preset is built
-            foreach (KeymapPreset pr in presets)
+            foreach (KeymapPreset pr in _presets)
             {
                 this.flwPresetButtons.Controls.Add(pr.ButtonForPresetSection);
                 pr.ButtonForPresetSection.Click += ButtonForPresetSection_Click;
             }
             //adding first element keymaps to mapper
-            mapper.ClearKeyMaps();
-            mapper.AddKeymaps(presets[0].Keymaps);
-            UpdateKeymapDatagrid(presets[0].Keymaps);
+            _mapper.ClearKeyMaps();
+            _mapper.AddKeymaps(_presets[0].Keymaps);
+            UpdateKeymapDatagrid(_presets[0].Keymaps);
             //activating first button in the list
             if (this.flwPresetButtons.Controls[0] is Button btn)
             {
@@ -72,31 +77,31 @@ namespace XMapLibSharp
         }
         private void UpdateKeymapDatagrid(List<XMapLibKeymap> newMaps)
         {
-            currentKeymaps = newMaps;
+            _currentKeymaps = newMaps;
             dataGridView1.DataSource = newMaps;
         }
         private void UpdateMouseSensitivityTrackbar()
         {
-            trackBar1.Value = mapper.GetMouseSensitivity();
+            trackBar1.Value = _mapper.GetMouseSensitivity();
         }
         private void UpdateControllerConnectedButton()
         {
-            bool isConnected = mapper.IsControllerConnected();
-            button2.Text = isConnected ? MSG_CONTROLLER : MSG_NOCONTROLLER;
-            button2.BackColor = isConnected ? CLR_NORMAL : CLR_INFO;
+            bool isConnected = _mapper.IsControllerConnected();
+            button2.Text = isConnected ? MsgController : MsgNocontroller;
+            button2.BackColor = isConnected ? _clrNormal : _clrInfo;
         }
         private void UpdateMouseSensitivityButton()
         {
-            btnSensitivityIndicator.Text = MSG_SENSBEGIN + " " + mapper.GetMouseSensitivity().ToString() + MSG_SENSMAX;
+            btnSensitivityIndicator.Text = MsgSensbegin + " " + _mapper.GetMouseSensitivity().ToString() + MsgSensmax;
         }
         private void UpdateIsMouseRunning()
         {
-            bool isRunning = mapper.IsMouseRunning();
-            btnMouseProcessing.Text = isRunning ? MSG_STOP_MOUSE : MSG_START_MOUSE;
+            bool isRunning = _mapper.IsMouseRunning();
+            btnMouseProcessing.Text = isRunning ? MsgStopMouse : MsgStartMouse;
         }
         private void UpdateMapStringBox()
         {
-            mapper.GetKeyMaps(out var currentMaps);
+            _mapper.GetKeyMaps(out var currentMaps);
             tbxMapDetails.Text = currentMaps;
         }
         private void TogglePresetButtonStatus(Button prButton)
@@ -111,22 +116,22 @@ namespace XMapLibSharp
         private void btnMouseProcessing_Click(object sender, EventArgs e)
         {
             //toggle processing
-            if (mapper.IsMouseRunning())
+            if (_mapper.IsMouseRunning())
             {
-                mapper.StopMouse();
-                btnMouseProcessing.Text = MSG_START_MOUSE;
+                _mapper.StopMouse();
+                btnMouseProcessing.Text = MsgStartMouse;
             }
             else
             {
-                mapper.InitMouse();
-                btnMouseProcessing.Text = MSG_STOP_MOUSE;
+                _mapper.InitMouse();
+                btnMouseProcessing.Text = MsgStopMouse;
             }
         }
         private void btnStick_Click(object sender, EventArgs e)
         {
-            currentXMapLibStick = currentXMapLibStick.Next();
-            btnStick.Text = currentXMapLibStick.ToString() + " " + MSG_STICK;
-            mapper.SetMouseStick(currentXMapLibStick);
+            _currentXMapLibStick = _currentXMapLibStick.Next();
+            btnStick.Text = _currentXMapLibStick.ToString() + " " + MsgStick;
+            _mapper.SetMouseStick(_currentXMapLibStick);
             UpdateIsMouseRunning();
         }
         /// <summary> Background GUI thread to update certain statuses, such as is the controller connected. </summary>
@@ -144,7 +149,7 @@ namespace XMapLibSharp
                 {
                     sc.Send(delegate (object? state) { UpdateControllerConnectedButton(); }, null);
                     sc.Send(delegate (object? state) { UpdateMapStringBox(); }, null);
-                    Thread.Sleep(DELAY_REDRAW_MS);
+                    Thread.Sleep(DelayRedrawMs);
                 }
             }
             else if (e.Argument != null)
@@ -159,7 +164,7 @@ namespace XMapLibSharp
         private void trackBar1_ValueChanged(object sender, EventArgs e)
         {
             int val = trackBar1.Value;
-            mapper.SetMouseSensitivity(val);
+            _mapper.SetMouseSensitivity(val);
             UpdateMouseSensitivityButton();
             UpdateIsMouseRunning();
         }
@@ -172,7 +177,7 @@ namespace XMapLibSharp
                 if (!isButtonTextSelected)
                 {
                     //set each button to not selected.
-                    foreach (var p in presets)
+                    foreach (var p in _presets)
                     {
                         if (KeymapPresetOperations.IsButtonTextSelected(p.ButtonForPresetSection))
                             KeymapPresetOperations.ChangeButtonTextForSelected(p.ButtonForPresetSection, false);
@@ -180,12 +185,12 @@ namespace XMapLibSharp
                     //select sending button
                     KeymapPresetOperations.ChangeButtonTextForSelected(b, !isButtonTextSelected);
                     //find button in preset list, change keymaps over.
-                    mapper.ClearKeyMaps();
-                    foreach (var p in presets)
+                    _mapper.ClearKeyMaps();
+                    foreach (var p in _presets)
                     {
                         if (p.ButtonForPresetSection == b)
                         {
-                            mapper.AddKeymaps(p.Keymaps);
+                            _mapper.AddKeymaps(p.Keymaps);
                             UpdateKeymapDatagrid(p.Keymaps);
                         }
                     }
