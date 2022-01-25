@@ -58,7 +58,7 @@ namespace sds
 			m_map_token_info.push_back(w);
 			return "";
 		}
-		void ClearMap()
+		void ClearMap() noexcept
 		{
 			m_map_token_info.clear();
 		}
