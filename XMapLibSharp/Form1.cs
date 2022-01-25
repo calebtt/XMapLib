@@ -20,6 +20,7 @@ namespace XMapLibSharp
         private const int DelayRedrawMs = 1000; // a whole second
         private const string ErrNotRunning = "Started, but not running.";
         private const string ErrPresetButtonStatus = "Error toggling preset button selected status.";
+        private const string ErrUpdatingMaps = "Error updating maps!";
         private const string MsgStartMouse = "Start Mouse Processing";
         private const string MsgStopMouse = "Stop Mouse Processing";
         private const string MsgStick = "Stick";
@@ -55,11 +56,10 @@ namespace XMapLibSharp
         {
             if (tabControl1.SelectedIndex == 0)
             {
-                if(_mapper.AddKeymaps(_currentKeymaps))
-                    UpdateMapStringBox();
-                else
+                _mapper.ClearKeyMaps();
+                if(!_mapper.AddKeymaps(_currentKeymaps))
                 {
-                    MessageBox.Show("Error updating maps.");
+                    MessageBox.Show(ErrUpdatingMaps);
                 }
             }
         }
@@ -72,29 +72,20 @@ namespace XMapLibSharp
             DataGridViewTextBoxColumn col3 = new();
             DataGridViewComboBoxColumn col4 = new();
             DataGridViewCheckBoxColumn col5 = new();
-
-            const string mappedFrom = "VkMappedFrom";
-            const string mappedFromAka = "VkMappedFromAka";
-            const string mappedTo = "VkMappedTo";
-            const string mappedToAka = "VkMappedToAka";
-            const string repeatBehavior = "UsesRepeatBehavior";
-            col1.Name = mappedFrom;
-            col2.Name = mappedFromAka;
-            col3.Name = mappedTo;
-            col4.Name = mappedToAka;
-            col5.Name = repeatBehavior;
-
-            col1.DataPropertyName = mappedFrom;
-            col2.DataPropertyName = mappedFromAka;
-            col3.DataPropertyName = mappedTo;
-            col4.DataPropertyName = mappedToAka;
-            col5.DataPropertyName = repeatBehavior;
-
+            col1.Name = nameof(XMapLibKeymap.VkMappedFrom);
+            col2.Name = nameof(XMapLibKeymap.VkMappedFromAka);
+            col3.Name = nameof(XMapLibKeymap.VkMappedTo);
+            col4.Name = nameof(XMapLibKeymap.VkMappedToAka);
+            col5.Name = nameof(XMapLibKeymap.UsesRepeatBehavior);
+            col1.DataPropertyName = nameof(XMapLibKeymap.VkMappedFrom);
+            col2.DataPropertyName = nameof(XMapLibKeymap.VkMappedFromAka);
+            col3.DataPropertyName = nameof(XMapLibKeymap.VkMappedTo);
+            col4.DataPropertyName = nameof(XMapLibKeymap.VkMappedToAka);
+            col5.DataPropertyName = nameof(XMapLibKeymap.UsesRepeatBehavior);
             col2.DisplayStyle = DataGridViewComboBoxDisplayStyle.Nothing;
             col4.DisplayStyle = DataGridViewComboBoxDisplayStyle.Nothing;
             col2.Items.AddRange(buttonNames);
             col4.Items.AddRange(keyNames);
-
             dataGridView1.Columns.Add(col1);
             dataGridView1.Columns.Add(col2);
             dataGridView1.Columns.Add(col3);

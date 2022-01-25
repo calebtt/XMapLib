@@ -41,7 +41,10 @@ namespace sds
 		KeyboardMapper(KeyboardMapper&& other) = delete;
 		KeyboardMapper& operator=(const KeyboardMapper& other) = delete;
 		KeyboardMapper& operator=(KeyboardMapper&& other) = delete;
-		~KeyboardMapper() = default;
+		~KeyboardMapper()
+		{
+			Stop();
+		}
 
 		bool IsControllerConnected() const
 		{
@@ -56,8 +59,9 @@ namespace sds
 			m_poller.Start();
 			m_workThread->StartThread();
 		}
-		void Stop() const noexcept
+		void Stop() noexcept
 		{
+			m_translator.CleanupInProgressEvents();
 			m_poller.Stop();
 			m_workThread->StopThread();
 		}

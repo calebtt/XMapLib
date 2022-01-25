@@ -57,7 +57,7 @@ namespace sds
 			{
 				if(m.LastAction == InpType::KEYDOWN || m.LastAction == InpType::KEYREPEAT)
 				{
-					DoOvertaking(m);
+					this->DoOvertaking(m);
 				}
 			}
 		}
@@ -73,7 +73,7 @@ namespace sds
 		{
 			m_map_token_info.clear();
 		}
-		std::vector<KeyboardKeyMap> GetMaps() const
+		std::vector<KeyboardKeyMap> GetMaps() const noexcept
 		{
 			return m_map_token_info;
 		}
@@ -121,7 +121,7 @@ namespace sds
 			}
 		}
 		/// <summary>Does the key send call, updates LastAction and updates LastSentTime</summary>
-		void SendTheKey(KeyboardKeyMap& mp, const bool keyDown, KeyboardKeyMap::ActionType action)
+		void SendTheKey(KeyboardKeyMap& mp, const bool keyDown, KeyboardKeyMap::ActionType action) noexcept
 		{
 			//std::cerr << mp << std::endl; // temp logging
 			mp.LastAction = action;
@@ -158,7 +158,7 @@ namespace sds
 			}
 			return false;
 		}
-		void DoOvertaking(KeyboardKeyMap &detail)
+		void DoOvertaking(KeyboardKeyMap &detail) noexcept
 		{
 			SendTheKey(detail, false, InpType::KEYUP);
 		}
