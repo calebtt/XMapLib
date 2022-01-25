@@ -135,6 +135,7 @@ namespace XMapLibSharp
                 while (!bgWorkThread.CancellationPending)
                 {
                     sc.Send(delegate (object? state) { UpdateControllerConnectedButton(); }, null);
+                    sc.Send(delegate (object? state) { UpdateMapStringBox(); }, null);
                     Thread.Sleep(DELAY_REDRAW_MS);
                 }
             }
@@ -177,7 +178,6 @@ namespace XMapLibSharp
                         if (p.ButtonForPresetSection == b)
                         {
                             mapper.AddKeymaps(p.Keymaps);
-                            UpdateMapStringBox();
                         }
                     }
                 }
