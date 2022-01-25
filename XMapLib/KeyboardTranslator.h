@@ -91,9 +91,7 @@ namespace sds
 				}
 			}
 		}
-		/// <summary>
-		/// Normal keypress simulation logic. 
-		/// </summary>
+		/// <summary>Normal keypress simulation logic.</summary>
 		void Normal(KeyboardKeyMap &detail, const XINPUT_KEYSTROKE &stroke)
 		{
 			const bool DoDown = (detail.LastAction == InpType::NONE) && (stroke.Flags & static_cast<WORD>(InpType::KEYDOWN));
@@ -111,7 +109,7 @@ namespace sds
 				SendTheKey(detail, false, InpType::KEYUP);
 			}
 		}
-		//Does the key send call, updates LastAction and updates LastSentTime
+		/// <summary>Does the key send call, updates LastAction and updates LastSentTime</summary>
 		void SendTheKey(KeyboardKeyMap& mp, const bool keyDown, KeyboardKeyMap::ActionType action)
 		{
 			//std::cerr << mp << std::endl; // temp logging
@@ -119,9 +117,7 @@ namespace sds
 			m_key_send.SendScanCode(mp.MappedToVK, keyDown);
 			mp.LastSentTime.Reset(KeyboardSettings::MICROSECONDS_DELAY_KEYREPEAT); // update last sent time
 		}
-		/// <summary>
-		/// Check to see if a different axis of the same thumbstick has been pressed already
-		/// </summary>
+		/// <summary>Check to see if a different axis of the same thumbstick has been pressed already</summary>
 		/// <param name="detail">Newest element being set to keydown state</param>
 		///	<param name="outOvertaken">out key set to the one being overtaken</param>
 		/// <returns>true if is overtaking a thumbstick direction already depressed</returns>
