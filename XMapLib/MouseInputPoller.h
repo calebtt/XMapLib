@@ -36,39 +36,27 @@ namespace sds
 		MouseInputPoller(MouseInputPoller&& other) = delete;
 		MouseInputPoller& operator=(const MouseInputPoller& other) = delete;
 		MouseInputPoller& operator=(MouseInputPoller&& other) = delete;
-		/// <summary>
-		/// Destructor override, ensures the running thread function is stopped
-		/// inside of this class and not the base.
-		/// </summary>
-		~MouseInputPoller()
-		{
-			Stop();
-		}
+		~MouseInputPoller() = default;
+
 		XINPUT_STATE GetUpdatedState() const noexcept
 		{
 			if (m_workThread)
 				return m_workThread->GetCurrentState();
 			return XINPUT_STATE{};
 		}
-		/// <summary>
-		/// Start polling for updated XINPUT_STATE info.
-		/// </summary>
+		/// <summary>Start polling for updated XINPUT_STATE info.</summary>
 		void Start() const noexcept
 		{
 			if (m_workThread)
 				m_workThread->StartThread();
 		}
-		/// <summary>
-		/// Stop input polling.
-		/// </summary>
+		/// <summary>Stop input polling.</summary>
 		void Stop() const noexcept
 		{
 			if (m_workThread)
 				m_workThread->StopThread();
 		}
-		/// <summary>
-		/// Gets the running status of the worker thread
-		/// </summary>
+		/// <summary>Gets the running status of the worker thread</summary>
 		/// <returns> true if thread is running, false otherwise</returns>
 		bool IsRunning() const noexcept
 		{
@@ -76,19 +64,15 @@ namespace sds
 				return m_workThread->IsRunning();
 			return false;
 		}
-		/// <summary>
-		/// Returns status of XINPUT library detecting a controller.
-		/// </summary>
+		/// <summary>Returns status of XINPUT library detecting a controller.</summary>
 		/// <returns> true if controller is connected, false otherwise</returns>
 		bool IsControllerConnected() const noexcept
 		{
 			XINPUT_STATE ss{};
 			return XInputGetState(m_local_player.player_id, &ss) == ERROR_SUCCESS;
 		}
-		/// <summary>
-		/// Returns status of XINPUT library detecting a controller.
-		/// overload that uses the player_id value in a MousePlayerInfo struct
-		/// </summary>
+		/// <summary>Returns status of XINPUT library detecting a controller.
+		/// This overload uses the player_id value in a MousePlayerInfo struct.</summary>
 		/// <returns> true if controller is connected, false otherwise</returns>
 		bool IsControllerConnected(const MousePlayerInfo &p) const noexcept
 		{
@@ -96,10 +80,7 @@ namespace sds
 			return XInputGetState(p.player_id, &ss) == ERROR_SUCCESS;
 		}
 	protected:
-		/// <summary>
-		/// Worker thread overriding the base pure virtual workThread.
-		///	Updates "local_state" with mutex protection.
-		/// </summary>
+		/// <summary>Worker thread used by m_workThread. Updates the protectedData with mutex protection.</summary>
 		void workThread(sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2& mut, InternalType& protectedData) const noexcept
 		{
 			{
