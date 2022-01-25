@@ -1,24 +1,13 @@
 ﻿using System;
-using System.CodeDom;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO.MemoryMappedFiles;
 using System.Linq;
-using System.Numerics;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace XMapLibSharp
 {
     public class XMapLibWrapper
     {
         private const string TokStartmap = "[KeyboardKeyMap]";
-        //private const string TOK_ENDMAP = "[/KeyboardKeyMap]";
-        //private const string TOK_SENDING_VK = "SendingElementVK";
-        //private const string TOK_MAPPEDTO_VK = "MappedToVK";
-        //private const string TOK_USES_REPEAT = "UsesRepeat";
         private const string RegexWsPattern = @"\s+";
         private const string ValueDelimiter = ":";
         public XMapLibWrapper()
