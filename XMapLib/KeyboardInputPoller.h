@@ -39,25 +39,19 @@ namespace sds
 		{
 			return m_workThread->GetAndClearCurrentStates();
 		}
-		/// <summary>
-		/// Start polling for updated XINPUT_STATE info.
-		/// </summary>
+		/// <summary>Start polling for updated XINPUT_KEYSTROKE info.</summary>
 		void Start() const noexcept
 		{
 			if (m_workThread)
 				m_workThread->StartThread();
 		}
-		/// <summary>
-		/// Stop input polling.
-		/// </summary>
+		/// <summary>Stop input polling.</summary>
 		void Stop() const noexcept
 		{
 			if (m_workThread)
 				m_workThread->StopThread();
 		}
-		/// <summary>
-		/// Gets the running status of the worker thread
-		/// </summary>
+		/// <summary>Gets the running status of the worker thread</summary>
 		/// <returns> true if thread is running, false otherwise</returns>
 		bool IsRunning() const noexcept
 		{
@@ -65,9 +59,7 @@ namespace sds
 				return m_workThread->IsRunning();
 			return false;
 		}
-		/// <summary>
-		/// Returns status of XINPUT library detecting a controller.
-		/// </summary>
+		/// <summary>Returns status of XINPUT library detecting a controller.</summary>
 		/// <returns> true if controller is connected, false otherwise</returns>
 		bool IsControllerConnected() const noexcept
 		{
@@ -75,10 +67,8 @@ namespace sds
 			const DWORD ret = XInputGetKeystroke(m_local_player.player_id,0, &ss);
 			return ret == ERROR_SUCCESS || ret == ERROR_EMPTY;
 		}
-		/// <summary>
-		/// Returns status of XINPUT library detecting a controller.
-		/// overload that uses the player_id value in a KeyboardPlayerInfo struct
-		/// </summary>
+		/// <summary>Returns status of XINPUT library detecting a controller.
+		/// This overload uses the player_id value in a KeyboardPlayerInfo struct</summary>
 		/// <returns> true if controller is connected, false otherwise</returns>
 		bool IsControllerConnected(const KeyboardPlayerInfo& p) const noexcept
 		{
@@ -87,10 +77,7 @@ namespace sds
 			return ret == ERROR_SUCCESS || ret == ERROR_EMPTY;
 		}
 	protected:
-		/// <summary>
-		/// Worker thread overriding the base pure virtual workThread.
-		///	Updates "m_local_state" with mutex protection.
-		/// </summary>
+		/// <summary>Worker thread used by m_workThread. Updates the protectedData with mutex protection.</summary>
 		void workThread(sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2& mut, auto& protectedData)
 		{
 			auto addElement = [this,&mut,&protectedData](const XINPUT_KEYSTROKE& state)
