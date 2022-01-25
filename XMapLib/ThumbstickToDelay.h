@@ -55,7 +55,7 @@ namespace sds
 				return sens_min;
 			return user_sens;
 		}
-		bool IsBeyondDeadzone(const int val, const bool isX) const noexcept
+		constexpr bool IsBeyondDeadzone(const int val, const bool isX) const noexcept
 		{
 			using namespace Utilities;
 			auto GetDeadzoneCurrent = [this](const bool isItX)
@@ -67,7 +67,7 @@ namespace sds
 					|| ToFloat(val) < -ToFloat(GetDeadzoneCurrent(isX)));
 			return move;
 		}
-		bool IsBeyondAltDeadzone(const int val, const bool isItX) const noexcept
+		constexpr bool IsBeyondAltDeadzone(const int val, const bool isItX) const noexcept
 		{
 			using namespace Utilities;
 			auto GetDeadzoneCurrent = [this](const bool isTheX)
@@ -197,7 +197,7 @@ namespace sds
 		/// <param name="thumbstick">thumbstick value between short minimum and short maximum</param>
 		/// <param name="axisDeadzone">positive deadzone value to use for the axis value</param>
 		/// <returns>positive value between (inclusive) SENSITIVITY_MIN and SENSITIVITY_MAX, or SENSITIVITY_MIN for thumbstick less than deadzone</returns>
-		int GetRangedThumbstickValue(int thumbstick, int axisDeadzone) const noexcept
+		[[nodiscard]] constexpr int GetRangedThumbstickValue(int thumbstick, int axisDeadzone) const noexcept
 		{
 			thumbstick = RangeBindValue(thumbstick, MouseSettings::SMin, MouseSettings::SMax);
 			if (thumbstick == 0)

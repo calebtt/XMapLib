@@ -64,23 +64,28 @@ namespace XMapLibSharp
             DataGridViewCheckBoxColumn col5 = new();
 
             const string mappedFrom = "VkMappedFrom";
+            const string mappedFromAka = "VkMappedFromAka";
             const string mappedTo = "VkMappedTo";
+            const string mappedToAka = "VkMappedToAka";
+            const string repeatBehavior = "UsesRepeatBehavior";
             col1.Name = mappedFrom;
-            col2.Name = mappedFrom + "Aka";
+            col2.Name = mappedFromAka;
             col3.Name = mappedTo;
-            col4.Name = mappedTo + "Aka";
-            col5.Name = "UsesRepeatBehavior";
+            col4.Name = mappedToAka;
+            col5.Name = repeatBehavior;
 
             col1.DataPropertyName = mappedFrom;
-            col2.DataPropertyName = mappedFrom+"Aka";
+            col2.DataPropertyName = mappedFromAka;
             col3.DataPropertyName = mappedTo;
-            col4.DataPropertyName = mappedTo+"Aka";
-            col5.DataPropertyName = "UsesRepeatBehavior";
+            col4.DataPropertyName = mappedToAka;
+            col5.DataPropertyName = repeatBehavior;
 
             col2.DisplayStyle = DataGridViewComboBoxDisplayStyle.Nothing;
             col4.DisplayStyle = DataGridViewComboBoxDisplayStyle.Nothing;
             col2.Items.AddRange(buttonNames);
             col4.Items.AddRange(keyNames);
+
+
             dataGridView1.Columns.Add(col1);
             dataGridView1.Columns.Add(col2);
             dataGridView1.Columns.Add(col3);
