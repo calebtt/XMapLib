@@ -33,6 +33,8 @@ namespace XMapLibSharp
         private XMapLibStickMap _currentXMapLibStick = XMapLibStickMap.Right;
         private List<KeymapPreset> _presets = new();
         private List<XMapLibKeymap> _currentKeymaps = new();
+        private string[] keyNames = Enum.GetNames(typeof(Keys));
+        private string[] buttonNames = Enum.GetNames(typeof(ControllerButtons));
         public Form1()
         {
             InitializeComponent();
@@ -46,10 +48,45 @@ namespace XMapLibSharp
             InitPresetButtons();
             UpdateMapStringBox();
             InitDataGridView();
+            tabControl1.SelectedIndexChanged += TabControl1_SelectedIndexChanged;
+        }
+        /// <summary>Event raised when clicking a tab page on the tabcontrol.</summary>
+        private void TabControl1_SelectedIndexChanged(object? sender, EventArgs e)
+        {
         }
 
         private void InitDataGridView()
         {
+            DataGridViewTextBoxColumn col1 = new();
+            DataGridViewComboBoxColumn col2 = new();
+            DataGridViewTextBoxColumn col3 = new();
+            DataGridViewComboBoxColumn col4 = new();
+            DataGridViewCheckBoxColumn col5 = new();
+
+            const string mappedFrom = "VkMappedFrom";
+            const string mappedTo = "VkMappedTo";
+            col1.Name = mappedFrom;
+            col2.Name = mappedFrom + "Aka";
+            col3.Name = mappedTo;
+            col4.Name = mappedTo + "Aka";
+            col5.Name = "UsesRepeatBehavior";
+
+            col1.DataPropertyName = mappedFrom;
+            col2.DataPropertyName = mappedFrom+"Aka";
+            col3.DataPropertyName = mappedTo;
+            col4.DataPropertyName = mappedTo+"Aka";
+            col5.DataPropertyName = "UsesRepeatBehavior";
+
+            col2.DisplayStyle = DataGridViewComboBoxDisplayStyle.Nothing;
+            col4.DisplayStyle = DataGridViewComboBoxDisplayStyle.Nothing;
+            col2.Items.AddRange(buttonNames);
+            col4.Items.AddRange(keyNames);
+            dataGridView1.Columns.Add(col1);
+            dataGridView1.Columns.Add(col2);
+            dataGridView1.Columns.Add(col3);
+            dataGridView1.Columns.Add(col4);
+            dataGridView1.Columns.Add(col5);
+            dataGridView1.AutoGenerateColumns = false;
             this.dataGridView1.DataSource = _currentKeymaps;
         }
         private void InitPresetButtons()
@@ -77,6 +114,7 @@ namespace XMapLibSharp
         }
         private void UpdateKeymapDatagrid(List<XMapLibKeymap> newMaps)
         {
+            dataGridView1.AutoGenerateColumns = false;
             _currentKeymaps = newMaps;
             dataGridView1.DataSource = newMaps;
         }
@@ -147,8 +185,8 @@ namespace XMapLibSharp
             {
                 while (!bgWorkThread.CancellationPending)
                 {
-                    sc.Send(delegate (object? state) { UpdateControllerConnectedButton(); }, null);
-                    sc.Send(delegate (object? state) { UpdateMapStringBox(); }, null);
+                    sc.Post(delegate (object? state) { UpdateControllerConnectedButton(); }, null);
+                    sc.Post(delegate (object? state) { UpdateMapStringBox(); }, null);
                     Thread.Sleep(DelayRedrawMs);
                 }
             }
