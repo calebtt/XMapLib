@@ -11,7 +11,7 @@ namespace XMapLibSharp
     {
         public int VKMappedFrom { get; set; }
         public int VKMappedTo { get; set; }
-        public char? VKMappedToAKA {  get; set; }
+        public string VKMappedToAKA {  get; set; }
         public bool UsesRepeatBehavior { get; set; }
     }
 }

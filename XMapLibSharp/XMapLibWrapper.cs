@@ -98,8 +98,11 @@ namespace XMapLibSharp
                                 mp.VKMappedTo = Int32.Parse(tokens[i + 2].Split()[1]);
                                 if (akaStrings.Length > 1)
                                 {
-                                    if(akaStrings[1].Length > 0)
-                                        mp.VKMappedToAKA = Char.Parse(akaStrings[1]);
+                                    mp.VKMappedToAKA = (akaStrings[1]);
+                                }
+                                else
+                                {
+                                    mp.VKMappedToAKA = "";
                                 }
                                 string[] repeatStrings = tokens[i+4].Split();
                                 if(repeatStrings.Length >1)

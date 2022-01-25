@@ -32,6 +32,7 @@ namespace XMapLibSharp
         private readonly XMapLibWrapper mapper;
         private XMapLibStickMap currentXMapLibStick = XMapLibStickMap.RIGHT;
         private List<KeymapPreset> presets = new();
+        private List<XMapLibKeymap> currentKeymaps = new();
         public Form1()
         {
             InitializeComponent();
@@ -44,6 +45,7 @@ namespace XMapLibSharp
             InitBackgroundWorker();
             InitPresetButtons();
             UpdateMapStringBox();
+            this.dataGridView1.DataSource = currentKeymaps;
         }
         private void InitPresetButtons()
         {
@@ -54,9 +56,10 @@ namespace XMapLibSharp
                 this.flwPresetButtons.Controls.Add(pr.ButtonForPresetSection);
                 pr.ButtonForPresetSection.Click += ButtonForPresetSection_Click;
             }
-            //adding keymaps for button to mapper
+            //adding first element keymaps to mapper
             mapper.ClearKeyMaps();
             mapper.AddKeymaps(presets[0].Keymaps);
+            UpdateKeymapDatagrid(presets[0].Keymaps);
             //activating first button in the list
             if (this.flwPresetButtons.Controls[0] is Button btn)
             {
@@ -66,6 +69,11 @@ namespace XMapLibSharp
         private void InitBackgroundWorker()
         {
             bgWorkThread.RunWorkerAsync(SynchronizationContext.Current);
+        }
+        private void UpdateKeymapDatagrid(List<XMapLibKeymap> newMaps)
+        {
+            currentKeymaps = newMaps;
+            dataGridView1.DataSource = newMaps;
         }
         private void UpdateMouseSensitivityTrackbar()
         {
@@ -178,6 +186,7 @@ namespace XMapLibSharp
                         if (p.ButtonForPresetSection == b)
                         {
                             mapper.AddKeymaps(p.Keymaps);
+                            UpdateKeymapDatagrid(p.Keymaps);
                         }
                     }
                 }
