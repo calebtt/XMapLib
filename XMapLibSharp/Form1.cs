@@ -57,6 +57,7 @@ namespace XMapLibSharp
 
         private void InitDataGridView()
         {
+            dataGridView1.CellValueChanged += DataGridView1_CellValueChanged;
             DataGridViewTextBoxColumn col1 = new();
             DataGridViewComboBoxColumn col2 = new();
             DataGridViewTextBoxColumn col3 = new();
@@ -85,6 +86,8 @@ namespace XMapLibSharp
             col2.Items.AddRange(buttonNames);
             col4.Items.AddRange(keyNames);
 
+            col2.ReadOnly = false;
+            col4.ReadOnly = false;
 
             dataGridView1.Columns.Add(col1);
             dataGridView1.Columns.Add(col2);
@@ -94,6 +97,12 @@ namespace XMapLibSharp
             dataGridView1.AutoGenerateColumns = false;
             this.dataGridView1.DataSource = _currentKeymaps;
         }
+
+        private void DataGridView1_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
         private void InitPresetButtons()
         {
             _presets = KeymapPresetOperations.BuildPresetButtons();
