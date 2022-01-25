@@ -76,7 +76,7 @@ namespace sds
 		}
 		void ClearMaps()
 		{
-			m_translator.ClearMap();
+			m_translator.ClearMaps();
 		}
 	protected:
 		/// <summary>Worker thread, protected visibility.</summary>

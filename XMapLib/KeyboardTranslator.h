@@ -50,6 +50,17 @@ namespace sds
 				}
 			}
 		}
+		/// <summary>Call this function to send key-ups for any in-progress key presses.</summary>
+		void CleanupInProgressEvents()
+		{
+			for(auto &m: m_map_token_info)
+			{
+				if(m.LastAction == InpType::KEYDOWN || m.LastAction == InpType::KEYREPEAT)
+				{
+					DoOvertaking(m);
+				}
+			}
+		}
 		std::string AddKeyMap(KeyboardKeyMap w)
 		{
 			std::string result = CheckForVKError(w);
@@ -58,7 +69,7 @@ namespace sds
 			m_map_token_info.push_back(w);
 			return "";
 		}
-		void ClearMap() noexcept
+		void ClearMaps() noexcept
 		{
 			m_map_token_info.clear();
 		}

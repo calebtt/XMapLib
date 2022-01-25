@@ -33,8 +33,8 @@ namespace XMapLibSharp
         private XMapLibStickMap _currentXMapLibStick = XMapLibStickMap.Right;
         private List<KeymapPreset> _presets = new();
         private List<XMapLibKeymap> _currentKeymaps = new();
-        private string[] keyNames = Enum.GetNames(typeof(Keys));
-        private string[] buttonNames = Enum.GetNames(typeof(ControllerButtons));
+        private readonly string[] keyNames = Enum.GetNames(typeof(Keys));
+        private readonly string[] buttonNames = Enum.GetNames(typeof(ControllerButtons));
         public Form1()
         {
             InitializeComponent();
@@ -53,6 +53,15 @@ namespace XMapLibSharp
         /// <summary>Event raised when clicking a tab page on the tabcontrol.</summary>
         private void TabControl1_SelectedIndexChanged(object? sender, EventArgs e)
         {
+            if (tabControl1.SelectedIndex == 0)
+            {
+                if(_mapper.AddKeymaps(_currentKeymaps))
+                    UpdateMapStringBox();
+                else
+                {
+                    MessageBox.Show("Error updating maps.");
+                }
+            }
         }
 
         private void InitDataGridView()
@@ -86,9 +95,6 @@ namespace XMapLibSharp
             col2.Items.AddRange(buttonNames);
             col4.Items.AddRange(keyNames);
 
-            col2.ReadOnly = false;
-            col4.ReadOnly = false;
-
             dataGridView1.Columns.Add(col1);
             dataGridView1.Columns.Add(col2);
             dataGridView1.Columns.Add(col3);
@@ -100,7 +106,67 @@ namespace XMapLibSharp
 
         private void DataGridView1_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
-            throw new NotImplementedException();
+            ControllerButtons? FindControllerButtonByName(string name)
+            {
+                var valueList = Enum.GetValues(typeof(ControllerButtons)).Cast<ControllerButtons>();
+                foreach (var value in valueList)
+                {
+                    if (name == value.ToString())
+                        return value;
+                }
+                return null;
+            }
+            Keys? FindKeyByName(string name)
+            {
+                var valueList = Enum.GetValues(typeof(Keys)).Cast<Keys>();
+                foreach (var value in valueList)
+                {
+                    if (name == value.ToString())
+                        return value;
+                }
+                return null;
+            }
+            //get row and column
+            int row = e.RowIndex;
+            int col = e.ColumnIndex;
+            var workedWithMap = _currentKeymaps[row];
+            switch (col)
+            {
+                case 0:
+                    //mapped from element
+                case 1:
+                    //mapped from enum element
+                    if (this.dataGridView1[col, row].EditedFormattedValue is string enumAsString)
+                    {
+                        ControllerButtons? elem = FindControllerButtonByName(enumAsString);
+                        if (elem != null)
+                        {
+                            workedWithMap.VkMappedFrom = (int) elem;
+                            _currentKeymaps[row] = workedWithMap;
+                        }
+                    }
+                    break;
+                case 2:
+                    //mapped to element
+                case 3:
+                    //mapped to enum element
+                    if (this.dataGridView1[col, row].EditedFormattedValue is string keyEnumAsString)
+                    {
+                        Keys? elem = FindKeyByName(keyEnumAsString);
+                        if (elem != null)
+                        {
+                            workedWithMap.VkMappedTo = (int) elem;
+                            _currentKeymaps[row] = workedWithMap;
+                        }
+                    }
+                    break;
+                case 4:
+                    //bool uses repeat checkbox
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+            dataGridView1.Refresh();
         }
 
         private void InitPresetButtons()
