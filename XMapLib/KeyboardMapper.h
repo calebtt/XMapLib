@@ -25,17 +25,13 @@ namespace sds
 				([this](auto& stopCondition, auto& mut, auto& protectedData) { workThread(stopCondition, mut, protectedData); });
 		}
 	public:
-		/// <summary>
-		/// Ctor for default configuration
-		/// </summary>
+		/// <summary>Ctor for default configuration</summary>
 		KeyboardMapper()
 		{
 			InitWorkThread();
 			Start();
 		}
-		/// <summary>
-		/// Ctor allows setting a custom KeyboardPlayerInfo
-		/// </summary>
+		/// <summary>Ctor allows setting a custom KeyboardPlayerInfo</summary>
 		explicit KeyboardMapper(const sds::KeyboardPlayerInfo& player) : m_localPlayerInfo(player)
 		{
 			InitWorkThread();
@@ -45,14 +41,7 @@ namespace sds
 		KeyboardMapper(KeyboardMapper&& other) = delete;
 		KeyboardMapper& operator=(const KeyboardMapper& other) = delete;
 		KeyboardMapper& operator=(KeyboardMapper&& other) = delete;
-		/// <summary>
-		/// Destructor override, ensures the running thread function is stopped
-		/// inside of this class and not the base.
-		/// </summary>
-		~KeyboardMapper()
-		{
-			Stop();
-		}
+
 		bool IsControllerConnected() const
 		{
 			return m_poller.IsControllerConnected();
@@ -89,10 +78,7 @@ namespace sds
 			m_translator.ClearMap();
 		}
 	protected:
-		/// <summary>
-		/// Worker thread, protected visibility.
-		/// Accesses the std::atomic m_threadX and m_threadY members.
-		/// </summary>
+		/// <summary>Worker thread, protected visibility.</summary>
 		void workThread(auto& stopCondition, auto&, auto&)
 		{
 			//thread main loop
