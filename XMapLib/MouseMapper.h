@@ -31,38 +31,23 @@ namespace sds
 				([this](sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2& mut, int& protectedData) { workThread(stopCondition, mut, protectedData); });
 		}
 	public:
-		/// <summary>
-		/// Ctor for default configuration
-		/// </summary>
+		/// <summary>Ctor for default configuration</summary>
 		MouseMapper() noexcept
 		{
 			InitWorkThread();
 		}
-		/// <summary>
-		/// Ctor allows setting a custom MousePlayerInfo
-		/// </summary>
+		/// <summary>Ctor allows setting a custom MousePlayerInfo</summary>
 		explicit MouseMapper(const sds::MousePlayerInfo& player) noexcept : m_local_player(player) { InitWorkThread(); }
 		MouseMapper(const MouseMapper& other) = delete;
 		MouseMapper(MouseMapper&& other) = delete;
 		MouseMapper& operator=(const MouseMapper& other) = delete;
 		MouseMapper& operator=(MouseMapper&& other) = delete;
-		/// <summary>
-		/// Destructor override, ensures the running thread function is stopped
-		/// inside of this class and not the base.
-		/// </summary>
-		~MouseMapper()
-		{
-			if(m_workThread != nullptr)
-			{
-				m_workThread->StopThread();
-			}
-		}
-		/// <summary>
-		/// Use this function to establish one stick or the other as the one controlling the mouse movements.
+		~MouseMapper() = default;
+
+		/// <summary>Use this function to establish one stick or the other as the one controlling the mouse movements.
 		/// Set to NEITHER_STICK for no thumbstick mouse movement. Options are RIGHT_STICK, LEFT_STICK, NEITHER_STICK
 		///	This will start processing if the stick is something other than "NEITHER"
-		///	**Arbitrary values outside of the enum constants will not be processed successfully.**
-		/// </summary>
+		///	**Arbitrary values outside of the enum constants will not be processed successfully.**</summary>
 		/// <param name="info"> a StickMap enum</param>
 		void SetStick(const StickMap info)
 		{
@@ -86,9 +71,7 @@ namespace sds
 		{
 			return m_stickmap_info;
 		}
-		/// <summary>
-		/// Setter for sensitivity value.
-		/// </summary>
+		/// <summary>Setter for sensitivity value.</summary>
 		/// <returns> returns a std::string containing an error message
 		/// if there is an error, empty string otherwise. </returns>
 		std::string SetSensitivity(const int new_sens)
@@ -102,18 +85,16 @@ namespace sds
 			Start();
 			return "";
 		}
-		/// <summary>
-		/// Getter for sensitivity value
-		/// </summary>
-		int GetSensitivity() const
+		/// <summary>Getter for sensitivity value</summary>
+		int GetSensitivity() const noexcept
 		{
 			return m_mouse_sensitivity;
 		}
-		bool IsControllerConnected() const
+		bool IsControllerConnected() const noexcept
 		{
 			return m_poller.IsControllerConnected();
 		}
-		bool IsRunning() const
+		bool IsRunning() const noexcept
 		{
 			bool workRunning = false;
 			if (m_workThread != nullptr)
@@ -133,10 +114,8 @@ namespace sds
 				m_workThread->StopThread();
 		}
 	protected:
-		/// <summary>
-		/// Worker thread, protected visibility, gets updated data from ProcessState() function to use.
-		/// Accesses the std::atomic m_thread_x and m_thread_y members.
-		/// </summary>
+		/// <summary>Worker thread, protected visibility, gets updated data from ProcessState() function to use.
+		/// Accesses the std::atomic m_thread_x and m_thread_y members.</summary>
 		void workThread(sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2&, int&)
 		{
 			ThumbstickToDelay xThread(this->GetSensitivity(), m_local_player, m_stickmap_info, true);
@@ -160,9 +139,7 @@ namespace sds
 			}
 		}
 	private:
-		/// <summary>
-		/// Updates local values with XINPUT_STATE info from the MouseInputPoller
-		/// </summary>
+		/// <summary>Updates local atomic values with XINPUT_STATE info from the MouseInputPoller</summary>
 		void ProcessState(const XINPUT_STATE& state) noexcept
 		{
 			if (m_stickmap_info == StickMap::NEITHER_STICK)
