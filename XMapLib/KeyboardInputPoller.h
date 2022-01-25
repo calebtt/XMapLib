@@ -33,14 +33,8 @@ namespace sds
 		KeyboardInputPoller(KeyboardInputPoller&& other) = delete;
 		KeyboardInputPoller& operator=(const KeyboardInputPoller& other) = delete;
 		KeyboardInputPoller& operator=(KeyboardInputPoller&& other) = delete;
-		/// <summary>
-		/// Destructor override, ensures the running thread function is stopped
-		/// inside of this class and not the base.
-		/// </summary>
-		~KeyboardInputPoller()
-		{
-			Stop();
-		}
+		~KeyboardInputPoller() = default;
+
 		std::vector<XINPUT_KEYSTROKE> getAndClearStates() const
 		{
 			return m_workThread->GetAndClearCurrentStates();
