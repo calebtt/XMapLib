@@ -33,17 +33,5 @@ namespace XMapLibSharp
         }
         public string VkMappedToAka {  get; set; }
         public bool UsesRepeatBehavior { get; set; }
-
-        /////<summary>Copy constructor</summary>
-        //public XMapLibKeymap(XMapLibKeymap other)
-        //{
-        //    _vkMappedTo = 0;
-        //    _vkMappedFrom = 0;
-        //    VkMappedFromAka = "";
-        //    VkMappedToAka = "";
-        //    VkMappedFrom = other.VkMappedFrom;
-        //    VkMappedTo = other.VkMappedTo;
-        //    UsesRepeatBehavior = other.UsesRepeatBehavior;
-        //}
     }
 }
