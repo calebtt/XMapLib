@@ -177,6 +177,7 @@ namespace XMapLibSharp
                         if (p.ButtonForPresetSection == b)
                         {
                             mapper.AddKeymaps(p.Keymaps);
+                            UpdateMapStringBox();
                         }
                     }
                 }
