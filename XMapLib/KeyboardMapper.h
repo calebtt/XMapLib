@@ -41,6 +41,7 @@ namespace sds
 		KeyboardMapper(KeyboardMapper&& other) = delete;
 		KeyboardMapper& operator=(const KeyboardMapper& other) = delete;
 		KeyboardMapper& operator=(KeyboardMapper&& other) = delete;
+		~KeyboardMapper() = default;
 
 		bool IsControllerConnected() const
 		{
