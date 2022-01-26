@@ -83,71 +83,6 @@ namespace XMapLibSharp
             this.dataGridView1.DataSource = _currentKeymaps;
         }
 
-        private void DataGridView1_CellValueChanged(object sender, DataGridViewCellEventArgs e)
-        {
-            ControllerButtons? FindControllerButtonByName(string name)
-            {
-                var valueList = Enum.GetValues(typeof(ControllerButtons)).Cast<ControllerButtons>();
-                foreach (var value in valueList)
-                {
-                    if (name == value.ToString())
-                        return value;
-                }
-                return null;
-            }
-            Keys? FindKeyByName(string name)
-            {
-                var valueList = Enum.GetValues(typeof(Keys)).Cast<Keys>();
-                foreach (var value in valueList)
-                {
-                    if (name == value.ToString())
-                        return value;
-                }
-                return null;
-            }
-            //get row and column
-            int row = e.RowIndex;
-            int col = e.ColumnIndex;
-            var workedWithMap = _currentKeymaps[row];
-            switch (col)
-            {
-                case 0:
-                    //mapped from element
-                case 1:
-                    //mapped from enum element
-                    if (this.dataGridView1[col, row].EditedFormattedValue is string enumAsString)
-                    {
-                        ControllerButtons? elem = FindControllerButtonByName(enumAsString);
-                        if (elem != null)
-                        {
-                            workedWithMap.VkMappedFrom = (int) elem;
-                            _currentKeymaps[row] = workedWithMap;
-                        }
-                    }
-                    break;
-                case 2:
-                    //mapped to element
-                case 3:
-                    //mapped to enum element
-                    if (this.dataGridView1[col, row].EditedFormattedValue is string keyEnumAsString)
-                    {
-                        Keys? elem = FindKeyByName(keyEnumAsString);
-                        if (elem != null)
-                        {
-                            workedWithMap.VkMappedTo = (int) elem;
-                            _currentKeymaps[row] = workedWithMap;
-                        }
-                    }
-                    break;
-                case 4:
-                    //bool uses repeat checkbox
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
-            dataGridView1.Refresh();
-        }
-
         private void InitPresetButtons()
         {
             _presets = KeymapPresetOperations.BuildPresetButtons();
@@ -308,6 +243,71 @@ namespace XMapLibSharp
                     }
                 }
             }
+        }
+        /// <summary>Event handler for datagridview cell item value changed.</summary>
+        private void DataGridView1_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            ControllerButtons? FindControllerButtonByName(string name)
+            {
+                var valueList = Enum.GetValues(typeof(ControllerButtons)).Cast<ControllerButtons>();
+                foreach (var value in valueList)
+                {
+                    if (name == value.ToString())
+                        return value;
+                }
+                return null;
+            }
+            Keys? FindKeyByName(string name)
+            {
+                var valueList = Enum.GetValues(typeof(Keys)).Cast<Keys>();
+                foreach (var value in valueList)
+                {
+                    if (name == value.ToString())
+                        return value;
+                }
+                return null;
+            }
+            //get row and column
+            int row = e.RowIndex;
+            int col = e.ColumnIndex;
+            var workedWithMap = _currentKeymaps[row]; //they are a struct so it's a copy
+            switch (col)
+            {
+                case 0:
+                //mapped from element
+                case 1:
+                    //mapped from enum element
+                    if (this.dataGridView1[col, row].EditedFormattedValue is string enumAsString)
+                    {
+                        ControllerButtons? elem = FindControllerButtonByName(enumAsString);
+                        if (elem != null)
+                        {
+                            workedWithMap.VkMappedFrom = (int)elem;
+                            _currentKeymaps[row] = workedWithMap;
+                        }
+                    }
+                    break;
+                case 2:
+                //mapped to element
+                case 3:
+                    //mapped to enum element
+                    if (this.dataGridView1[col, row].EditedFormattedValue is string keyEnumAsString)
+                    {
+                        Keys? elem = FindKeyByName(keyEnumAsString);
+                        if (elem != null)
+                        {
+                            workedWithMap.VkMappedTo = (int)elem;
+                            _currentKeymaps[row] = workedWithMap;
+                        }
+                    }
+                    break;
+                case 4:
+                    //bool uses repeat checkbox
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+            dataGridView1.Refresh();
         }
         /// <summary>Event raised when clicking a tab page on the tabcontrol.</summary>
         private void TabControl1_SelectedIndexChanged(object? sender, EventArgs e)
