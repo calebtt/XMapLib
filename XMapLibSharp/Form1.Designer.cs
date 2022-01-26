@@ -111,7 +111,7 @@
             this.groupBox3.Controls.Add(this.flwPresetButtons);
             this.groupBox3.Location = new System.Drawing.Point(6, 206);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(701, 98);
+            this.groupBox3.Size = new System.Drawing.Size(698, 98);
             this.groupBox3.TabIndex = 4;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Preset Select";
@@ -121,7 +121,7 @@
             this.flwPresetButtons.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flwPresetButtons.Location = new System.Drawing.Point(3, 19);
             this.flwPresetButtons.Name = "flwPresetButtons";
-            this.flwPresetButtons.Size = new System.Drawing.Size(695, 76);
+            this.flwPresetButtons.Size = new System.Drawing.Size(692, 76);
             this.flwPresetButtons.TabIndex = 0;
             // 
             // groupBox2
@@ -132,7 +132,7 @@
             this.groupBox2.Controls.Add(this.label1);
             this.groupBox2.Location = new System.Drawing.Point(342, 6);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(360, 187);
+            this.groupBox2.Size = new System.Drawing.Size(362, 187);
             this.groupBox2.TabIndex = 3;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Controller";
@@ -140,7 +140,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(16, 81);
+            this.label2.Location = new System.Drawing.Point(16, 63);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(69, 15);
             this.label2.TabIndex = 3;
@@ -150,11 +150,12 @@
             // 
             this.tbxMapDetails.BackColor = System.Drawing.Color.Aquamarine;
             this.tbxMapDetails.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.tbxMapDetails.Location = new System.Drawing.Point(16, 99);
+            this.tbxMapDetails.Font = new System.Drawing.Font("Segoe UI", 12.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.tbxMapDetails.Location = new System.Drawing.Point(16, 81);
             this.tbxMapDetails.Multiline = true;
             this.tbxMapDetails.Name = "tbxMapDetails";
             this.tbxMapDetails.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.tbxMapDetails.Size = new System.Drawing.Size(326, 77);
+            this.tbxMapDetails.Size = new System.Drawing.Size(340, 95);
             this.tbxMapDetails.TabIndex = 2;
             // 
             // button2

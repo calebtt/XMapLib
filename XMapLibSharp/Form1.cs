@@ -136,9 +136,11 @@ namespace XMapLibSharp
         {
             var mapList = _mapper.GetKeyMaps(out var currentMaps);
             StringBuilder sb = new();
+            sb.AppendFormat("Processing {0} key maps." + Environment.NewLine, mapList.Count);
             foreach (var km in mapList)
             {
-                sb.Append(km.ToString() + Environment.NewLine);
+                sb.AppendFormat("[From]:{0} [To]:{1}" + Environment.NewLine, km.VkMappedFromAka, km.VkMappedToAka);
+                //sb.Append(km.ToString() + Environment.NewLine);
             }
 
             if (sb.ToString() != tbxMapDetails.Text)

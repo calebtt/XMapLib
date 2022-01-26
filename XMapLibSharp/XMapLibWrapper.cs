@@ -85,14 +85,6 @@ namespace XMapLibSharp
                                 XMapLibKeymap mp = new();
                                 mp.VkMappedFrom = Int32.Parse(tokens[i + 1].Split()[1]);
                                 mp.VkMappedTo = Int32.Parse(tokens[i + 2].Split()[1]);
-                                if (akaStrings.Length > 1)
-                                {
-                                    mp.VkMappedToAka = (akaStrings[1]);
-                                }
-                                else
-                                {
-                                    mp.VkMappedToAka = "";
-                                }
                                 string[] repeatStrings = tokens[i+4].Split();
                                 if(repeatStrings.Length >1)
                                     if (repeatStrings[1].Length > 0)
