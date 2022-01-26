@@ -140,7 +140,6 @@ namespace XMapLibSharp
             foreach (var km in mapList)
             {
                 sb.AppendFormat("[From]:{0} [To]:{1}" + Environment.NewLine, km.VkMappedFromAka, km.VkMappedToAka);
-                //sb.Append(km.ToString() + Environment.NewLine);
             }
 
             if (sb.ToString() != tbxMapDetails.Text)

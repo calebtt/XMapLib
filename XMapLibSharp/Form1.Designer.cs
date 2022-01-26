@@ -150,7 +150,7 @@
             // 
             this.tbxMapDetails.BackColor = System.Drawing.Color.Aquamarine;
             this.tbxMapDetails.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.tbxMapDetails.Font = new System.Drawing.Font("Segoe UI", 12.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.tbxMapDetails.Font = new System.Drawing.Font("Cambria", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.tbxMapDetails.Location = new System.Drawing.Point(16, 81);
             this.tbxMapDetails.Multiline = true;
             this.tbxMapDetails.Name = "tbxMapDetails";
