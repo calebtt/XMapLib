@@ -51,19 +51,7 @@ namespace XMapLibSharp
             InitDataGridView();
             tabControl1.SelectedIndexChanged += TabControl1_SelectedIndexChanged;
         }
-        /// <summary>Event raised when clicking a tab page on the tabcontrol.</summary>
-        private void TabControl1_SelectedIndexChanged(object? sender, EventArgs e)
-        {
-            if (tabControl1.SelectedIndex == 0)
-            {
-                _mapper.ClearKeyMaps();
-                if(!_mapper.AddKeymaps(_currentKeymaps))
-                {
-                    MessageBox.Show(ErrUpdatingMaps, ErrUpdatingMaps, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-        }
-
+        /// <summary>Build items for the datagridview.</summary>
         private void InitDataGridView()
         {
             dataGridView1.CellValueChanged += DataGridView1_CellValueChanged;
@@ -318,6 +306,18 @@ namespace XMapLibSharp
                             UpdateKeymapDatagrid(p.Keymaps);
                         }
                     }
+                }
+            }
+        }
+        /// <summary>Event raised when clicking a tab page on the tabcontrol.</summary>
+        private void TabControl1_SelectedIndexChanged(object? sender, EventArgs e)
+        {
+            if (tabControl1.SelectedIndex == 0)
+            {
+                _mapper.ClearKeyMaps();
+                if (!_mapper.AddKeymaps(_currentKeymaps))
+                {
+                    MessageBox.Show(ErrUpdatingMaps, ErrUpdatingMaps, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
