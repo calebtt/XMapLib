@@ -67,6 +67,7 @@ namespace XMapLibSharp
         private void InitDataGridView()
         {
             dataGridView1.CellValueChanged += DataGridView1_CellValueChanged;
+            dataGridView1.AutoGenerateColumns = false;
             DataGridViewTextBoxColumn col1 = new();
             DataGridViewComboBoxColumn col2 = new();
             DataGridViewTextBoxColumn col3 = new();
@@ -91,7 +92,6 @@ namespace XMapLibSharp
             dataGridView1.Columns.Add(col3);
             dataGridView1.Columns.Add(col4);
             dataGridView1.Columns.Add(col5);
-            dataGridView1.AutoGenerateColumns = false;
             this.dataGridView1.DataSource = _currentKeymaps;
         }
 
