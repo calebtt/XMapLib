@@ -59,7 +59,7 @@ namespace XMapLibSharp
                 _mapper.ClearKeyMaps();
                 if(!_mapper.AddKeymaps(_currentKeymaps))
                 {
-                    MessageBox.Show(ErrUpdatingMaps);
+                    MessageBox.Show(ErrUpdatingMaps, ErrUpdatingMaps, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
@@ -208,10 +208,21 @@ namespace XMapLibSharp
             bool isRunning = _mapper.IsMouseRunning();
             btnMouseProcessing.Text = isRunning ? MsgStopMouse : MsgStartMouse;
         }
+        /// <summary>Function to update the map string box.</summary>
         private void UpdateMapStringBox()
         {
-            _mapper.GetKeyMaps(out var currentMaps);
-            tbxMapDetails.Text = currentMaps;
+            var mapList = _mapper.GetKeyMaps(out var currentMaps);
+            StringBuilder sb = new();
+            foreach (var km in mapList)
+            {
+                sb.Append(km.ToString() + Environment.NewLine);
+            }
+
+            if (sb.ToString() != tbxMapDetails.Text)
+            {
+                tbxMapDetails.Text = "";
+                tbxMapDetails.Text = sb.ToString();
+            }
         }
         private void TogglePresetButtonStatus(Button prButton)
         {
@@ -222,6 +233,7 @@ namespace XMapLibSharp
         {
 
         }
+        /// <summary>Event handler for mouse movement processing enable/disable.</summary>
         private void btnMouseProcessing_Click(object sender, EventArgs e)
         {
             //toggle processing
@@ -236,6 +248,7 @@ namespace XMapLibSharp
                 btnMouseProcessing.Text = MsgStopMouse;
             }
         }
+        /// <summary>Event handler for controller thumbstick select button</summary>
         private void btnStick_Click(object sender, EventArgs e)
         {
             _currentXMapLibStick = _currentXMapLibStick.Next();
@@ -270,6 +283,7 @@ namespace XMapLibSharp
                 ShowErrorMessage("e.Argument is null!");
             }
         }
+        /// <summary>Event handler for mouse sensitivity trackbar.</summary>
         private void trackBar1_ValueChanged(object sender, EventArgs e)
         {
             int val = trackBar1.Value;
@@ -277,6 +291,7 @@ namespace XMapLibSharp
             UpdateMouseSensitivityButton();
             UpdateIsMouseRunning();
         }
+        /// <summary>Event handler for preset buttons</summary>
         private void ButtonForPresetSection_Click(object? sender, EventArgs e)
         {
             if (sender is Button b)

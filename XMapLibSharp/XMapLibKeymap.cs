@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Windows.Forms;
 
 namespace XMapLibSharp
@@ -33,5 +34,16 @@ namespace XMapLibSharp
         }
         public string VkMappedToAka {  get; set; }
         public bool UsesRepeatBehavior { get; set; }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new();
+            sb.Append(nameof(VkMappedFrom) + ":" + VkMappedFrom + " ");
+            sb.Append(nameof(VkMappedFromAka) + ":" + VkMappedFromAka + " ");
+            sb.Append(nameof(VkMappedTo) + ":" + VkMappedTo + " ");
+            sb.Append(nameof(VkMappedToAka) + ":" + VkMappedToAka + " ");
+            sb.Append(nameof(UsesRepeatBehavior) + ":" + UsesRepeatBehavior);
+            return sb.ToString();
+        }
     }
 }
