@@ -13,9 +13,10 @@ the project has access to the entire .NET framework for GUI work while keeping t
 </ul>
 
 <a href="https://ibb.co/pymkwT7"><img src="https://i.ibb.co/M6XJSHv/XMap-Lib-gui2.png" alt="XMap-Lib-gui2" border="0"></a>
-<a href="https://ibb.co/tsvcZ2S"><img src="https://i.ibb.co/FwyJsY9/XMap-Lib-gui3.png" alt="XMap-Lib-gui3" border="0">
+<a href="https://ibb.co/tsvcZ2S"><img src="https://i.ibb.co/FwyJsY9/XMap-Lib-gui3.png" alt="XMap-Lib-gui3" border="0"></a>
   
   <b><p>A high level code diagram of the XMapLib project code (native C++)</b>
+  <a href="https://ibb.co/kBvqrRX"><img src="https://i.ibb.co/g9htX5J/XMap-Lib-uml3.png" alt="XMapLib-uml" border="0"></a>
   <p>The project utilizes
   <ul>
     <li>C++ templates</li>
@@ -35,7 +36,7 @@ the project has access to the entire .NET framework for GUI work while keeping t
     <li>it is a real time system (or very close)</li>
     <li>lots and lots of object oriented programming</li>
     </ul>
-    <a href="https://ibb.co/kBvqrRX"><img src="https://i.ibb.co/g9htX5J/XMap-Lib-uml3.png" alt="XMapLib-uml" border="0"></a>
+    
 
   <b>The main classes for use in the native C++ XMapLib project are :</b>
  <ul>
