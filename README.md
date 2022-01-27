@@ -12,8 +12,9 @@ the project has access to the entire .NET framework for GUI work while keeping t
   <li>managed/native interop via custom C++ DLL</li>
 </ul>
 
-<a href="https://ibb.co/x28d2WX"><img src="https://i.ibb.co/0nVvnTm/XMap-Lib-gui1.jpg" alt="XMap-Lib-gui1" border="0"></a>
-
+<a href="https://ibb.co/pymkwT7"><img src="https://i.ibb.co/M6XJSHv/XMap-Lib-gui2.png" alt="XMap-Lib-gui2" border="0"></a>
+<a href="https://ibb.co/tsvcZ2S"><img src="https://i.ibb.co/FwyJsY9/XMap-Lib-gui3.png" alt="XMap-Lib-gui3" border="0">
+  
   <b><p>A high level code diagram of the XMapLib project code (native C++)</b>
   <p>The project utilizes
   <ul>
