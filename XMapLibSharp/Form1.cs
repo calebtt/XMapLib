@@ -34,8 +34,8 @@ namespace XMapLibSharp
         private XMapLibStickMap _currentXMapLibStick = XMapLibStickMap.Right;
         private List<KeymapPreset> _presets = new();
         private List<XMapLibKeymap> _currentKeymaps = new();
-        private readonly string[] keyNames = Enum.GetNames(typeof(Keys));
-        private readonly string[] buttonNames = Enum.GetNames(typeof(ControllerButtons));
+        private readonly string[] _keyNames = Enum.GetNames(typeof(Keys));
+        private readonly string[] _buttonNames = Enum.GetNames(typeof(ControllerButtons));
         public Form1()
         {
             InitializeComponent();
@@ -73,8 +73,8 @@ namespace XMapLibSharp
             col5.DataPropertyName = nameof(XMapLibKeymap.UsesRepeatBehavior);
             col2.DisplayStyle = DataGridViewComboBoxDisplayStyle.Nothing;
             col4.DisplayStyle = DataGridViewComboBoxDisplayStyle.Nothing;
-            col2.Items.AddRange(buttonNames);
-            col4.Items.AddRange(keyNames);
+            col2.Items.AddRange(_buttonNames);
+            col4.Items.AddRange(_keyNames);
             dataGridView1.Columns.Add(col1);
             dataGridView1.Columns.Add(col2);
             dataGridView1.Columns.Add(col3);
