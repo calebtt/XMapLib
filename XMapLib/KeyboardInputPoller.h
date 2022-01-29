@@ -35,6 +35,7 @@ namespace sds
 		KeyboardInputPoller& operator=(KeyboardInputPoller&& other) = delete;
 		~KeyboardInputPoller() = default;
 
+		/// <summary>Returns copy and clears internal one.</summary>
 		std::vector<XINPUT_KEYSTROKE> getAndClearStates() const
 		{
 			return m_workThread->GetAndClearCurrentStates();
