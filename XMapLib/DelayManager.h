@@ -13,7 +13,7 @@ namespace sds::Utilities
 	public:
 		//us is microseconds
 		DelayManager() = delete;
-		DelayManager(size_t duration_us) : m_duration(duration_us) { }
+		explicit DelayManager(size_t duration_us) : m_duration(duration_us) { }
 		DelayManager(const DelayManager& other) = default;
 		DelayManager(DelayManager&& other) = default;
 		DelayManager& operator=(const DelayManager& other) = default;

@@ -25,7 +25,7 @@ namespace sds
 		int MappedToVK = 0; // VK of mapped-to input (key or mouse button)
 		bool UsesRepeat = true; // Uses the key-repeat behavior when held down
 		ActionType LastAction = ActionType::NONE;
-		Utilities::DelayManager LastSentTime = KeyboardSettings::MICROSECONDS_DELAY_KEYREPEAT;
+		Utilities::DelayManager LastSentTime{ KeyboardSettings::MICROSECONDS_DELAY_KEYREPEAT };
 		//Ctor
 		KeyboardKeyMap(const int controllerElementVK, const int keyboardMouseElementVK, const bool useRepeat)
 			: SendingElementVK(controllerElementVK), MappedToVK(keyboardMouseElementVK), UsesRepeat(useRepeat)
