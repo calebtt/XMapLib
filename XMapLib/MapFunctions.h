@@ -10,7 +10,7 @@ namespace sds::Utilities::MapFunctions
 	template<class T, class H>
 	bool IsInMap(const T keyValue, const std::map<T, H>& curMap, H& retVal)
 	{
-		auto it = curMap.find(keyValue);
+		const auto it = curMap.find(keyValue);
 		if(it != curMap.end())
 		{
 			retVal = it->second;
