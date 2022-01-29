@@ -2,10 +2,7 @@
 #include <map>
 namespace sds::Utilities::MapFunctions
 {
-	/// <summary>
-	/// Verifies that the key value is in the map{T,H} and sets a reference arg to the value
-	///	if found.
-	/// </summary>
+	/// <summary>Verifies that the key value is in the map{T,H} and sets a reference arg to the value if found.</summary>
 	/// <param name="keyValue">key value to check</param>
 	///	<param name="curMap">map of T,H to check the key</param>
 	///	<param name="retVal">will be set to the value the key points to, if found</param>
@@ -19,9 +16,6 @@ namespace sds::Utilities::MapFunctions
 			retVal = it->second;
 			return true;
 		}
-		else
-		{
-			return false;
-		}
+		return false;
 	}
 }
