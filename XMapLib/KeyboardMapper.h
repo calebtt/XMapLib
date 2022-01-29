@@ -14,10 +14,10 @@ namespace sds
 		using InternalType = int;
 		using LambdaRunnerType = sds::CPPRunnerGeneric<InternalType>;
 		using lock = LambdaRunnerType::ScopedLockType;
-		sds::KeyboardPlayerInfo m_localPlayerInfo;
-		sds::KeyboardInputPoller m_poller;
-		sds::KeyboardTranslator m_translator;
-		std::unique_ptr<LambdaRunnerType> m_workThread;
+		sds::KeyboardPlayerInfo m_localPlayerInfo{};
+		sds::KeyboardInputPoller m_poller{};
+		sds::KeyboardTranslator m_translator{};
+		std::unique_ptr<LambdaRunnerType> m_workThread{};
 		void InitWorkThread() noexcept
 		{
 			m_workThread =

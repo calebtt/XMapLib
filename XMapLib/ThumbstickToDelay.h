@@ -10,14 +10,14 @@ namespace sds
 	/// This class must be re-instantiated to use new deadzone values.</summary>
 	class ThumbstickToDelay
 	{
-		const std::string BAD_DELAY_MSG = "Bad timer delay value, exception.";
+		const std::string BAD_DELAY_MSG{ "Bad timer delay value, exception." };
 		inline static std::atomic<bool> m_is_deadzone_activated{ false }; //shared between instances
-		float m_alt_deadzone_multiplier = MouseSettings::ALT_DEADZONE_MULT_DEFAULT;
-		int m_axis_sensitivity = MouseSettings::SENSITIVITY_DEFAULT;
-		int m_x_axis_deadzone = MouseSettings::DEADZONE_DEFAULT;
-		int m_y_axis_deadzone = MouseSettings::DEADZONE_DEFAULT;
-		SensitivityMap m_sensitivity_mapper;
-		std::map<int, int> m_shared_sensitivity_map;
+		float m_alt_deadzone_multiplier{ MouseSettings::ALT_DEADZONE_MULT_DEFAULT };
+		int m_axis_sensitivity{ MouseSettings::SENSITIVITY_DEFAULT };
+		int m_x_axis_deadzone{ MouseSettings::DEADZONE_DEFAULT };
+		int m_y_axis_deadzone{ MouseSettings::DEADZONE_DEFAULT };
+		SensitivityMap m_sensitivity_mapper{};
+		std::map<int, int> m_shared_sensitivity_map{};
 		const bool m_is_x_axis;
 		//Used to make some assertions about the settings values this class depends upon.
 		static void AssertSettings()

@@ -13,9 +13,9 @@ namespace sds
 		using InternalType = std::vector<XINPUT_KEYSTROKE>;
 		using LambdaRunnerType = sds::CPPRunnerGeneric<InternalType>;
 		using lock = LambdaRunnerType::ScopedLockType;
-		const int EMPTY_COUNT = 5000;
-		KeyboardPlayerInfo m_local_player;
-		std::unique_ptr<LambdaRunnerType> m_workThread;
+		const int EMPTY_COUNT{ 5000 };
+		KeyboardPlayerInfo m_local_player{};
+		std::unique_ptr<LambdaRunnerType> m_workThread{};
 		void InitWorkThread() noexcept
 		{
 			m_workThread =

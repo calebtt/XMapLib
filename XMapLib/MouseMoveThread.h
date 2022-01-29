@@ -17,7 +17,7 @@ namespace sds
 		std::atomic<bool> m_is_y_moving{ false };
 		std::atomic<bool> m_is_x_positive{ false };
 		std::atomic<bool> m_is_y_positive{ false };
-		std::unique_ptr<LambdaRunnerType> m_workThread;
+		std::unique_ptr<LambdaRunnerType> m_workThread{};
 		void InitWorkThread() noexcept
 		{
 			m_workThread =

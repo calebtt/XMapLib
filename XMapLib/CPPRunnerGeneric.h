@@ -32,8 +32,8 @@ namespace sds
 		const LambdaType m_lambda;
 		InternalData m_local_state{}; // default constructed type InternalData
 		std::atomic<bool> m_is_stop_requested{ false };
-		std::unique_ptr<std::thread> m_local_thread;
-		std::mutex m_state_mutex;
+		std::unique_ptr<std::thread> m_local_thread{};
+		std::mutex m_state_mutex{};
 	public:
 		/// <summary>Starts running a new thread for the lambda.</summary>
 		///	<returns>true on success, false on failure.</returns>

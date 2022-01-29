@@ -13,8 +13,8 @@ namespace sds
 		using InternalType = XINPUT_STATE;
 		using LambdaRunnerType = sds::CPPRunnerGeneric<InternalType>;
 		using lock = LambdaRunnerType::ScopedLockType;
-		MousePlayerInfo m_local_player;
-		std::unique_ptr<LambdaRunnerType> m_workThread;
+		MousePlayerInfo m_local_player{};
+		std::unique_ptr<LambdaRunnerType> m_workThread{};
 		void InitWorkThread() noexcept
 		{
 			m_workThread =

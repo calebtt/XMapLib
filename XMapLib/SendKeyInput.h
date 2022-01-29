@@ -17,8 +17,8 @@ namespace sds::Utilities
 		using ScanCodeType = unsigned short;
 		using VirtualKeyType = unsigned int;
 		using PrintableType = char;
-		bool m_auto_disable_numlock = true; // toggle this to make the default behavior not toggle off numlock on your keyboard
-		std::map<int,int> m_scancode_store;
+		bool m_auto_disable_numlock{ true }; // toggle this to make the default behavior not toggle off numlock on your keyboard
+		std::map<int, int> m_scancode_store{};
 	public:
 		/// <summary>
 		/// Default Constructor

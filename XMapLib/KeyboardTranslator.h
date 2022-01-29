@@ -15,15 +15,15 @@ namespace sds
 	/// </summary>
 	class KeyboardTranslator
 	{
-		const std::string ERR_BAD_VK = "Either WordData.MappedToVK OR WordData.SendElementVK is <= 0";
-		const std::string ERR_DUP_KEYUP = "Sent a duplicate keyup event to handle thumbstick direction changing behavior.";
 		using ClockType = std::chrono::high_resolution_clock;
 		using PointInTime = std::chrono::time_point<ClockType>;
 		using InpType = sds::KeyboardKeyMap::ActionType;
+		const std::string ERR_BAD_VK{ "Either WordData.MappedToVK OR WordData.SendElementVK is <= 0" };
+		const std::string ERR_DUP_KEYUP{ "Sent a duplicate keyup event to handle thumbstick direction changing behavior." };
 	private:
-		Utilities::SendKeyInput m_key_send;
-		std::vector<KeyboardKeyMap> m_map_token_info;
-		KeyboardPlayerInfo m_local_player;
+		Utilities::SendKeyInput m_key_send{};
+		std::vector<KeyboardKeyMap> m_map_token_info{};
+		KeyboardPlayerInfo m_local_player{};
 	public:
 		explicit KeyboardTranslator(const KeyboardPlayerInfo &p) : m_local_player(p)
 		{
