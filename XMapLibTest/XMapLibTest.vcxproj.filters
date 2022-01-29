@@ -41,5 +41,8 @@
     <ClInclude Include="TestThumbstickToDelay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TestMapFunctions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

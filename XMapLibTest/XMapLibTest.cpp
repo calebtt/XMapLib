@@ -7,6 +7,7 @@
 #include "TestSensitivityMap.h"
 #include "TestMouse.h"
 #include "TestThumbstickToDelay.h"
+#include "TestMapFunctions.h"
 #include "../XMapLib/MouseSettings.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;

@@ -181,6 +181,7 @@
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="TemplatesForTest.h" />
+    <ClInclude Include="TestMapFunctions.h" />
     <ClInclude Include="TestMapper.h" />
     <ClInclude Include="TestMouse.h" />
     <ClInclude Include="TestSensitivityMap.h" />
