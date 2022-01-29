@@ -304,6 +304,8 @@ namespace XMapLibSharp
                     break;
                 case 4:
                     //bool uses repeat checkbox
+                    workedWithMap.UsesRepeatBehavior = !workedWithMap.UsesRepeatBehavior;
+                    _currentKeymaps[row] = workedWithMap;
                     break;
                 default:
                     throw new NotImplementedException();
