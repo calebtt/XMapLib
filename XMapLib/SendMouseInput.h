@@ -8,14 +8,11 @@ namespace sds::Utilities
 	/// </summary>
 	class SendMouseInput
 	{
-		INPUT m_mouse_move_input = {};
+		INPUT m_mouse_move_input{};
 	public:
-		/// <summary>
-		/// Default Constructor
-		/// </summary>
+		/// <summary>Default Constructor</summary>
 		SendMouseInput()
 		{
-			memset(&m_mouse_move_input, 0, sizeof(INPUT));
 			m_mouse_move_input.type = INPUT_MOUSE;
 			m_mouse_move_input.mi.dwFlags = MOUSEEVENTF_MOVE;
 		}
@@ -24,9 +21,7 @@ namespace sds::Utilities
 		SendMouseInput& operator=(const SendMouseInput& other) = delete;
 		SendMouseInput& operator=(SendMouseInput&& other) = delete;
 		~SendMouseInput() = default;
-		/// <summary>
-		/// Sends mouse movement specified by X and Y number of pixels to move.
-		/// </summary>
+		/// <summary>Sends mouse movement specified by X and Y number of pixels to move.</summary>
 		/// <param name="x">number of pixels in X</param>
 		/// <param name="y">number of pixels in Y</param>
 		void SendMouseMove(const int x, const int y)
@@ -37,10 +32,8 @@ namespace sds::Utilities
 			//Finally, send the input
 			CallSendInput(&m_mouse_move_input, 1);
 		}
-		/// <summary>
-		/// One member function calls SendInput with the eventual built INPUT struct.
-		/// This is useful for debugging or re-routing the output for logging/testing of a real-time system.
-		/// </summary>
+		/// <summary>One member function calls SendInput with the eventual built INPUT struct.
+		/// This is useful for debugging or re-routing the output for logging/testing of a real-time system.</summary>
 		/// <param name="inp">Pointer to first element of INPUT array.</param>
 		/// <param name="numSent">Number of elements in the array to send.</param>
 		UINT CallSendInput(INPUT* inp, size_t numSent) const

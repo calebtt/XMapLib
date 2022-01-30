@@ -9,9 +9,7 @@ namespace sds::Utilities
 		using ScanCodeType = unsigned short;
 		using VirtualKeyType = unsigned int;
 		using PrintableType = char;
-		/// <summary>
-		///	Utility function to map a Virtual Keycode to a char
-		///	</summary>
+		/// <summary>Utility function to map a Virtual Keycode to a char</summary>
 		/// <returns>printable char value or 0 on error</returns>
 		[[nodiscard]] static PrintableType GetCharFromVK(const VirtualKeyType vk) noexcept
 		{

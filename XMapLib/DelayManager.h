@@ -7,13 +7,13 @@ namespace sds::Utilities
 	class DelayManager
 	{
 		using TimeType = std::chrono::time_point<std::chrono::high_resolution_clock>;
-		TimeType m_start_time = std::chrono::high_resolution_clock::now();
-		size_t m_duration = 1;
-		bool m_has_fired = false;
+		TimeType m_start_time{ std::chrono::high_resolution_clock::now() };
+		size_t m_duration{ 1 };
+		bool m_has_fired{ false };
 	public:
 		//us is microseconds
 		DelayManager() = delete;
-		DelayManager(size_t duration_us) : m_duration(duration_us) { }
+		explicit DelayManager(size_t duration_us) : m_duration(duration_us) { }
 		DelayManager(const DelayManager& other) = default;
 		DelayManager(DelayManager&& other) = default;
 		DelayManager& operator=(const DelayManager& other) = default;

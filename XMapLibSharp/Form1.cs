@@ -17,26 +17,30 @@ namespace XMapLibSharp
      right click -> outlining -> collapse to definitions */
     public partial class Form1 : Form
     {
-        private const int DELAY_REDRAW_MS = 1000; // a whole second
-        private const string ERR_NOT_RUNNING = "Started, but not running.";
-        private const string ERR_PRESET_BUTTON_STATUS = "Error toggling preset button selected status.";
-        private const string MSG_START_MOUSE = "Start Mouse Processing";
-        private const string MSG_STOP_MOUSE = "Stop Mouse Processing";
-        private const string MSG_STICK = "Stick";
-        private const string MSG_NOCONTROLLER = "Not Connected";
-        private const string MSG_CONTROLLER = "Connected";
-        private const string MSG_SENSMAX = "/100";
-        private const string MSG_SENSBEGIN = "Sensitivity: ";
-        private readonly Color CLR_INFO = Color.BurlyWood;
-        private readonly Color CLR_NORMAL = Color.DarkSeaGreen;
-        private readonly XMapLibWrapper mapper;
-        private XMapLibStickMap currentXMapLibStick = XMapLibStickMap.RIGHT;
-        private List<KeymapPreset> presets = new();
+        private const int DelayRedrawMs = 1000; // a whole second
+        private const string ErrNotRunning = "Started, but not running.";
+        private const string ErrPresetButtonStatus = "Error toggling preset button selected status.";
+        private const string ErrUpdatingMaps = "Error updating maps!";
+        private const string MsgStartMouse = "Start Mouse Processing";
+        private const string MsgStopMouse = "Stop Mouse Processing";
+        private const string MsgStick = "Stick";
+        private const string MsgNocontroller = "Not Connected";
+        private const string MsgController = "Connected";
+        private const string MsgSensmax = "/100";
+        private const string MsgSensbegin = "Sensitivity: ";
+        private readonly Color _clrInfo = Color.BurlyWood;
+        private readonly Color _clrNormal = Color.DarkSeaGreen;
+        private readonly XMapLibWrapper _mapper;
+        private XMapLibStickMap _currentXMapLibStick = XMapLibStickMap.Right;
+        private List<KeymapPreset> _presets = new();
+        private List<XMapLibKeymap> _currentKeymaps = new();
+        private readonly string[] _keyNames = Enum.GetNames(typeof(Keys));
+        private readonly string[] _buttonNames = Enum.GetNames(typeof(ControllerButtons));
         public Form1()
         {
             InitializeComponent();
-            mapper = new XMapLibWrapper();
-            mapper.SetMouseStick(currentXMapLibStick);
+            _mapper = new XMapLibWrapper();
+            _mapper.SetMouseStick(_currentXMapLibStick);
             UpdateMouseSensitivityTrackbar();
             UpdateControllerConnectedButton();
             UpdateMouseSensitivityButton();
@@ -44,19 +48,54 @@ namespace XMapLibSharp
             InitBackgroundWorker();
             InitPresetButtons();
             UpdateMapStringBox();
+            InitDataGridView();
+            tabControl1.SelectedIndexChanged += TabControl1_SelectedIndexChanged;
         }
+        /// <summary>Build items for the datagridview.</summary>
+        private void InitDataGridView()
+        {
+            dataGridView1.CellValueChanged += DataGridView1_CellValueChanged;
+            dataGridView1.AutoGenerateColumns = false;
+            DataGridViewTextBoxColumn col1 = new();
+            DataGridViewComboBoxColumn col2 = new();
+            DataGridViewTextBoxColumn col3 = new();
+            DataGridViewComboBoxColumn col4 = new();
+            DataGridViewCheckBoxColumn col5 = new();
+            col1.Name = nameof(XMapLibKeymap.VkMappedFrom);
+            col2.Name = nameof(XMapLibKeymap.VkMappedFromAka);
+            col3.Name = nameof(XMapLibKeymap.VkMappedTo);
+            col4.Name = nameof(XMapLibKeymap.VkMappedToAka);
+            col5.Name = nameof(XMapLibKeymap.UsesRepeatBehavior);
+            col1.DataPropertyName = nameof(XMapLibKeymap.VkMappedFrom);
+            col2.DataPropertyName = nameof(XMapLibKeymap.VkMappedFromAka);
+            col3.DataPropertyName = nameof(XMapLibKeymap.VkMappedTo);
+            col4.DataPropertyName = nameof(XMapLibKeymap.VkMappedToAka);
+            col5.DataPropertyName = nameof(XMapLibKeymap.UsesRepeatBehavior);
+            col2.DisplayStyle = DataGridViewComboBoxDisplayStyle.Nothing;
+            col4.DisplayStyle = DataGridViewComboBoxDisplayStyle.Nothing;
+            col2.Items.AddRange(_buttonNames);
+            col4.Items.AddRange(_keyNames);
+            dataGridView1.Columns.Add(col1);
+            dataGridView1.Columns.Add(col2);
+            dataGridView1.Columns.Add(col3);
+            dataGridView1.Columns.Add(col4);
+            dataGridView1.Columns.Add(col5);
+            this.dataGridView1.DataSource = _currentKeymaps;
+        }
+
         private void InitPresetButtons()
         {
-            presets = KeymapPresetOperations.BuildPresetButtons();
+            _presets = KeymapPresetOperations.BuildPresetButtons();
             //assumes at least one preset is built
-            foreach (KeymapPreset pr in presets)
+            foreach (KeymapPreset pr in _presets)
             {
                 this.flwPresetButtons.Controls.Add(pr.ButtonForPresetSection);
                 pr.ButtonForPresetSection.Click += ButtonForPresetSection_Click;
             }
-            //adding keymaps for button to mapper
-            mapper.ClearKeyMaps();
-            mapper.AddKeymaps(presets[0].Keymaps);
+            //adding first element keymaps to mapper
+            _mapper.ClearKeyMaps();
+            _mapper.AddKeymaps(_presets[0].Keymaps);
+            UpdateKeymapDatagrid(_presets[0].Keymaps);
             //activating first button in the list
             if (this.flwPresetButtons.Controls[0] is Button btn)
             {
@@ -67,29 +106,47 @@ namespace XMapLibSharp
         {
             bgWorkThread.RunWorkerAsync(SynchronizationContext.Current);
         }
+        private void UpdateKeymapDatagrid(List<XMapLibKeymap> newMaps)
+        {
+            dataGridView1.AutoGenerateColumns = false;
+            _currentKeymaps = newMaps;
+            dataGridView1.DataSource = newMaps;
+        }
         private void UpdateMouseSensitivityTrackbar()
         {
-            trackBar1.Value = mapper.GetMouseSensitivity();
+            trackBar1.Value = _mapper.GetMouseSensitivity();
         }
         private void UpdateControllerConnectedButton()
         {
-            bool isConnected = mapper.IsControllerConnected();
-            button2.Text = isConnected ? MSG_CONTROLLER : MSG_NOCONTROLLER;
-            button2.BackColor = isConnected ? CLR_NORMAL : CLR_INFO;
+            bool isConnected = _mapper.IsControllerConnected();
+            button2.Text = isConnected ? MsgController : MsgNocontroller;
+            button2.BackColor = isConnected ? _clrNormal : _clrInfo;
         }
         private void UpdateMouseSensitivityButton()
         {
-            btnSensitivityIndicator.Text = MSG_SENSBEGIN + " " + mapper.GetMouseSensitivity().ToString() + MSG_SENSMAX;
+            btnSensitivityIndicator.Text = MsgSensbegin + " " + _mapper.GetMouseSensitivity().ToString() + MsgSensmax;
         }
         private void UpdateIsMouseRunning()
         {
-            bool isRunning = mapper.IsMouseRunning();
-            btnMouseProcessing.Text = isRunning ? MSG_STOP_MOUSE : MSG_START_MOUSE;
+            bool isRunning = _mapper.IsMouseRunning();
+            btnMouseProcessing.Text = isRunning ? MsgStopMouse : MsgStartMouse;
         }
+        /// <summary>Function to update the map string box.</summary>
         private void UpdateMapStringBox()
         {
-            mapper.GetKeyMaps(out var currentMaps);
-            tbxMapDetails.Text = currentMaps;
+            var mapList = _mapper.GetKeyMaps(out var currentMaps);
+            StringBuilder sb = new();
+            sb.AppendFormat("Processing {0} key maps." + Environment.NewLine, mapList.Count);
+            foreach (var km in mapList)
+            {
+                sb.AppendFormat("[From]:{0} [To]:{1}" + Environment.NewLine, km.VkMappedFromAka, km.VkMappedToAka);
+            }
+
+            if (sb.ToString() != tbxMapDetails.Text)
+            {
+                tbxMapDetails.Text = "";
+                tbxMapDetails.Text = sb.ToString();
+            }
         }
         private void TogglePresetButtonStatus(Button prButton)
         {
@@ -100,25 +157,27 @@ namespace XMapLibSharp
         {
 
         }
+        /// <summary>Event handler for mouse movement processing enable/disable.</summary>
         private void btnMouseProcessing_Click(object sender, EventArgs e)
         {
             //toggle processing
-            if (mapper.IsMouseRunning())
+            if (_mapper.IsMouseRunning())
             {
-                mapper.StopMouse();
-                btnMouseProcessing.Text = MSG_START_MOUSE;
+                _mapper.StopMouse();
+                btnMouseProcessing.Text = MsgStartMouse;
             }
             else
             {
-                mapper.InitMouse();
-                btnMouseProcessing.Text = MSG_STOP_MOUSE;
+                _mapper.InitMouse();
+                btnMouseProcessing.Text = MsgStopMouse;
             }
         }
+        /// <summary>Event handler for controller thumbstick select button</summary>
         private void btnStick_Click(object sender, EventArgs e)
         {
-            currentXMapLibStick = currentXMapLibStick.Next();
-            btnStick.Text = currentXMapLibStick.ToString() + " " + MSG_STICK;
-            mapper.SetMouseStick(currentXMapLibStick);
+            _currentXMapLibStick = _currentXMapLibStick.Next();
+            btnStick.Text = _currentXMapLibStick.ToString() + " " + MsgStick;
+            _mapper.SetMouseStick(_currentXMapLibStick);
             UpdateIsMouseRunning();
         }
         /// <summary> Background GUI thread to update certain statuses, such as is the controller connected. </summary>
@@ -134,8 +193,9 @@ namespace XMapLibSharp
             {
                 while (!bgWorkThread.CancellationPending)
                 {
-                    sc.Send(delegate (object? state) { UpdateControllerConnectedButton(); }, null);
-                    Thread.Sleep(DELAY_REDRAW_MS);
+                    sc.Post(delegate (object? state) { UpdateControllerConnectedButton(); }, null);
+                    sc.Post(delegate (object? state) { UpdateMapStringBox(); }, null);
+                    Thread.Sleep(DelayRedrawMs);
                 }
             }
             else if (e.Argument != null)
@@ -147,13 +207,15 @@ namespace XMapLibSharp
                 ShowErrorMessage("e.Argument is null!");
             }
         }
+        /// <summary>Event handler for mouse sensitivity trackbar.</summary>
         private void trackBar1_ValueChanged(object sender, EventArgs e)
         {
             int val = trackBar1.Value;
-            mapper.SetMouseSensitivity(val);
+            _mapper.SetMouseSensitivity(val);
             UpdateMouseSensitivityButton();
             UpdateIsMouseRunning();
         }
+        /// <summary>Event handler for preset buttons</summary>
         private void ButtonForPresetSection_Click(object? sender, EventArgs e)
         {
             if (sender is Button b)
@@ -163,7 +225,7 @@ namespace XMapLibSharp
                 if (!isButtonTextSelected)
                 {
                     //set each button to not selected.
-                    foreach (var p in presets)
+                    foreach (var p in _presets)
                     {
                         if (KeymapPresetOperations.IsButtonTextSelected(p.ButtonForPresetSection))
                             KeymapPresetOperations.ChangeButtonTextForSelected(p.ButtonForPresetSection, false);
@@ -171,14 +233,94 @@ namespace XMapLibSharp
                     //select sending button
                     KeymapPresetOperations.ChangeButtonTextForSelected(b, !isButtonTextSelected);
                     //find button in preset list, change keymaps over.
-                    mapper.ClearKeyMaps();
-                    foreach (var p in presets)
+                    _mapper.ClearKeyMaps();
+                    foreach (var p in _presets)
                     {
                         if (p.ButtonForPresetSection == b)
                         {
-                            mapper.AddKeymaps(p.Keymaps);
+                            _mapper.AddKeymaps(p.Keymaps);
+                            UpdateKeymapDatagrid(p.Keymaps);
                         }
                     }
+                }
+            }
+        }
+        /// <summary>Event handler for datagridview cell item value changed.</summary>
+        private void DataGridView1_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            ControllerButtons? FindControllerButtonByName(string name)
+            {
+                var valueList = Enum.GetValues(typeof(ControllerButtons)).Cast<ControllerButtons>();
+                foreach (var value in valueList)
+                {
+                    if (name == value.ToString())
+                        return value;
+                }
+                return null;
+            }
+            Keys? FindKeyByName(string name)
+            {
+                var valueList = Enum.GetValues(typeof(Keys)).Cast<Keys>();
+                foreach (var value in valueList)
+                {
+                    if (name == value.ToString())
+                        return value;
+                }
+                return null;
+            }
+            //get row and column
+            int row = e.RowIndex;
+            int col = e.ColumnIndex;
+            var workedWithMap = _currentKeymaps[row]; //they are a struct so it's a copy
+            switch (col)
+            {
+                case 0:
+                //mapped from element
+                case 1:
+                    //mapped from enum element
+                    if (this.dataGridView1[col, row].EditedFormattedValue is string enumAsString)
+                    {
+                        ControllerButtons? elem = FindControllerButtonByName(enumAsString);
+                        if (elem != null)
+                        {
+                            workedWithMap.VkMappedFrom = (int)elem;
+                            _currentKeymaps[row] = workedWithMap;
+                        }
+                    }
+                    break;
+                case 2:
+                //mapped to element
+                case 3:
+                    //mapped to enum element
+                    if (this.dataGridView1[col, row].EditedFormattedValue is string keyEnumAsString)
+                    {
+                        Keys? elem = FindKeyByName(keyEnumAsString);
+                        if (elem != null)
+                        {
+                            workedWithMap.VkMappedTo = (int)elem;
+                            _currentKeymaps[row] = workedWithMap;
+                        }
+                    }
+                    break;
+                case 4:
+                    //bool uses repeat checkbox
+                    workedWithMap.UsesRepeatBehavior = !workedWithMap.UsesRepeatBehavior;
+                    _currentKeymaps[row] = workedWithMap;
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+            dataGridView1.Refresh();
+        }
+        /// <summary>Event raised when clicking a tab page on the tabcontrol.</summary>
+        private void TabControl1_SelectedIndexChanged(object? sender, EventArgs e)
+        {
+            if (tabControl1.SelectedIndex == 0)
+            {
+                _mapper.ClearKeyMaps();
+                if (!_mapper.AddKeymaps(_currentKeymaps))
+                {
+                    MessageBox.Show(ErrUpdatingMaps, ErrUpdatingMaps, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }

@@ -1,6 +1,7 @@
 #pragma once
 #include "stdafx.h"
 #include <bitset>
+#include <climits>
 #include "XELog.h"
 #include "MapFunctions.h"
 
@@ -17,23 +18,19 @@ namespace sds::Utilities
 		using ScanCodeType = unsigned short;
 		using VirtualKeyType = unsigned int;
 		using PrintableType = char;
-		bool m_auto_disable_numlock = true; // toggle this to make the default behavior not toggle off numlock on your keyboard
-		std::map<int,int> m_scancode_store;
+		bool m_auto_disable_numlock{ true }; // toggle this to make the default behavior not toggle off numlock on your keyboard
+		std::map<int, int> m_scancode_store{};
 	public:
-		/// <summary>
-		/// Default Constructor
-		/// </summary>
+		/// <summary>Default Constructor</summary>
 		SendKeyInput() = default;
 		//Turn auto disable numlock on or off
-		SendKeyInput(const bool autoDisable) : m_auto_disable_numlock(autoDisable) { }
+		explicit SendKeyInput(const bool autoDisable) : m_auto_disable_numlock(autoDisable) { }
 		SendKeyInput(const SendKeyInput& other) = delete;
 		SendKeyInput(SendKeyInput&& other) = delete;
 		SendKeyInput& operator=(const SendKeyInput& other) = delete;
 		SendKeyInput& operator=(SendKeyInput&& other) = delete;
 		~SendKeyInput() = default;
-		/// <summary>
-		/// Sends the virtual keycode as a hardware scancode.
-		/// </summary>
+		/// <summary>Sends the virtual keycode as a hardware scancode.</summary>
 		/// <param name="vk"> is the Virtual Keycode of the keystroke you wish to emulate </param>
 		/// <param name="down"> is a boolean denoting if the keypress event is KEYDOWN or KEYUP</param>
 		void SendScanCode(const int vk, const bool down)
@@ -92,9 +89,7 @@ namespace sds::Utilities
 					Utilities::LogError("SendInput returned 0");
 			}
 		}
-		/// <summary>
-		/// Utility function to map a Virtual Keycode to a scancode
-		/// </summary>
+		/// <summary>Utility function to map a Virtual Keycode to a scancode</summary>
 		/// <param name="vk"> integer virtual keycode</param>
 		/// <returns></returns>
 		WORD GetScanCode(const int vk)
@@ -113,10 +108,8 @@ namespace sds::Utilities
 				return scan;
 			}
 		}
-		/// <summary>
-		/// One member function calls SendInput with the eventual built INPUT struct.
-		///	This is useful for debugging or re-routing the output for logging/testing of a real-time system.
-		/// </summary>
+		/// <summary>One member function calls SendInput with the eventual built INPUT struct.
+		///	This is useful for debugging or re-routing the output for logging/testing of a real-time system.</summary>
 		/// <param name="inp">Pointer to first element of INPUT array.</param>
 		/// <param name="numSent">Number of elements in the array to send.</param>
 		UINT CallSendInput(INPUT* inp, size_t numSent) const
@@ -127,7 +120,7 @@ namespace sds::Utilities
 		void UnsetNumlockAsync() const noexcept
 		{
 			const ScanCodeType NumLockState = GetKeyState(static_cast<int>((VK_NUMLOCK)));
-			const std::bitset<sizeof(ScanCodeType)*8> bits(NumLockState);
+			const std::bitset<sizeof(ScanCodeType)*CHAR_BIT> bits(NumLockState);
 			if (bits[0])
 			{
 				auto DoNumlockSend = [this]()
@@ -140,10 +133,8 @@ namespace sds::Utilities
 				numLockSender.detach(); // fire and forget
 			}
 		}
-		/// <summary>
-		///	Utility function to send a virtual keycode as input to the OS.
-		///	Handles keyboard keys and several mouse click buttons.
-		///	</summary>
+		/// <summary>Utility function to send a virtual keycode as input to the OS.
+		/// Handles keyboard keys and several mouse click buttons.</summary>
 		UINT SendVirtualKey(const VirtualKeyType vk, const bool isKeyboard, const bool sendDown) const noexcept
 		{
 			INPUT inp{};

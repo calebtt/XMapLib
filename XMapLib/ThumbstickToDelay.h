@@ -5,21 +5,19 @@
 
 namespace sds
 {
-	/// <summary>
-	/// Basic logic for mapping thumbstick values to work thread delay values.
+	/// <summary>Basic logic for mapping thumbstick values to work thread delay values.
 	/// A single instance for a single thumbstick axis is to be used.
-	/// This class must be re-instantiated to use new deadzone values.
-	/// </summary>
+	/// This class must be re-instantiated to use new deadzone values.</summary>
 	class ThumbstickToDelay
 	{
-		const std::string BAD_DELAY_MSG = "Bad timer delay value, exception.";
+		const std::string BAD_DELAY_MSG{ "Bad timer delay value, exception." };
 		inline static std::atomic<bool> m_is_deadzone_activated{ false }; //shared between instances
-		float m_alt_deadzone_multiplier = MouseSettings::ALT_DEADZONE_MULT_DEFAULT;
-		int m_axis_sensitivity = MouseSettings::SENSITIVITY_DEFAULT;
-		int m_x_axis_deadzone = MouseSettings::DEADZONE_DEFAULT;
-		int m_y_axis_deadzone = MouseSettings::DEADZONE_DEFAULT;
-		SensitivityMap m_sensitivity_mapper;
-		std::map<int, int> m_shared_sensitivity_map;
+		float m_alt_deadzone_multiplier{ MouseSettings::ALT_DEADZONE_MULT_DEFAULT };
+		int m_axis_sensitivity{ MouseSettings::SENSITIVITY_DEFAULT };
+		int m_x_axis_deadzone{ MouseSettings::DEADZONE_DEFAULT };
+		int m_y_axis_deadzone{ MouseSettings::DEADZONE_DEFAULT };
+		SensitivityMap m_sensitivity_mapper{};
+		std::map<int, int> m_shared_sensitivity_map{};
 		const bool m_is_x_axis;
 		//Used to make some assertions about the settings values this class depends upon.
 		static void AssertSettings()
@@ -57,7 +55,7 @@ namespace sds
 				return sens_min;
 			return user_sens;
 		}
-		bool IsBeyondDeadzone(const int val, const bool isX) const noexcept
+		constexpr bool IsBeyondDeadzone(const int val, const bool isX) const noexcept
 		{
 			using namespace Utilities;
 			auto GetDeadzoneCurrent = [this](const bool isItX)
@@ -69,7 +67,7 @@ namespace sds
 					|| ToFloat(val) < -ToFloat(GetDeadzoneCurrent(isX)));
 			return move;
 		}
-		bool IsBeyondAltDeadzone(const int val, const bool isItX) const noexcept
+		constexpr bool IsBeyondAltDeadzone(const int val, const bool isItX) const noexcept
 		{
 			using namespace Utilities;
 			auto GetDeadzoneCurrent = [this](const bool isTheX)
@@ -93,11 +91,9 @@ namespace sds
 			return dz;
 		}
 	public:
-		/// <summary>
-		/// Ctor for dual axis sensitivity and deadzone processing.
+		/// <summary>Ctor for dual axis sensitivity and deadzone processing.
 		/// Allows getting sensitivity values for the current axis, from using alternate deadzones and sensitivity values for each axis.
-		/// In effect, the delay values returned will be influenced by the state of the other axis.
-		/// </summary>
+		/// In effect, the delay values returned will be influenced by the state of the other axis.</summary>
 		/// <exception cref="std::string"> logs std::string if XinSettings values are unusable. </exception>
 		/// <param name="sensitivity">int sensitivity value</param>
 		/// <param name="player">MousePlayerInfo struct full of deadzone information</param>
@@ -127,17 +123,13 @@ namespace sds
 		ThumbstickToDelay& operator=(const ThumbstickToDelay& other) = delete;
 		ThumbstickToDelay& operator=(ThumbstickToDelay&& other) = delete;
 		~ThumbstickToDelay() = default;
-		/// <summary>
-		/// returns a copy of the internal sensitivity map
-		/// </summary>
+		/// <summary>returns a copy of the internal sensitivity map</summary>
 		/// <returns>std map of int, int</returns>
 		[[nodiscard]] std::map<int, int> GetCopyOfSensitivityMap() const
 		{
 			return m_shared_sensitivity_map;
 		}
-		/// <summary>
-		/// Determines if m_is_x_axis axis requires move based on alt deadzone if dz is activated.
-		/// </summary>
+		/// <summary>Determines if m_is_x_axis axis requires move based on alt deadzone if dz is activated.</summary>
 		bool DoesAxisRequireMoveAlt(const int x, const int y) const noexcept
 		{
 			if (!m_is_deadzone_activated)
@@ -155,9 +147,7 @@ namespace sds
 				return m_is_x_axis ? xMove : yMove;
 			}
 		}
-		/// <summary>
-		/// Main func for use.
-		/// </summary>
+		/// <summary>Main func for use.</summary>
 		/// <returns>Delay in US</returns>
 		size_t GetDelayFromThumbstickValue(int x, int y) const noexcept
 		{
@@ -202,15 +192,12 @@ namespace sds
 				return MouseSettings::MICROSECONDS_MAX;
 			}
 		}
-		/// <summary>
-		/// For the case where sensitivity range is 1 to 100
-		/// this function will convert the thumbstick value to
-		/// an integer percentage. The deadzone value is subtracted before processing.
-		/// </summary>
+		/// <summary>For the case where sensitivity range is 1 to 100 this function will convert the thumbstick value to
+		/// an integer percentage. The deadzone value is subtracted before processing.</summary>
 		/// <param name="thumbstick">thumbstick value between short minimum and short maximum</param>
 		/// <param name="axisDeadzone">positive deadzone value to use for the axis value</param>
 		/// <returns>positive value between (inclusive) SENSITIVITY_MIN and SENSITIVITY_MAX, or SENSITIVITY_MIN for thumbstick less than deadzone</returns>
-		int GetRangedThumbstickValue(int thumbstick, int axisDeadzone) const noexcept
+		[[nodiscard]] constexpr int GetRangedThumbstickValue(int thumbstick, int axisDeadzone) const noexcept
 		{
 			thumbstick = RangeBindValue(thumbstick, MouseSettings::SMin, MouseSettings::SMax);
 			if (thumbstick == 0)

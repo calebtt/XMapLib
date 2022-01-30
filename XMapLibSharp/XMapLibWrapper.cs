@@ -1,26 +1,15 @@
 ﻿using System;
-using System.CodeDom;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO.MemoryMappedFiles;
 using System.Linq;
-using System.Numerics;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace XMapLibSharp
 {
     public class XMapLibWrapper
     {
-        private const string TOK_STARTMAP = "[KeyboardKeyMap]";
-        //private const string TOK_ENDMAP = "[/KeyboardKeyMap]";
-        //private const string TOK_SENDING_VK = "SendingElementVK";
-        //private const string TOK_MAPPEDTO_VK = "MappedToVK";
-        //private const string TOK_USES_REPEAT = "UsesRepeat";
-        private const string REGEX_WS_PATTERN = @"\s+";
-        private const string VALUE_DELIMITER = ":";
+        private const string TokStartmap = "[KeyboardKeyMap]";
+        private const string RegexWsPattern = @"\s+";
+        private const string ValueDelimiter = ":";
         public XMapLibWrapper()
         {
             XMapLibImports.XMapLibInitBoth();
@@ -51,7 +40,7 @@ namespace XMapLibSharp
         }
         public bool AddKeymap(XMapLibKeymap detail)
         {
-            return XMapLibImports.XMapLibAddMap(detail.VKMappedFrom, detail.VKMappedTo, detail.UsesRepeatBehavior);
+            return XMapLibImports.XMapLibAddMap(detail.VkMappedFrom, detail.VkMappedTo, detail.UsesRepeatBehavior);
         }
         public void ClearKeyMaps()
         {
@@ -78,11 +67,11 @@ namespace XMapLibSharp
                 {
                     mapsAsString = new string(retVal);
                     //parse strings, build list
-                    string removedWs = System.Text.RegularExpressions.Regex.Replace(retVal, REGEX_WS_PATTERN, " ");
+                    string removedWs = System.Text.RegularExpressions.Regex.Replace(retVal, RegexWsPattern, " ");
                     List<string> tokens = new();
                     foreach (string s in removedWs.Split(' '))
                     {
-                        string temp = s.Replace(VALUE_DELIMITER, " ");// replacing value delimiter from tokens
+                        string temp = s.Replace(ValueDelimiter, " ");// replacing value delimiter from tokens
                         tokens.Add(temp); // adding tokens to list
                     }
                     List<XMapLibKeymap> outMaps = new();
@@ -90,17 +79,12 @@ namespace XMapLibSharp
                     {
                         for (int i = 0; i < tokens.Count; i++)
                         {
-                            if (tokens[i] == TOK_STARTMAP)
+                            if (tokens[i] == TokStartmap)
                             {
                                 string[] akaStrings = tokens[i + 3].Split();
                                 XMapLibKeymap mp = new();
-                                mp.VKMappedFrom = Int32.Parse(tokens[i + 1].Split()[1]);
-                                mp.VKMappedTo = Int32.Parse(tokens[i + 2].Split()[1]);
-                                if (akaStrings.Length > 1)
-                                {
-                                    if(akaStrings[1].Length > 0)
-                                        mp.VKMappedToAKA = Char.Parse(akaStrings[1]);
-                                }
+                                mp.VkMappedFrom = Int32.Parse(tokens[i + 1].Split()[1]);
+                                mp.VkMappedTo = Int32.Parse(tokens[i + 2].Split()[1]);
                                 string[] repeatStrings = tokens[i+4].Split();
                                 if(repeatStrings.Length >1)
                                     if (repeatStrings[1].Length > 0)

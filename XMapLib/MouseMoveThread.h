@@ -4,10 +4,8 @@
 
 namespace sds
 {
-	/// <summary>
-	/// A singular thread responsible for sending mouse movements using
-	///	two different axis delay values being updated while running.
-	/// </summary>
+	/// <summary>A singular thread responsible for sending mouse movements using
+	///	two different axis delay values being updated while running.</summary>
 	class MouseMoveThread
 	{
 		using InternalType = int;
@@ -19,7 +17,7 @@ namespace sds
 		std::atomic<bool> m_is_y_moving{ false };
 		std::atomic<bool> m_is_x_positive{ false };
 		std::atomic<bool> m_is_y_positive{ false };
-		std::unique_ptr<LambdaRunnerType> m_workThread;
+		std::unique_ptr<LambdaRunnerType> m_workThread{};
 		void InitWorkThread() noexcept
 		{
 			m_workThread =
@@ -32,18 +30,13 @@ namespace sds
 			InitWorkThread();
 			m_workThread->StartThread();
 		}
-		~MouseMoveThread()
-		{
-			m_workThread->StopThread();
-		}
+		~MouseMoveThread() = default;
 		MouseMoveThread(const MouseMoveThread& other) = delete;
 		MouseMoveThread(MouseMoveThread&& other) = delete;
 		MouseMoveThread& operator=(const MouseMoveThread& other) = delete;
 		MouseMoveThread& operator=(MouseMoveThread&& other) = delete;
-		/// <summary>
-		/// Called to update mouse mover thread with new microsecond delay values,
-		///	and whether the axis to move should move positive or negative.
-		/// </summary>
+		/// <summary>Called to update mouse mover thread with new microsecond delay values,
+		///	and whether the axis to move should move positive or negative.</summary>
 		void UpdateState(const size_t x, const size_t y, const bool isXPositive, const bool isYPositive, const bool isXMoving, const bool isYMoving)
 		{
 			m_x_axis_delay = x;

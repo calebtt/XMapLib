@@ -7,13 +7,10 @@ namespace sds
 	struct SensitivityMap
 	{
 	private:
-		const std::string m_except_minimum = "Exception in SensitivityMap::SensitivityToMinimum(): ";
-		const std::string m_except_build_map = "Exception in SensitivityMap::BuildSensitivityMap(): ";
+		const std::string m_except_minimum{ "Exception in SensitivityMap::SensitivityToMinimum(): " };
+		const std::string m_except_build_map{ "Exception in SensitivityMap::BuildSensitivityMap(): " };
 	public:
-		/// <summary>
-		/// Builds a sensitivity map that maps values from sens_min to sens_max to values between
-		/// us_delay_min and us_delay_max
-		/// </summary>
+		/// <summary>Builds a sensitivity map that maps values from sens_min to sens_max to values between us_delay_min and us_delay_max</summary>
 		/// <param name="user_sens">user sensitivity value</param>
 		/// <param name="sens_min">minimum sensitivity value</param>
 		/// <param name="sens_max">maximum sensitivity value</param>
@@ -59,11 +56,9 @@ namespace sds
 			return sens_map;
 		}
 
-		/// <summary>
-		/// Returns the user sensitivity adjusted minimum microsecond delay based
+		/// <summary>Returns the user sensitivity adjusted minimum microsecond delay based
 		/// on the arguments. This is used to alter the minimum microsecond delay of the sensitivity map,
-		/// when a sensitivity value is used.
-		/// </summary>
+		/// when a sensitivity value is used.</summary>
 		/// <param name="user_sens">a user sensitivity value</param>
 		/// <param name="sens_min">minimum possible sensitivity value</param>
 		/// <param name="sens_max">maximum possible sensitivity value</param>

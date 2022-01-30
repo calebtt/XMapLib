@@ -15,15 +15,15 @@ namespace sds
 	/// </summary>
 	class KeyboardTranslator
 	{
-		const std::string ERR_BAD_VK = "Either WordData.MappedToVK OR WordData.SendElementVK is <= 0";
-		const std::string ERR_DUP_KEYUP = "Sent a duplicate keyup event to handle thumbstick direction changing behavior.";
 		using ClockType = std::chrono::high_resolution_clock;
 		using PointInTime = std::chrono::time_point<ClockType>;
 		using InpType = sds::KeyboardKeyMap::ActionType;
+		const std::string ERR_BAD_VK{ "Either WordData.MappedToVK OR WordData.SendElementVK is <= 0" };
+		const std::string ERR_DUP_KEYUP{ "Sent a duplicate keyup event to handle thumbstick direction changing behavior." };
 	private:
-		Utilities::SendKeyInput m_key_send;
-		std::vector<KeyboardKeyMap> m_map_token_info;
-		KeyboardPlayerInfo m_local_player;
+		Utilities::SendKeyInput m_key_send{};
+		std::vector<KeyboardKeyMap> m_map_token_info{};
+		KeyboardPlayerInfo m_local_player{};
 	public:
 		explicit KeyboardTranslator(const KeyboardPlayerInfo &p) : m_local_player(p)
 		{
@@ -50,6 +50,17 @@ namespace sds
 				}
 			}
 		}
+		/// <summary>Call this function to send key-ups for any in-progress key presses.</summary>
+		void CleanupInProgressEvents()
+		{
+			for(auto &m: m_map_token_info)
+			{
+				if(m.LastAction == InpType::KEYDOWN || m.LastAction == InpType::KEYREPEAT)
+				{
+					this->DoOvertaking(m);
+				}
+			}
+		}
 		std::string AddKeyMap(KeyboardKeyMap w)
 		{
 			std::string result = CheckForVKError(w);
@@ -58,11 +69,11 @@ namespace sds
 			m_map_token_info.push_back(w);
 			return "";
 		}
-		void ClearMap()
+		void ClearMaps() noexcept
 		{
 			m_map_token_info.clear();
 		}
-		std::vector<KeyboardKeyMap> GetMaps() const
+		std::vector<KeyboardKeyMap> GetMaps() const noexcept
 		{
 			return m_map_token_info;
 		}
@@ -91,9 +102,7 @@ namespace sds
 				}
 			}
 		}
-		/// <summary>
-		/// Normal keypress simulation logic. 
-		/// </summary>
+		/// <summary>Normal keypress simulation logic.</summary>
 		void Normal(KeyboardKeyMap &detail, const XINPUT_KEYSTROKE &stroke)
 		{
 			const bool DoDown = (detail.LastAction == InpType::NONE) && (stroke.Flags & static_cast<WORD>(InpType::KEYDOWN));
@@ -111,17 +120,15 @@ namespace sds
 				SendTheKey(detail, false, InpType::KEYUP);
 			}
 		}
-		//Does the key send call, updates LastAction and updates LastSentTime
-		void SendTheKey(KeyboardKeyMap& mp, const bool keyDown, KeyboardKeyMap::ActionType action)
+		/// <summary>Does the key send call, updates LastAction and updates LastSentTime</summary>
+		void SendTheKey(KeyboardKeyMap& mp, const bool keyDown, KeyboardKeyMap::ActionType action) noexcept
 		{
 			//std::cerr << mp << std::endl; // temp logging
 			mp.LastAction = action;
 			m_key_send.SendScanCode(mp.MappedToVK, keyDown);
 			mp.LastSentTime.Reset(KeyboardSettings::MICROSECONDS_DELAY_KEYREPEAT); // update last sent time
 		}
-		/// <summary>
-		/// Check to see if a different axis of the same thumbstick has been pressed already
-		/// </summary>
+		/// <summary>Check to see if a different axis of the same thumbstick has been pressed already</summary>
 		/// <param name="detail">Newest element being set to keydown state</param>
 		///	<param name="outOvertaken">out key set to the one being overtaken</param>
 		/// <returns>true if is overtaking a thumbstick direction already depressed</returns>
@@ -151,7 +158,7 @@ namespace sds
 			}
 			return false;
 		}
-		void DoOvertaking(KeyboardKeyMap &detail)
+		void DoOvertaking(KeyboardKeyMap &detail) noexcept
 		{
 			SendTheKey(detail, false, InpType::KEYUP);
 		}
