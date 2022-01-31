@@ -19,12 +19,10 @@ namespace sds::Utilities
 		DelayManager& operator=(const DelayManager& other) = default;
 		DelayManager& operator=(DelayManager&& other) = default;
 		~DelayManager() = default;
-		/// <summary>
-		/// Operator<< overload for std::ostream specialization,
+		/// <summary>Operator<< overload for std::ostream specialization,
 		///	writes more detailed delay details for debugging.
 		///	Thread-safe, provided all writes to the ostream object
-		///	are wrapped with std::osyncstream!
-		/// </summary>
+		///	are wrapped with std::osyncstream!</summary>
 		friend std::ostream& operator<<(std::ostream& os, const DelayManager& obj) noexcept
 		{
 			std::osyncstream ss(os);
@@ -35,9 +33,7 @@ namespace sds::Utilities
 				<< "[/DelayManager]";
 			return os;
 		}
-		/// <summary>
-		/// Check for elapsed.
-		/// </summary>
+		/// <summary>Check for elapsed.</summary>
 		bool IsElapsed() noexcept
 		{
 			if (std::chrono::high_resolution_clock::now() > (m_start_time + std::chrono::microseconds(m_duration)))
@@ -47,6 +43,7 @@ namespace sds::Utilities
 			}
 			return false;
 		}
+		/// <summary>Reset delay for elapsing.</summary>
 		void Reset(size_t microsec_delay) noexcept
 		{
 			m_start_time = std::chrono::high_resolution_clock::now();
