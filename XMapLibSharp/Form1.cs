@@ -18,8 +18,6 @@ namespace XMapLibSharp
     public partial class Form1 : Form
     {
         private const int DelayRedrawMs = 1000; // a whole second
-        private const string ErrNotRunning = "Started, but not running.";
-        private const string ErrPresetButtonStatus = "Error toggling preset button selected status.";
         private const string ErrUpdatingMaps = "Error updating maps!";
         private const string MsgStartMouse = "Start Mouse Processing";
         private const string MsgStopMouse = "Stop Mouse Processing";
