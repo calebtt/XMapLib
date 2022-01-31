@@ -131,8 +131,7 @@ namespace XMapLibSharp
         {
             btnSensitivityIndicator.Text = MsgSensbegin + " " + _mapper.GetMouseSensitivity().ToString() + MsgSensmax;
         }
-        /// <summary>Helper to update the status of the mouse movement processing based on the mapper's internal status
-        /// and update the button text.</summary>
+        /// <summary>Helper to update the status of the mouse movement processing based on the mapper's internal status and update the button text.</summary>
         private void UpdateIsMouseRunning()
         {
             bool isRunning = _mapper.IsMouseRunning();
