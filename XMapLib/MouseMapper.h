@@ -49,7 +49,7 @@ namespace sds
 		///	This will start processing if the stick is something other than "NEITHER"
 		///	**Arbitrary values outside of the enum constants will not be processed successfully.**</summary>
 		/// <param name="info"> a StickMap enum</param>
-		void SetStick(const StickMap info)
+		void SetStick(const StickMap info) noexcept
 		{
 			if (m_stickmap_info != info)
 			{
@@ -74,7 +74,7 @@ namespace sds
 		/// <summary>Setter for sensitivity value.</summary>
 		/// <returns> returns a std::string containing an error message
 		/// if there is an error, empty string otherwise. </returns>
-		std::string SetSensitivity(const int new_sens)
+		std::string SetSensitivity(const int new_sens) noexcept
 		{
 			if (!MouseSettings::IsValidSensitivityValue(new_sens))
 			{
@@ -115,7 +115,7 @@ namespace sds
 		}
 	protected:
 		/// <summary>Worker thread, protected visibility, gets updated data from ProcessState() function to use.
-		/// Accesses the std::atomic m_thread_x and m_thread_y members.</summary>
+		/// Accesses the std::atomic m_thread_x and m_thread_y members. chrono lib instances may throw exceptions.</summary>
 		void workThread(sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2&, int&)
 		{
 			ThumbstickToDelay xThread(this->GetSensitivity(), m_local_player, m_stickmap_info, true);

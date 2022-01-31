@@ -18,8 +18,6 @@ namespace XMapLibSharp
     public partial class Form1 : Form
     {
         private const int DelayRedrawMs = 1000; // a whole second
-        private const string ErrNotRunning = "Started, but not running.";
-        private const string ErrPresetButtonStatus = "Error toggling preset button selected status.";
         private const string ErrUpdatingMaps = "Error updating maps!";
         private const string MsgStartMouse = "Start Mouse Processing";
         private const string MsgStopMouse = "Stop Mouse Processing";
@@ -82,7 +80,7 @@ namespace XMapLibSharp
             dataGridView1.Columns.Add(col5);
             this.dataGridView1.DataSource = _currentKeymaps;
         }
-
+        /// <summary>Init preset buttons and add to the GUI</summary>
         private void InitPresetButtons()
         {
             _presets = KeymapPresetOperations.BuildPresetButtons();
@@ -102,30 +100,36 @@ namespace XMapLibSharp
                 KeymapPresetOperations.ChangeButtonTextForSelected(btn, true);
             }
         }
+        /// <summary>Starts running the background thread that updates the GUI elements.</summary>
         private void InitBackgroundWorker()
         {
             bgWorkThread.RunWorkerAsync(SynchronizationContext.Current);
         }
+        /// <summary>Helper to update the datagridview to a new List of keymaps.</summary>
         private void UpdateKeymapDatagrid(List<XMapLibKeymap> newMaps)
         {
             dataGridView1.AutoGenerateColumns = false;
             _currentKeymaps = newMaps;
             dataGridView1.DataSource = newMaps;
         }
+        /// <summary>Updates mouse sensitivity trackbar value based on mapper's internal reported value.</summary>
         private void UpdateMouseSensitivityTrackbar()
         {
             trackBar1.Value = _mapper.GetMouseSensitivity();
         }
+        /// <summary>Helper to update the status of the controller being connected.</summary>
         private void UpdateControllerConnectedButton()
         {
             bool isConnected = _mapper.IsControllerConnected();
             button2.Text = isConnected ? MsgController : MsgNocontroller;
             button2.BackColor = isConnected ? _clrNormal : _clrInfo;
         }
+        /// <summary>Helper to update the sensitivity value displayed on the button.</summary>
         private void UpdateMouseSensitivityButton()
         {
             btnSensitivityIndicator.Text = MsgSensbegin + " " + _mapper.GetMouseSensitivity().ToString() + MsgSensmax;
         }
+        /// <summary>Helper to update the status of the mouse movement processing based on the mapper's internal status and update the button text.</summary>
         private void UpdateIsMouseRunning()
         {
             bool isRunning = _mapper.IsMouseRunning();
