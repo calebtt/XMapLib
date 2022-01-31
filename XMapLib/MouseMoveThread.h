@@ -25,7 +25,7 @@ namespace sds
 				([this](sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2& mut, auto& protectedData) { workThread(stopCondition, mut, protectedData); });
 		}
 	public:
-		MouseMoveThread()
+		MouseMoveThread() noexcept
 		{
 			InitWorkThread();
 			m_workThread->StartThread();
@@ -37,7 +37,7 @@ namespace sds
 		MouseMoveThread& operator=(MouseMoveThread&& other) = delete;
 		/// <summary>Called to update mouse mover thread with new microsecond delay values,
 		///	and whether the axis to move should move positive or negative.</summary>
-		void UpdateState(const size_t x, const size_t y, const bool isXPositive, const bool isYPositive, const bool isXMoving, const bool isYMoving)
+		void UpdateState(const size_t x, const size_t y, const bool isXPositive, const bool isYPositive, const bool isXMoving, const bool isYMoving) noexcept
 		{
 			m_x_axis_delay = x;
 			m_y_axis_delay = y;
