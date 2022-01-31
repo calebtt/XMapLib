@@ -27,6 +27,7 @@ namespace sds
 		~CPPRunnerGeneric()
 		{
 			StopThread();
+			ScopedLockType tempLock(this->m_state_mutex);
 		}
 	protected:
 		const LambdaType m_lambda;
