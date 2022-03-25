@@ -46,7 +46,7 @@ namespace sds
 			m_x_axis_deadzone = xAxisDz;
 			m_y_axis_deadzone = yAxisDz;
 		}
-		constexpr int RangeBindValue(const int user_sens, const int sens_min, const int sens_max) const noexcept
+		[[nodiscard]] constexpr int RangeBindValue(const int user_sens, const int sens_min, const int sens_max) const noexcept
 		{
 			//bounds check result
 			if (user_sens > sens_max)
@@ -55,37 +55,37 @@ namespace sds
 				return sens_min;
 			return user_sens;
 		}
-		constexpr bool IsBeyondDeadzone(const int val, const bool isX) const noexcept
+		[[nodiscard]] constexpr bool IsBeyondDeadzone(const int val, const bool isX) const noexcept
 		{
 			using namespace Utilities;
 			auto GetDeadzoneCurrent = [this](const bool isItX)
 			{
-				return static_cast<int>(isItX ? this->m_x_axis_deadzone : this->m_y_axis_deadzone);
+				return ToA<int>(isItX ? this->m_x_axis_deadzone : this->m_y_axis_deadzone);
 			};
 			const bool move = 
-				(ToFloat(val) > ToFloat(GetDeadzoneCurrent(isX)) 
-					|| ToFloat(val) < -ToFloat(GetDeadzoneCurrent(isX)));
+				(ToA<float>(val) > ToA<float>(GetDeadzoneCurrent(isX)) 
+					|| ToA<float>(val) < -ToA<float>(GetDeadzoneCurrent(isX)));
 			return move;
 		}
-		constexpr bool IsBeyondAltDeadzone(const int val, const bool isItX) const noexcept
+		[[nodiscard]] constexpr bool IsBeyondAltDeadzone(const int val, const bool isItX) const noexcept
 		{
 			using namespace Utilities;
 			auto GetDeadzoneCurrent = [this](const bool isTheX)
 			{
-				return static_cast<int>(isTheX ? (ToFloat(m_x_axis_deadzone) * m_alt_deadzone_multiplier) : (ToFloat(m_y_axis_deadzone) * m_alt_deadzone_multiplier));
+				return ToA<int>(isTheX ? (ToA<float>(m_x_axis_deadzone) * m_alt_deadzone_multiplier) : (ToA<float>(m_y_axis_deadzone) * m_alt_deadzone_multiplier));
 			};
 			const bool move =
-				(ToFloat(val) > ToFloat(GetDeadzoneCurrent(isItX))
-					|| ToFloat(val) < -ToFloat(GetDeadzoneCurrent(isItX)));
+				(ToA<float>(val) > ToA<float>(GetDeadzoneCurrent(isItX))
+					|| ToA<float>(val) < -ToA<float>(GetDeadzoneCurrent(isItX)));
 			return move;
 		}
 		//Returns the dz for the axis, or the alternate if the dz is already activated.
-		int GetDeadzoneActivated(const bool isX) const noexcept
+		[[nodiscard]] int GetDeadzoneActivated(const bool isX) const noexcept
 		{
 			using namespace Utilities;
 			int dz = 0;
 			if (m_is_deadzone_activated)
-				dz = static_cast<int>(isX ? (ToFloat(m_x_axis_deadzone) * m_alt_deadzone_multiplier) : (ToFloat(m_y_axis_deadzone) * m_alt_deadzone_multiplier));
+				dz = ToA<int>(isX ? (ToA<float>(m_x_axis_deadzone) * m_alt_deadzone_multiplier) : (ToA<float>(m_y_axis_deadzone) * m_alt_deadzone_multiplier));
 			else
 				dz = isX ? m_x_axis_deadzone : m_y_axis_deadzone;
 			return dz;
@@ -130,7 +130,7 @@ namespace sds
 			return m_shared_sensitivity_map;
 		}
 		/// <summary>Determines if m_is_x_axis axis requires move based on alt deadzone if dz is activated.</summary>
-		bool DoesAxisRequireMoveAlt(const int x, const int y) const noexcept
+		[[nodiscard]] bool DoesAxisRequireMoveAlt(const int x, const int y) const noexcept
 		{
 			if (!m_is_deadzone_activated)
 			{
@@ -149,7 +149,7 @@ namespace sds
 		}
 		/// <summary>Main func for use.</summary>
 		/// <returns>Delay in US</returns>
-		size_t GetDelayFromThumbstickValue(int x, int y) const noexcept
+		[[nodiscard]] size_t GetDelayFromThumbstickValue(int x, int y) const noexcept
 		{
 			const int xdz = GetDeadzoneActivated(true);
 			const int ydz = GetDeadzoneActivated(false);
@@ -161,9 +161,9 @@ namespace sds
 				using namespace Utilities;
 				double txVal = MouseSettings::SENSITIVITY_MIN;
 				if (isX && (ty != 0))
-					txVal = ToDub(std::abs(tx)) + (std::sqrt(std::abs(ty)) * 3.6);
+					txVal = ToA<double>(ConstAbs(tx)) + (std::sqrt(ConstAbs(ty)) * 3.6);
 				else if (tx != 0)
-					txVal = ToDub(std::abs(ty)) + (std::sqrt(std::abs(tx)) * 3.6);
+					txVal = ToA<double>(ConstAbs(ty)) + (std::sqrt(ConstAbs(tx)) * 3.6);
 				return static_cast<int>(txVal);
 			};
 			x = TransformSensitivityValue(x, y, true);
@@ -171,17 +171,18 @@ namespace sds
 			const int txVal = GetMappedValue(m_is_x_axis ? x : y);
 			return txVal;
 		}
-		int GetMappedValue(int keyValue) const noexcept
+		///<summary>Retrieves value mapped to the key, with error checking. </summary>
+		[[nodiscard]] int GetMappedValue(int keyValue) const noexcept
 		{
 			keyValue = RangeBindValue(keyValue, MouseSettings::SENSITIVITY_MIN, MouseSettings::SENSITIVITY_MAX);
 			//error checking to make sure the value is in the map
-			int rval = 0;
-			if (!Utilities::MapFunctions::IsInMap<int, int>(keyValue, m_shared_sensitivity_map, rval))
+			if(!m_shared_sensitivity_map.contains(keyValue))
 			{
 				//this should not happen, but in case it does I want a plain string telling me it did.
 				Utilities::LogError("Exception in ThumbstickToDelay::GetDelayFromThumbstickValue(int,int,bool): " + BAD_DELAY_MSG);
 				return 1;
 			}
+			const auto rval = m_shared_sensitivity_map.at(keyValue);
 			if(rval >= MouseSettings::MICROSECONDS_MIN && rval <= MouseSettings::MICROSECONDS_MAX)
 			{
 				return rval;
@@ -199,18 +200,19 @@ namespace sds
 		/// <returns>positive value between (inclusive) SENSITIVITY_MIN and SENSITIVITY_MAX, or SENSITIVITY_MIN for thumbstick less than deadzone</returns>
 		[[nodiscard]] constexpr int GetRangedThumbstickValue(int thumbstick, int axisDeadzone) const noexcept
 		{
+			using namespace sds::Utilities;
 			thumbstick = RangeBindValue(thumbstick, MouseSettings::SMin, MouseSettings::SMax);
 			if (thumbstick == 0)
 				return MouseSettings::SENSITIVITY_MIN;
 			//error checking deadzone arg range
 			if (!MouseSettings::IsValidDeadzoneValue(axisDeadzone))
 				axisDeadzone = MouseSettings::DEADZONE_DEFAULT;
-			const int absThumb = std::abs(thumbstick);
+			const int absThumb = ConstAbs(thumbstick);
 			if (absThumb < axisDeadzone)
 				return MouseSettings::SENSITIVITY_MIN;
 			int percentage = (absThumb - axisDeadzone) / ((MouseSettings::SMax - axisDeadzone) / MouseSettings::SENSITIVITY_MAX);
 			percentage = RangeBindValue(percentage, MouseSettings::SENSITIVITY_MIN, MouseSettings::SENSITIVITY_MAX);
-			return static_cast<int>(percentage);
+			return ToA<int>(percentage);
 		}
 	};
 }

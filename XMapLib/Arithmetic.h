@@ -4,20 +4,26 @@ namespace sds::Utilities
 {
 	template<class T>
 	concept is_number_v = std::is_integral_v<T> || std::is_floating_point_v<T>;
-	constexpr double ToDub(const is_number_v auto something) noexcept
+
+	template<typename T>
+	[[nodiscard]] constexpr T ToA(const is_number_v auto something) noexcept
 	{
-		return static_cast<double>(something);
+		return static_cast<T>(something);
 	}
-	constexpr float ToFloat(const is_number_v auto something) noexcept
-	{
-		return static_cast<float>(something);
-	}
-	constexpr int ToInt(const is_number_v auto something) noexcept
-	{
-		return static_cast<int>(something);
-	}
-	constexpr bool IsNormalF(const is_number_v auto val) noexcept
+	[[nodiscard]] constexpr bool IsNormalF(const is_number_v auto val) noexcept
 	{
 		return std::isnormal(static_cast<float>(val));
+	}
+	/// <summary> Absolute value replacement function. This version is constexpr! </summary>
+	/// <param name="val">Number value to perform absolute value on</param>
+	/// <returns>Returns the absolute value of val</returns>
+	[[nodiscard]] constexpr auto ConstAbs(const is_number_v auto val) noexcept
+	{
+		constexpr decltype(val) zeroValue{};
+		if (val < zeroValue)
+		{
+			return (-val);
+		}
+		return val;
 	}
 }

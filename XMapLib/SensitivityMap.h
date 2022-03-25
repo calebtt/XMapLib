@@ -6,6 +6,8 @@ namespace sds
 {
 	struct SensitivityMap
 	{
+	public:
+		using SensMapType = std::map<int, int>;
 	private:
 		const std::string m_except_minimum{ "Exception in SensitivityMap::SensitivityToMinimum(): " };
 		const std::string m_except_build_map{ "Exception in SensitivityMap::BuildSensitivityMap(): " };
@@ -18,14 +20,14 @@ namespace sds
 		/// <param name="us_delay_max">maximum delay in microseconds</param>
 		/// <param name="us_delay_min_max">minimum microsecond delay maximum value, used by the user sensitivity adjustment function</param>
 		/// <returns>map int,int mapping sensitivity values to microsecond delay values</returns>
-		[[nodiscard]] std::map<int, int> BuildSensitivityMap(const int user_sens, 
+		[[nodiscard]] SensMapType BuildSensitivityMap(const int user_sens, 
 			const int sens_min, 
 			const int sens_max, 
 			const int us_delay_min, 
 			const int us_delay_max, 
 			const int us_delay_min_max) const noexcept
 		{
-			using namespace sds::Utilities; // for ToFloat() and ToDub() and LogError()
+			using namespace sds::Utilities; // for ToA<float>() and ToDub() and LogError()
 			//arg error checking
 			if (sens_min >= sens_max || us_delay_min >= us_delay_max || user_sens < sens_min || user_sens > sens_max)
 				LogError(m_except_build_map + "user sensitivity, or sensitivity range or delay range out of range.");
@@ -36,12 +38,12 @@ namespace sds
 			};
 			//getting new minimum using minimum maximum
 			const int adjustedMinimum = SensitivityToMinimum(user_sens, sens_min, sens_max, us_delay_min, us_delay_min_max);
-			const float fstep = (ToFloat(us_delay_max) - ToFloat(adjustedMinimum)) / (ToFloat(sens_max) - ToFloat(sens_min));
+			const float fstep = (ToA<float>(us_delay_max) - ToA<float>(adjustedMinimum)) / (ToA<float>(sens_max) - ToA<float>(sens_min));
 			const int step = static_cast<int>(std::lroundf(fstep));
 			LogErrorIfFalse(IsNormalF(adjustedMinimum));
 			LogErrorIfFalse(IsNormalF(fstep));
 			LogErrorIfFalse(IsNormalF(step));
-			std::map<int, int> sens_map;
+			SensMapType sens_map;
 			for (auto i = sens_min, j = us_delay_max; i <= sens_max; i++, j-=step)
 			{
 				if (j < adjustedMinimum)
@@ -78,11 +80,11 @@ namespace sds
 				Utilities::LogError(m_except_minimum + "user sensitivity, or sensitivity range or delay range out of range.");
 				return 1;
 			}
-			const double sensitivityRange = ToDub(sens_max) - ToDub(sens_min);
-			const double step = (ToDub(us_delay_max) - ToDub(us_delay_min)) / sensitivityRange;
+			const double sensitivityRange = ToA<double>(sens_max) - ToA<double>(sens_min);
+			const double step = (ToA<double>(us_delay_max) - ToA<double>(us_delay_min)) / sensitivityRange;
 			std::vector<double> delayVec;
 			for (auto i = sens_min, j = 0; i <= sens_max; i++, j++)
-				delayVec.push_back(ToDub(us_delay_min) + (ToDub(j) * step));
+				delayVec.push_back(ToA<double>(us_delay_min) + (ToA<double>(j) * step));
 			//adapt user_sens and sensitivityRange to vector indexes
 			const int elementIndex = sens_max - user_sens;
 			return static_cast<int>(delayVec[elementIndex]);

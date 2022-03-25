@@ -166,7 +166,6 @@
     <ClInclude Include="Arithmetic.h" />
     <ClInclude Include="CPPRunnerGeneric.h" />
     <ClInclude Include="DelayManager.h" />
-    <ClInclude Include="MapFunctions.h" />
     <ClInclude Include="MouseInputPoller.h" />
     <ClInclude Include="MouseMoveThread.h" />
     <ClInclude Include="SendKeyInput.h" />

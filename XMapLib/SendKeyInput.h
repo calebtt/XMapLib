@@ -3,7 +3,6 @@
 #include <bitset>
 #include <climits>
 #include "XELog.h"
-#include "MapFunctions.h"
 
 namespace sds::Utilities
 {
@@ -15,11 +14,13 @@ namespace sds::Utilities
 	/// </summary>
 	class SendKeyInput
 	{
+		using ScanMapType = std::unordered_map<int, int>;
 		using ScanCodeType = unsigned short;
 		using VirtualKeyType = unsigned int;
 		using PrintableType = char;
+		using VkType = unsigned char;
 		bool m_auto_disable_numlock{ true }; // toggle this to make the default behavior not toggle off numlock on your keyboard
-		std::map<int, int> m_scancode_store{};
+		ScanMapType m_scancode_store{};
 	public:
 		/// <summary>Default Constructor</summary>
 		SendKeyInput() = default;
@@ -33,7 +34,7 @@ namespace sds::Utilities
 		/// <summary>Sends the virtual keycode as a hardware scancode.</summary>
 		/// <param name="vk"> is the Virtual Keycode of the keystroke you wish to emulate </param>
 		/// <param name="down"> is a boolean denoting if the keypress event is KEYDOWN or KEYUP</param>
-		void SendScanCode(const int vk, const bool down)
+		void SendScanCode(const int vk, const bool down) noexcept
 		{
 			if (m_auto_disable_numlock)
 			{
@@ -92,14 +93,13 @@ namespace sds::Utilities
 		/// <summary>Utility function to map a Virtual Keycode to a scancode</summary>
 		/// <param name="vk"> integer virtual keycode</param>
 		/// <returns></returns>
-		WORD GetScanCode(const int vk)
+		[[nodiscard]] WORD GetScanCode(const int vk) noexcept
 		{
-			if (vk > std::numeric_limits<unsigned char>::max() || vk < std::numeric_limits<unsigned char>::min())
+			if (vk > std::numeric_limits<VkType>::max() || vk < std::numeric_limits<VkType>::min())
 				return 0;
-			int ret = 0;
-			if(MapFunctions::IsInMap(vk, m_scancode_store, ret))
+			if (m_scancode_store.contains(vk))
 			{
-				return static_cast<WORD>(ret);
+				return static_cast<WORD>(m_scancode_store[vk]);
 			}
 			else
 			{
@@ -112,7 +112,7 @@ namespace sds::Utilities
 		///	This is useful for debugging or re-routing the output for logging/testing of a real-time system.</summary>
 		/// <param name="inp">Pointer to first element of INPUT array.</param>
 		/// <param name="numSent">Number of elements in the array to send.</param>
-		UINT CallSendInput(INPUT* inp, size_t numSent) const
+		UINT CallSendInput(INPUT* inp, size_t numSent) const noexcept
 		{
 			return SendInput(static_cast<UINT>(numSent), inp, sizeof(INPUT));
 		}
@@ -120,14 +120,18 @@ namespace sds::Utilities
 		void UnsetNumlockAsync() const noexcept
 		{
 			const ScanCodeType NumLockState = GetKeyState(static_cast<int>((VK_NUMLOCK)));
-			const std::bitset<sizeof(ScanCodeType)*CHAR_BIT> bits(NumLockState);
+			const std::bitset<sizeof(ScanCodeType)* CHAR_BIT> bits(NumLockState);
 			if (bits[0])
 			{
 				auto DoNumlockSend = [this]()
 				{
-					SendVirtualKey(VK_NUMLOCK, true, true);
+					auto result = SendVirtualKey(VK_NUMLOCK, true, true);
+					if (result != 1)
+						Utilities::LogError("Error sending numlock keypress down.");
 					std::this_thread::sleep_for(std::chrono::milliseconds(15));
-					SendVirtualKey(VK_NUMLOCK, true, false);
+					result = SendVirtualKey(VK_NUMLOCK, true, false);
+					if (result != 1)
+						Utilities::LogError("Error sending numlock keypress up.");
 				};
 				std::thread numLockSender(DoNumlockSend);
 				numLockSender.detach(); // fire and forget

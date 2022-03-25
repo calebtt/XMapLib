@@ -92,9 +92,6 @@
     <ClInclude Include="DelayManager.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="MapFunctions.h">
-      <Filter>Header Files\Utilities</Filter>
-    </ClInclude>
     <ClInclude Include="SendMouseInput.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>

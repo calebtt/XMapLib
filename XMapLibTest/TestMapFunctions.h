@@ -20,22 +20,18 @@ namespace XMapLibTest
 			const map<wstring, int> testMap{ {one,1}, {two,2}, {three,3} };
 			auto TestFound = [&](const wstring key, const int value)
 			{
-				
-				int outValue = 0;
 				const wstring message = L"asserting key " + key + L" is found in the map.";
 				std::wstringstream ws;
 				ws << L"asserting value " << value << L" is found in the map.";
 				const wstring valueMessage = ws.str();
-				Assert::IsTrue(Utilities::MapFunctions::IsInMap(key, testMap, outValue), message.c_str());
-				Assert::AreEqual(outValue, value, valueMessage.c_str());
+				Assert::IsTrue(testMap.contains(key), message.c_str());
+				Assert::AreEqual(testMap.at(key), value, valueMessage.c_str());
 			};
 			TestFound(one, 1);
 			TestFound(two, 2);
 			TestFound(three, 3);
 			const wstring notFound = L"not found key";
-			int result = 0;
-			Assert::IsFalse(Utilities::MapFunctions::IsInMap(notFound, testMap, result), L"Testing key definitely not in map returns false.");
-			Assert::AreEqual(result, 0, L"Testing reference arg still 0 after not found in map.");
+			Assert::IsFalse(testMap.contains(notFound), L"Testing key definitely not in map returns false.");
 			Logger::WriteMessage("End TestSetMapInfo()");
 		}
 	};
