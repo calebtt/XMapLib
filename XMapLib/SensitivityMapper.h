@@ -4,13 +4,13 @@
 #include <cmath>
 namespace sds
 {
-	struct SensitivityMap
+	struct SensitivityMapper
 	{
 	public:
 		using SensMapType = std::map<int, int>;
 	private:
-		const std::string m_except_minimum{ "Exception in SensitivityMap::SensitivityToMinimum(): " };
-		const std::string m_except_build_map{ "Exception in SensitivityMap::BuildSensitivityMap(): " };
+		const std::string m_except_minimum{ "Exception in SensitivityMapper::SensitivityToMinimum(): " };
+		const std::string m_except_build_map{ "Exception in SensitivityMapper::BuildSensitivityMap(): " };
 	public:
 		/// <summary>Builds a sensitivity map that maps values from sens_min to sens_max to values between us_delay_min and us_delay_max</summary>
 		/// <param name="user_sens">user sensitivity value</param>

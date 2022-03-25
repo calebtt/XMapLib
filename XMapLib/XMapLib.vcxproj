@@ -170,7 +170,7 @@
     <ClInclude Include="MouseMoveThread.h" />
     <ClInclude Include="SendKeyInput.h" />
     <ClInclude Include="SendMouseInput.h" />
-    <ClInclude Include="SensitivityMap.h" />
+    <ClInclude Include="SensitivityMapper.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StickMap.h" />
     <ClInclude Include="ThumbstickToDelay.h" />

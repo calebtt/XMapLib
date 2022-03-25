@@ -35,7 +35,7 @@
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SensitivityMap.h">
+    <ClInclude Include="SensitivityMapper.h">
       <Filter>Header Files\Mouse</Filter>
     </ClInclude>
     <ClInclude Include="StickMap.h">

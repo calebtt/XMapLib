@@ -1,7 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "CppUnitTest.h"
-#include "../XMapLib/SensitivityMap.h"
+#include "../XMapLib/SensitivityMapper.h"
 
 namespace XMapLibTest
 {
@@ -21,7 +21,7 @@ namespace XMapLibTest
 			Logger::WriteMessage("Begin TestBuildMap()");
 			auto TestAndPrint = [this](const auto sensitivity, const auto key_elem, const auto value_elem, std::wstring message)
 			{
-				SensitivityMap mp;
+				SensitivityMapper mp;
 				const map<int, int> sensMap = mp.BuildSensitivityMap(sensitivity, SENS_MIN, SENS_MAX, DELAY_MIN, DELAY_MAX, DELAY_MINMAX);
 				const int firstResult = sensMap.at(key_elem);
 				message += L" Map built with sens:" + std::to_wstring(sensitivity);
@@ -43,7 +43,7 @@ namespace XMapLibTest
 			Logger::WriteMessage("Begin TestSensitivityMinimum()");
 			auto TestAndPrint = [this](const auto sensitivity, const auto expected_result, std::wstring message)
 			{
-				SensitivityMap mp;
+				SensitivityMapper mp;
 				const int result = mp.SensitivityToMinimum(sensitivity, SENS_MIN, SENS_MAX, DELAY_MIN, DELAY_MAX);
 				message += L" Result built with sens:" + std::to_wstring(sensitivity);
 				message += L" Expecting result:" + std::to_wstring(expected_result);
