@@ -5,4 +5,3 @@
 #include "SendMouseInput.h"
 #include "Arithmetic.h"
 #include "DelayManager.h"
-#include "MapFunctions.h"

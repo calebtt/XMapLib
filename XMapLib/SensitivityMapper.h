@@ -84,7 +84,7 @@ namespace sds
 			const double step = (ToA<double>(us_delay_max) - ToA<double>(us_delay_min)) / sensitivityRange;
 			std::vector<double> delayVec;
 			for (auto i = sens_min, j = 0; i <= sens_max; i++, j++)
-				delayVec.push_back(ToA<double>(us_delay_min) + (ToA<double>(j) * step));
+				delayVec.emplace_back(ToA<double>(us_delay_min) + (ToA<double>(j) * step));
 			//adapt user_sens and sensitivityRange to vector indexes
 			const int elementIndex = sens_max - user_sens;
 			return ToA<int>(delayVec[elementIndex]);
