@@ -39,7 +39,7 @@ namespace sds
 			//getting new minimum using minimum maximum
 			const int adjustedMinimum = SensitivityToMinimum(user_sens, sens_min, sens_max, us_delay_min, us_delay_min_max);
 			const float fstep = (ToA<float>(us_delay_max) - ToA<float>(adjustedMinimum)) / (ToA<float>(sens_max) - ToA<float>(sens_min));
-			const int step = static_cast<int>(std::lroundf(fstep));
+			const int step = ToA<int>(std::lroundf(fstep));
 			LogErrorIfFalse(IsNormalF(adjustedMinimum));
 			LogErrorIfFalse(IsNormalF(fstep));
 			LogErrorIfFalse(IsNormalF(step));
@@ -87,7 +87,7 @@ namespace sds
 				delayVec.push_back(ToA<double>(us_delay_min) + (ToA<double>(j) * step));
 			//adapt user_sens and sensitivityRange to vector indexes
 			const int elementIndex = sens_max - user_sens;
-			return static_cast<int>(delayVec[elementIndex]);
+			return ToA<int>(delayVec[elementIndex]);
 		}
 	};
 }
