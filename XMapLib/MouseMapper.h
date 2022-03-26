@@ -86,15 +86,15 @@ namespace sds
 			return "";
 		}
 		/// <summary>Getter for sensitivity value</summary>
-		int GetSensitivity() const noexcept
+		[[nodiscard]] int GetSensitivity() const noexcept
 		{
 			return m_mouse_sensitivity;
 		}
-		bool IsControllerConnected() const noexcept
+		[[nodiscard]] bool IsControllerConnected() const noexcept
 		{
 			return m_poller.IsControllerConnected();
 		}
-		bool IsRunning() const noexcept
+		[[nodiscard]] bool IsRunning() const noexcept
 		{
 			bool workRunning = false;
 			if (m_workThread != nullptr)
@@ -116,7 +116,7 @@ namespace sds
 	protected:
 		/// <summary>Worker thread, protected visibility, gets updated data from ProcessState() function to use.
 		/// Accesses the std::atomic m_thread_x and m_thread_y members. chrono lib instances may throw exceptions.</summary>
-		void workThread(sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2&, int&)
+		void workThread(const sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2&, int&)
 		{
 			ThumbstickToDelay xThread(this->GetSensitivity(), m_local_player, m_stickmap_info, true);
 			ThumbstickToDelay yThread(this->GetSensitivity(), m_local_player, m_stickmap_info, false);
