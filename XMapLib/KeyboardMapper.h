@@ -46,11 +46,11 @@ namespace sds
 			Stop();
 		}
 
-		bool IsControllerConnected() const
+		[[nodiscard]] bool IsControllerConnected() const
 		{
 			return m_poller.IsControllerConnected();
 		}
-		bool IsRunning() const
+		[[nodiscard]] bool IsRunning() const
 		{
 			return m_poller.IsRunning() && m_workThread->IsRunning();
 		}
@@ -74,7 +74,7 @@ namespace sds
 				Start();
 			return er;
 		}
-		std::vector<KeyboardKeyMap> GetMaps() const
+		[[nodiscard]] std::vector<KeyboardKeyMap> GetMaps() const
 		{
 			return m_translator.GetMaps();
 		}
