@@ -5,7 +5,7 @@ namespace sds
 	/// Used as a data structure to hold player information, includes thumbstick deadzone information.
 	/// A default constructed MousePlayerInfo struct has default values that are usable.
 	/// </summary>
-	struct MousePlayerInfo
+	struct MousePlayerInfo final
 	{
 		using PidType = int;
 		using DzType = int;
