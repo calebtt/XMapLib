@@ -38,7 +38,7 @@ namespace sds
 		MouseInputPoller& operator=(MouseInputPoller&& other) = delete;
 		~MouseInputPoller() = default;
 
-		XINPUT_STATE GetUpdatedState() const noexcept
+		[[nodiscard]] XINPUT_STATE GetUpdatedState() const noexcept
 		{
 			if (m_workThread)
 				return m_workThread->GetCurrentState();
@@ -58,7 +58,7 @@ namespace sds
 		}
 		/// <summary>Gets the running status of the worker thread</summary>
 		/// <returns> true if thread is running, false otherwise</returns>
-		bool IsRunning() const noexcept
+		[[nodiscard]] bool IsRunning() const noexcept
 		{
 			if(m_workThread)
 				return m_workThread->IsRunning();
@@ -66,7 +66,7 @@ namespace sds
 		}
 		/// <summary>Returns status of XINPUT library detecting a controller.</summary>
 		/// <returns> true if controller is connected, false otherwise</returns>
-		bool IsControllerConnected() const noexcept
+		[[nodiscard]] bool IsControllerConnected() const noexcept
 		{
 			XINPUT_STATE ss{};
 			return XInputGetState(m_local_player.player_id, &ss) == ERROR_SUCCESS;
@@ -74,14 +74,14 @@ namespace sds
 		/// <summary>Returns status of XINPUT library detecting a controller.
 		/// This overload uses the player_id value in a MousePlayerInfo struct.</summary>
 		/// <returns> true if controller is connected, false otherwise</returns>
-		bool IsControllerConnected(const MousePlayerInfo &p) const noexcept
+		[[nodiscard]] bool IsControllerConnected(const MousePlayerInfo &p) const noexcept
 		{
 			XINPUT_STATE ss{};
 			return XInputGetState(p.player_id, &ss) == ERROR_SUCCESS;
 		}
 	protected:
 		/// <summary>Worker thread used by m_workThread. Updates the protectedData with mutex protection.</summary>
-		void workThread(sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2& mut, InternalType& protectedData) const noexcept
+		void workThread(const sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2& mut, InternalType& protectedData) const noexcept
 		{
 			{
 				//zero local_state before use
