@@ -6,7 +6,7 @@ namespace sds
 	/// A default constructed KeyboardPlayerInfo struct has default values that are usable.
 	///	Thread safe.
 	/// </summary>
-	struct KeyboardPlayerInfo
+	struct KeyboardPlayerInfo final
 	{
 		using PidType = int;
 		//ISO CPP guidelines C.45 followed here: https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rc-default
