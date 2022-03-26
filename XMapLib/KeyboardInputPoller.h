@@ -36,7 +36,7 @@ namespace sds
 		~KeyboardInputPoller() = default;
 
 		/// <summary>Returns copy and clears internal one.</summary>
-		std::vector<XINPUT_KEYSTROKE> getAndClearStates() const
+		[[nodiscard]] std::vector<XINPUT_KEYSTROKE> getAndClearStates() const
 		{
 			return m_workThread->GetAndClearCurrentStates();
 		}
@@ -54,7 +54,7 @@ namespace sds
 		}
 		/// <summary>Gets the running status of the worker thread</summary>
 		/// <returns> true if thread is running, false otherwise</returns>
-		bool IsRunning() const noexcept
+		[[nodiscard]] bool IsRunning() const noexcept
 		{
 			if (m_workThread)
 				return m_workThread->IsRunning();
@@ -62,7 +62,7 @@ namespace sds
 		}
 		/// <summary>Returns status of XINPUT library detecting a controller.</summary>
 		/// <returns> true if controller is connected, false otherwise</returns>
-		bool IsControllerConnected() const noexcept
+		[[nodiscard]] bool IsControllerConnected() const noexcept
 		{
 			XINPUT_KEYSTROKE ss{};
 			const DWORD ret = XInputGetKeystroke(m_local_player.player_id,0, &ss);
@@ -71,7 +71,7 @@ namespace sds
 		/// <summary>Returns status of XINPUT library detecting a controller.
 		/// This overload uses the player_id value in a KeyboardPlayerInfo struct</summary>
 		/// <returns> true if controller is connected, false otherwise</returns>
-		bool IsControllerConnected(const KeyboardPlayerInfo& p) const noexcept
+		[[nodiscard]] bool IsControllerConnected(const KeyboardPlayerInfo& p) const noexcept
 		{
 			XINPUT_KEYSTROKE ss{};
 			const DWORD ret = XInputGetKeystroke(p.player_id, 0, &ss);
