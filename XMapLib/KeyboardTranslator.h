@@ -73,7 +73,7 @@ namespace sds
 		{
 			m_map_token_info.clear();
 		}
-		std::vector<KeyboardKeyMap> GetMaps() const noexcept
+		[[nodiscard]] std::vector<KeyboardKeyMap> GetMaps() const noexcept
 		{
 			return m_map_token_info;
 		}
@@ -132,7 +132,7 @@ namespace sds
 		/// <param name="detail">Newest element being set to keydown state</param>
 		///	<param name="outOvertaken">out key set to the one being overtaken</param>
 		/// <returns>true if is overtaking a thumbstick direction already depressed</returns>
-		bool IsOvertaking(const KeyboardKeyMap &detail, KeyboardKeyMap &outOvertaken)
+		[[nodiscard]] bool IsOvertaking(const KeyboardKeyMap &detail, KeyboardKeyMap &outOvertaken)
 		{
 			//Is detail a thumbstick direction map, and if so, which thumbstick.
 			const auto leftAxisIterator = std::ranges::find(KeyboardSettings::THUMBSTICK_L_VK_LIST, detail.SendingElementVK);
@@ -162,7 +162,7 @@ namespace sds
 		{
 			SendTheKey(detail, false, InpType::KEYUP);
 		}
-		std::string CheckForVKError(const KeyboardKeyMap& detail) const
+		[[nodiscard]] std::string CheckForVKError(const KeyboardKeyMap& detail) const
 		{
 			if ((detail.MappedToVK <= 0) || (detail.SendingElementVK <= 0))
 			{
