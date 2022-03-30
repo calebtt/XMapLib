@@ -79,7 +79,7 @@ namespace sds
 		}
 	protected:
 		/// <summary>Worker thread used by m_workThread. Updates the protectedData with mutex protection.</summary>
-		void workThread(sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2& mut, auto& protectedData)
+		void workThread(const sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2& mut, auto& protectedData)
 		{
 			auto addElement = [this,&mut,&protectedData](const XINPUT_KEYSTROKE& state)
 			{
