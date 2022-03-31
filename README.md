@@ -1,9 +1,4 @@
 # XMapLib
-<a href="https://scan.coverity.com/projects/calebtt-xmaplib">
-  <img alt="Coverity Scan Build Status"
-       src="https://scan.coverity.com/projects/24728/badge.svg"/>
-</a>
-
 A closer to the metal library for Xbox controller to keyboard and mouse input.
 
 <p>XMapLibSharp is a C# .NET GUI project using the C++ project code through a DLL. With this approach,
