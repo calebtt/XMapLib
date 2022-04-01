@@ -10,13 +10,17 @@ namespace sds
 		using LambdaArg1 = std::atomic<bool>;
 		using LambdaArg2 = std::mutex;
 	};
-	/// <summary>All aboard the SFINAE train</summary>
+	/// <summary>All aboard the SFINAE train. It provides facilities for safely accessing data being operated on by a spawned thread,
+	///	as well as stopping and starting the running thread.
+	///	If you want to use this class, make a function (or lambda function) with parameters
+	///	of the form [void] function_name( const LambdaArgs::LambdaArg1 stopCondition, LambdaArgs::LambdaArg2 theMutex, UserType protectedDataYouWantToAccess )
+	/// </summary>
 	template<typename InternalData>
 	requires std::is_default_constructible_v<InternalData>
 	class CPPRunnerGeneric
 	{
 	public:
-		using LambdaType = std::function<void(std::atomic<bool>&, std::mutex&, InternalData&)>;
+		using LambdaType = std::function<void(const std::atomic<bool>&, std::mutex&, InternalData&)>;
 		using ScopedLockType = std::lock_guard<std::mutex>;
 
 		CPPRunnerGeneric(LambdaType lambdaToRun) : m_lambda(std::move(lambdaToRun)) { }
@@ -43,7 +47,7 @@ namespace sds
 			if (m_local_thread != nullptr)
 				return false;
 			m_is_stop_requested = false;
-			m_local_thread = std::make_unique<std::thread>(m_lambda, std::ref(m_is_stop_requested), std::ref(m_state_mutex), std::ref(m_local_state));
+			m_local_thread = std::make_unique<std::thread>(m_lambda, std::cref(m_is_stop_requested), std::ref(m_state_mutex), std::ref(m_local_state));
 			return m_local_thread->joinable();
 		}
 		/// <summary>Returns true if thread is running.</summary>

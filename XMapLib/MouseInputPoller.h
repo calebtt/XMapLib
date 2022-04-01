@@ -19,7 +19,7 @@ namespace sds
 		{
 			m_workThread =
 				std::make_unique<LambdaRunnerType>
-				([this](sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2& mut, auto& protectedData) { workThread(stopCondition, mut, protectedData); });
+				([this](const sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2& mut, auto& protectedData) { workThread(stopCondition, mut, protectedData); });
 		}
 	public:
 		MouseInputPoller()
