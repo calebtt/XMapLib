@@ -122,7 +122,7 @@ namespace sds
 			ThumbstickToDelay yThread(this->GetSensitivity(), m_local_player, m_stickmap_info, false);
 			MouseMoveThread mover;
 			//thread main loop
-			while (!stopCondition)
+			while (!(*stopCondition))
 			{
 				ProcessState(m_poller.GetUpdatedState());
 				//store the returned delay from axisthread for each axis

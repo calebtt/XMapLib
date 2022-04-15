@@ -58,7 +58,7 @@ namespace sds
 			//and in that way, will perform the single pixel move with two different variable time delays.
 			bool isXM = false;
 			bool isYM = false;
-			while (!stopCondition)
+			while (!(*stopCondition))
 			{
 				const bool isXPos = m_is_x_positive;
 				const bool isYPos = m_is_y_positive;

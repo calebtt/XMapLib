@@ -90,7 +90,7 @@ namespace sds
 			}
 			XINPUT_STATE tempState{};
 			DWORD lastPacket = 0;
-			while (!stopCondition)
+			while (!(*stopCondition))
 			{
 				tempState = {};
 				const DWORD error = XInputGetState(m_local_player.player_id, &tempState);

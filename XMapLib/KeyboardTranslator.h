@@ -11,7 +11,7 @@ namespace sds
 {
 	/// <summary>
 	/// Contains the logic for determining if a key press or mouse click should occur, uses sds::Utilities::SendKeyInput m_key_send to send the input.
-	///	Function ProcessKeystroke(XINPUT_KEYSTROKE &stroke) is used to process a controller input structure.
+	///	Function ProcessKeystroke(XINPUT_KEYSTROKE &stroke) is used to process a controller input structure. Handles key-repeat behavior as well.
 	/// </summary>
 	class KeyboardTranslator
 	{
@@ -123,7 +123,6 @@ namespace sds
 		/// <summary>Does the key send call, updates LastAction and updates LastSentTime</summary>
 		void SendTheKey(KeyboardKeyMap& mp, const bool keyDown, KeyboardKeyMap::ActionType action) noexcept
 		{
-			//std::cerr << mp << std::endl; // temp logging
 			mp.LastAction = action;
 			m_key_send.SendScanCode(mp.MappedToVK, keyDown);
 			mp.LastSentTime.Reset(KeyboardSettings::MICROSECONDS_DELAY_KEYREPEAT); // update last sent time

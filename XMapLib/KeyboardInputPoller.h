@@ -91,7 +91,7 @@ namespace sds
 			};
 			XINPUT_KEYSTROKE tempState{};
 			int currentCount = 0;
-			while (!stopCondition)
+			while (!(*stopCondition))
 			{
 				tempState={};
 				const DWORD error = XInputGetKeystroke(m_local_player.player_id, 0, &tempState);

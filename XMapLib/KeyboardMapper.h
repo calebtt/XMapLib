@@ -84,10 +84,10 @@ namespace sds
 		}
 	protected:
 		/// <summary>Worker thread, protected visibility.</summary>
-		void workThread(auto& stopCondition, auto&, auto&)
+		void workThread(const auto& stopCondition, auto&, auto&)
 		{
 			//thread main loop
-			while (!stopCondition)
+			while (!(*stopCondition))
 			{
 				const std::vector<XINPUT_KEYSTROKE> states = m_poller.getAndClearStates();
 				for(const auto &cur: states)
