@@ -108,7 +108,7 @@ namespace sds
 						addElement(tempState);
 					}
 				}
-				//std::this_thread::sleep_for(std::chrono::milliseconds(KeyboardSettings::THREAD_DELAY_POLLER));
+				std::this_thread::sleep_for(std::chrono::milliseconds(KeyboardSettings::THREAD_DELAY_POLLER));
 			}
 		}
 	};
