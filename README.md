@@ -24,8 +24,8 @@ A closer to the metal library for Xbox controller to keyboard and mouse input.
   <li>Load/Save config files and share them</li>
  </ul>
  
-<p><i>XMapLibSharp is a C# .NET GUI project using the C++ project code through a DLL. With this approach,
-the project has access to the entire .NET framework for GUI work while keeping the native performance and power of the C++ XMapLib project code.</i>
+<p><b><i>XMapLibSharp is a C# .NET GUI project using the C++ project code through a DLL. With this approach,
+the project has access to the entire .NET framework for GUI work while keeping the native performance and power of the C++ XMapLib project code.</i></b>
   <p>The project utilizes 
 <ul>
   <li>.NET multi-threading</li> 
