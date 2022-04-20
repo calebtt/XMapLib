@@ -1,8 +1,31 @@
 # XMapLib
 A closer to the metal library for Xbox controller to keyboard and mouse input.
-
-<p>XMapLibSharp is a C# .NET GUI project using the C++ project code through a DLL. With this approach,
-the project has access to the entire .NET framework for GUI work while keeping the native performance and power of the C++ XMapLib project code.
+<b><p>Current Features</b>
+<ul>
+  <li>Mapping of controller input to keyboard and mouse input on Windows.</li>
+  <li>GUI for changing key bindings</li>
+  <li>List of key binding presets to choose from</li>
+  <li>Editable list of key bindings</li>
+  <li>Adjustable mouse sensitivity</li>
+  <li>Toggleable key repeat behavior</li>
+ </ul>
+ <b><p>Roadmap</b>
+ <ul>
+  <li>Lower CPU usage</li>
+  <li>Portable input simulation thread priorities</li>
+  <li>Dep. injected timestamp retrieval, system calls for high res. clock are heavy</li>
+  <li>Make use of polar coordinates instead of scaling cartesian coordinates (PolarCode repo)</li>
+ </ul>
+ <b><p>Possible Ideas</b>
+ <ul>
+  <li>Integrate my PolarCode repo code</li>
+  <li>Portable everything</li>
+  <li>Run as a system service instead of on-demand app</li>
+  <li>Load/Save config files and share them</li>
+ </ul>
+ 
+<p><i>XMapLibSharp is a C# .NET GUI project using the C++ project code through a DLL. With this approach,
+the project has access to the entire .NET framework for GUI work while keeping the native performance and power of the C++ XMapLib project code.</i>
   <p>The project utilizes 
 <ul>
   <li>.NET multi-threading</li> 
