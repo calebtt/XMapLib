@@ -65,6 +65,8 @@ namespace sds
 				m_polar_magnitude_deadzone = cdz;
 			//read radius scale values config file
 			m_radius_scale_values = ReadRadiusScaleValues::GetScalingValues();
+			if (m_radius_scale_values.empty())
+				Utilities::LogError("Error in ThumbstickToDelay::ThumbstickToDelay(int,MousePlayerInfo,StickMap), failed to read radius scaling values from config file!");
 		}
 		ThumbstickToDelay() = delete;
 		ThumbstickToDelay(const ThumbstickToDelay& other) = delete;
