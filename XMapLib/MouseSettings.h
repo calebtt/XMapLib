@@ -15,7 +15,7 @@ namespace sds
 		//Input Poller thread delay, in milliseconds.
 		static constexpr int THREAD_DELAY_INPUT_POLLER_MS{ 4 };
 		//ThumbstickValueMax is the sentinel abs value a controller thumbstick should report.
-		static constexpr short ThumbstickValueMax{ 30'000 };
+		static constexpr short ThumbstickValueMax{ 32'766 };
 		//ThumbstickValueMin is the sentinel min value a controller thumbstick should report.
 		static constexpr short ThumbstickValueMin{ -ThumbstickValueMax };
 		//Sensitivity Min is the minimum mouse sensitivity value allowed, used in several places.

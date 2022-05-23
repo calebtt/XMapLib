@@ -125,15 +125,14 @@ namespace sds
 			return std::make_pair<size_t,size_t>(ToA<size_t>(interpX), ToA<size_t>(interpY));
 			//const auto inverseX = us_delay_max - (integralPercentageX * step + us_delay_min);
 			//const auto inverseY = us_delay_max - (integralPercentageY * step + us_delay_min);
-			return std::make_pair<size_t, size_t>(ToA<int>(std::clamp(inverseX, us_delay_min, us_delay_max)), ToA<int>(std::clamp(inverseY, us_delay_min, us_delay_max)));
+			//return std::make_pair<size_t, size_t>(ToA<int>(std::clamp(inverseX, us_delay_min, us_delay_max)), ToA<int>(std::clamp(inverseY, us_delay_min, us_delay_max)));
 		}
 		///<summary>Takes a cartesian value and returns true if equal or over deadzone. </summary>
 		[[nodiscard]] bool IsBeyondDeadzone(const int cartesianThumbstickValue) const noexcept
 		{
 			using sds::Utilities::ToA;
 			using sds::Utilities::ConstAbs;
-			const bool isAboveMag = ConstAbs(cartesianThumbstickValue) >= GetDeadzoneCurrentValue();
-			return isAboveMag;
+			return ConstAbs(cartesianThumbstickValue) >= GetDeadzoneCurrentValue();
 		}
 	};
 }
