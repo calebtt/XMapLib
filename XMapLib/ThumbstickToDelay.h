@@ -67,6 +67,9 @@ namespace sds
 			m_radius_scale_values = ReadRadiusScaleValues::GetScalingValues();
 			if (m_radius_scale_values.empty())
 				Utilities::LogError("Error in ThumbstickToDelay::ThumbstickToDelay(int,MousePlayerInfo,StickMap), failed to read radius scaling values from config file!");
+			std::string mapSize = "Radius scale value map size: ";
+			mapSize += m_radius_scale_values.size();
+			Utilities::LogError(mapSize.c_str());
 		}
 		ThumbstickToDelay() = delete;
 		ThumbstickToDelay(const ThumbstickToDelay& other) = delete;
@@ -95,19 +98,26 @@ namespace sds
 			using Utilities::ConstAbs;
 			static constexpr double SensMax{ 100.0 };
 			static constexpr double PolarRadiusMax{ MouseSettings::ThumbstickValueMax };
+			constexpr std::string_view ErrBadAngle = "Error in ThumbstickToDelay::BuildDelayInfo(), fixed theta angle out of bounds.";
 			PolarCalc pc(MouseSettings::ThumbstickValueMax, Utilities::LogError);
-			//get some polar info
-			auto fullInfo = pc.ComputePolarCompleteInfo(cartesianX, cartesianY);
+			//get polar X and Y magnitudes from cartesian X and Y.
+			auto fullInfo = pc.ComputePolarCompleteInfo(cartesianX, -cartesianY);
 			auto &[xPolarMag, yPolarMag] = fullInfo.adjusted_magnitudes;
-
 			//use stored scaling values to convert polar radii
-			const unsigned fixedAngle = ToA<unsigned>(ConstAbs(fullInfo.polar_info.polar_theta_angle * 100.0));
-			if (fixedAngle < 0)
-				Utilities::LogError("Error in ThumbstickToDelay::BuildDelayInfo(), fixed theta angle out of bounds.");
+			const unsigned fixedAngle = ToA<unsigned>(ConstAbs(fullInfo.polar_info.polar_theta_angle) * 100.0);
+
 			if (fixedAngle < m_radius_scale_values.size() && fixedAngle > 0)
 			{
 				xPolarMag *= m_radius_scale_values[fixedAngle];
 				yPolarMag *= m_radius_scale_values[fixedAngle];
+				//std::cout << "Fixed Angle: " << fixedAngle << " Fixed X: " << xPolarMag << " Fixed Y: " << yPolarMag << '\n';
+			}
+			else
+			{
+				std::stringstream ss;
+				ss << ErrBadAngle << " Angle:[";
+				ss << fixedAngle << "]\n";
+				Utilities::LogError(ss.str());
 			}
 			//TODO, add reading the scaling values file using readradiusscalevalues
 			//and make sure this is returning good delay values. Apply scaling factors to all quadrants.
@@ -119,12 +129,12 @@ namespace sds
 			const auto inverseX = 1.0 - (percentageX);
 			//const auto inverseY = 1.0 / percentageY;
 			const auto inverseY = 1.0 - (percentageY);
-			std::cout << "inverseX: " << inverseX << '\n';
-			std::cout << "inverseY: " << inverseY << '\n';
+			//std::cout << "inverseX: " << inverseX << '\n';
+			//std::cout << "inverseY: " << inverseY << '\n';
 			const auto interpX = std::lerp(us_delay_min, us_delay_max, inverseX);
 			const auto interpY = std::lerp(us_delay_min, us_delay_max, inverseY);
-			std::cout << "interpX: " << interpX << '\n';
-			std::cout << "interpY: " << interpY << '\n';
+			//std::cout << "interpX: " << interpX << '\n';
+			//std::cout << "interpY: " << interpY << '\n';
 			return std::make_pair<size_t,size_t>(ToA<size_t>(interpX), ToA<size_t>(interpY));
 			//const auto inverseX = us_delay_max - (integralPercentageX * step + us_delay_min);
 			//const auto inverseY = us_delay_max - (integralPercentageY * step + us_delay_min);

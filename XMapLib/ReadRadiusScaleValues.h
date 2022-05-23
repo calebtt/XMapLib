@@ -4,6 +4,9 @@ namespace sds
 {
 	class ReadRadiusScaleValues
 	{
+		using MutexType = std::mutex;
+		using LockType = std::scoped_lock<MutexType>;
+		inline static MutexType m_fileMutex;
 	public:
 		/// <summary> Reads floating point values used to scale the thumbstick values to a proper
 		///	circular polar radius. This is done because the values from the hardware are just plain bad.
@@ -12,6 +15,7 @@ namespace sds
 		/// <returns>Empty vector on error reading or parsing file. vector of double otherwise.</returns>
 		static std::vector<double> GetScalingValues()
 		{
+			LockType tempLock(m_fileMutex);
 			std::vector<double> scalingValues;
 			std::ifstream inFile(MouseSettings::SCALING_VALUES_FNAME.data());
 			std::string line;
