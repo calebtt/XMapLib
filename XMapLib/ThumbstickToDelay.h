@@ -89,7 +89,8 @@ namespace sds
 		{
 			//TODO this should only use the range between polar_deadzone and polarradiusmax, also there exists a bug lowering the movement speed
 			//TODO should make the sensitivity function change the microsec delay minimum, perhaps
-			using sds::Utilities::ToA;
+			using Utilities::ToA;
+			using Utilities::ConstAbs;
 			static constexpr double SensMax{ 100.0 };
 			static constexpr double PolarRadiusMax{ MouseSettings::ThumbstickValueMax };
 			PolarCalc pc(MouseSettings::ThumbstickValueMax, Utilities::LogError);
@@ -98,7 +99,7 @@ namespace sds
 			auto &[xPolarMag, yPolarMag] = fullInfo.adjusted_magnitudes;
 
 			//use stored scaling values to convert polar radii
-			const unsigned fixedAngle = ToA<unsigned>(std::abs(fullInfo.polar_info.polar_theta_angle * 100.0));
+			const unsigned fixedAngle = ToA<unsigned>(ConstAbs(fullInfo.polar_info.polar_theta_angle * 100.0));
 			if (fixedAngle < 0)
 				Utilities::LogError("Error in ThumbstickToDelay::BuildDelayInfo(), fixed theta angle out of bounds.");
 			if (fixedAngle < m_radius_scale_values.size() && fixedAngle > 0)
@@ -130,8 +131,8 @@ namespace sds
 		///<summary>Takes a cartesian value and returns true if equal or over deadzone. </summary>
 		[[nodiscard]] bool IsBeyondDeadzone(const int cartesianThumbstickValue) const noexcept
 		{
-			using sds::Utilities::ToA;
-			using sds::Utilities::ConstAbs;
+			using Utilities::ToA;
+			using Utilities::ConstAbs;
 			return ConstAbs(cartesianThumbstickValue) >= GetDeadzoneCurrentValue();
 		}
 	};
