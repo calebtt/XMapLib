@@ -10,25 +10,30 @@ namespace sds
 	/// </summary>
 	class KeyboardInputPoller
 	{
-		using InternalType = std::vector<XINPUT_KEYSTROKE>;
-		using LambdaRunnerType = sds::CPPRunnerGeneric<InternalType>;
-		using lock = LambdaRunnerType::ScopedLockType;
-		const int EMPTY_COUNT{ 5000 };
+		using DataType = std::vector<XINPUT_KEYSTROKE>;
+		using LambdaRunnerType = sds::CPPRunnerGeneric<DataType>;
+		using ScopedLockType = LambdaRunnerType::ScopedLockType;
+		const int EMPTY_COUNT{ 500 };
 		KeyboardPlayerInfo m_local_player{};
-		std::unique_ptr<LambdaRunnerType> m_workThread{};
-		void InitWorkThread() noexcept
+		LambdaRunnerType m_workThread;
+		auto GetLambda()
 		{
-			m_workThread =
-				std::make_unique<LambdaRunnerType>
-				([this](auto& stopCondition, auto& mut, auto& protectedData) { workThread(stopCondition, mut, protectedData); });
+			return [this](const auto stopCondition, const auto mut, auto protectedData) { workThread(stopCondition, mut, protectedData); };
+		}
+		static void SetPriority(void *nativeHandle)
+		{
+			SetThreadPriority(nativeHandle, THREAD_PRIORITY_TIME_CRITICAL);
 		}
 	public:
-		KeyboardInputPoller()
+		KeyboardInputPoller() : m_workThread(GetLambda())
 		{
-			InitWorkThread();
-			Start();
+			SetPriority(m_workThread.GetNativeHandle());
 		}
-		explicit KeyboardInputPoller(const KeyboardPlayerInfo& p) : m_local_player(p) { InitWorkThread(); Start(); }
+		explicit KeyboardInputPoller(const KeyboardPlayerInfo& p)
+		: m_local_player(p), m_workThread(GetLambda())
+		{
+			SetPriority(m_workThread.GetNativeHandle());
+		}
 		KeyboardInputPoller(const KeyboardInputPoller& other) = delete;
 		KeyboardInputPoller(KeyboardInputPoller&& other) = delete;
 		KeyboardInputPoller& operator=(const KeyboardInputPoller& other) = delete;
@@ -38,27 +43,23 @@ namespace sds
 		/// <summary>Returns copy and clears internal one.</summary>
 		[[nodiscard]] std::vector<XINPUT_KEYSTROKE> getAndClearStates() const
 		{
-			return m_workThread->GetAndClearCurrentStates();
+			return m_workThread.GetAndClearCurrentStates();
 		}
 		/// <summary>Start polling for updated XINPUT_KEYSTROKE info.</summary>
-		void Start() const noexcept
+		void Start() noexcept
 		{
-			if (m_workThread)
-				m_workThread->StartThread();
+			m_workThread.StartThread();
 		}
 		/// <summary>Stop input polling.</summary>
-		void Stop() const noexcept
+		void Stop() noexcept
 		{
-			if (m_workThread)
-				m_workThread->StopThread();
+			m_workThread.StopThread();
 		}
 		/// <summary>Gets the running status of the worker thread</summary>
 		/// <returns> true if thread is running, false otherwise</returns>
 		[[nodiscard]] bool IsRunning() const noexcept
 		{
-			if (m_workThread)
-				return m_workThread->IsRunning();
-			return false;
+			return m_workThread.IsRunning();
 		}
 		/// <summary>Returns status of XINPUT library detecting a controller.</summary>
 		/// <returns> true if controller is connected, false otherwise</returns>
@@ -78,14 +79,14 @@ namespace sds
 			return ret == ERROR_SUCCESS || ret == ERROR_EMPTY;
 		}
 	protected:
-		/// <summary>Worker thread used by m_workThread. Updates the protectedData with mutex protection.</summary>
-		void workThread(const sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2& mut, auto& protectedData)
+		/// <summary>Worker thread used by m_workThread. Updates the protectedData with mutex protection. The copied shared_ptr is intentional.</summary>
+		void workThread(const auto stopCondition, const auto mut, auto protectedData)
 		{
-			auto addElement = [this,&mut,&protectedData](const XINPUT_KEYSTROKE& state)
+			auto addElement = [&](const XINPUT_KEYSTROKE& state)
 			{
-				lock addLock(mut);
-				if (protectedData.size() < KeyboardSettings::MAX_STATE_COUNT)
-					protectedData.push_back(state);
+				ScopedLockType addLock(*mut);
+				if (protectedData->size() < KeyboardSettings::MAX_STATE_COUNT)
+					protectedData->push_back(state);
 				else
 					Utilities::LogError("KeyboardInputPoller::addElement(): State buffer dropping states.");
 			};
@@ -108,7 +109,9 @@ namespace sds
 						addElement(tempState);
 					}
 				}
-				std::this_thread::sleep_for(std::chrono::milliseconds(KeyboardSettings::THREAD_DELAY_POLLER));
+				//no loop delay is tolerable here, essentially. A missed state is a real problem.
+				//but someday with a low cpu usage custom timer, added into this class,
+				//it should be possible to get performant microsecond loop delays here.
 			}
 		}
 	};

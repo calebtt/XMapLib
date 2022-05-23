@@ -13,24 +13,25 @@ namespace sds
 		using InternalType = XINPUT_STATE;
 		using LambdaRunnerType = sds::CPPRunnerGeneric<InternalType>;
 		using lock = LambdaRunnerType::ScopedLockType;
+		inline static constexpr size_t MaxUnhandledBeforeSleep{ 250 };
 		MousePlayerInfo m_local_player{};
-		std::unique_ptr<LambdaRunnerType> m_workThread{};
-		void InitWorkThread() noexcept
+		LambdaRunnerType m_workThread;
+		auto GetLambda()
 		{
-			m_workThread =
-				std::make_unique<LambdaRunnerType>
-				([this](const sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2& mut, auto& protectedData) { workThread(stopCondition, mut, protectedData); });
+			return [this](const auto stopCondition, const auto mut, auto protectedData) { workThread(stopCondition, mut, protectedData); };
+		}
+		static void SetPriority(void* nativeHandle)
+		{
+			SetThreadPriority(nativeHandle, THREAD_PRIORITY_ABOVE_NORMAL);
 		}
 	public:
-		MouseInputPoller()
+		MouseInputPoller() : m_workThread(GetLambda())
 		{
-			InitWorkThread();
-			Start();
+			SetPriority(m_workThread.GetNativeHandle());
 		}
-		explicit MouseInputPoller(const MousePlayerInfo &p) : m_local_player(p)
+		explicit MouseInputPoller(const MousePlayerInfo &p) : m_local_player(p), m_workThread(GetLambda())
 		{
-			InitWorkThread();
-			Start();
+			SetPriority(m_workThread.GetNativeHandle());
 		}
 		MouseInputPoller(const MouseInputPoller& other) = delete;
 		MouseInputPoller(MouseInputPoller&& other) = delete;
@@ -38,31 +39,25 @@ namespace sds
 		MouseInputPoller& operator=(MouseInputPoller&& other) = delete;
 		~MouseInputPoller() = default;
 
-		[[nodiscard]] XINPUT_STATE GetUpdatedState() const noexcept
+		[[nodiscard]] XINPUT_STATE GetUpdatedState() noexcept
 		{
-			if (m_workThread)
-				return m_workThread->GetCurrentState();
-			return XINPUT_STATE{};
+			return m_workThread.GetCurrentState();
 		}
 		/// <summary>Start polling for updated XINPUT_STATE info.</summary>
-		void Start() const noexcept
+		void Start() noexcept
 		{
-			if (m_workThread)
-				m_workThread->StartThread();
+			m_workThread.StartThread();
 		}
-		/// <summary>Stop input polling.</summary>
-		void Stop() const noexcept
+		/// <summary>Stop input polling. Blocks and waits for finish.</summary>
+		void Stop() noexcept
 		{
-			if (m_workThread)
-				m_workThread->StopThread();
+			m_workThread.StopThread();
 		}
 		/// <summary>Gets the running status of the worker thread</summary>
 		/// <returns> true if thread is running, false otherwise</returns>
 		[[nodiscard]] bool IsRunning() const noexcept
 		{
-			if(m_workThread)
-				return m_workThread->IsRunning();
-			return false;
+			return m_workThread.IsRunning();
 		}
 		/// <summary>Returns status of XINPUT library detecting a controller.</summary>
 		/// <returns> true if controller is connected, false otherwise</returns>
@@ -81,15 +76,16 @@ namespace sds
 		}
 	protected:
 		/// <summary>Worker thread used by m_workThread. Updates the protectedData with mutex protection.</summary>
-		void workThread(const sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2& mut, InternalType& protectedData) const noexcept
+		void workThread(const auto stopCondition, const auto mut, const auto protectedData) const noexcept
 		{
 			{
 				//zero local_state before use
-				lock first(mut);
-				protectedData = {};
+				lock first(*mut);
+				*protectedData = {};
 			}
 			XINPUT_STATE tempState{};
 			DWORD lastPacket = 0;
+			size_t unhandledCount{ 0 };
 			while (!(*stopCondition))
 			{
 				tempState = {};
@@ -99,11 +95,19 @@ namespace sds
 					if (tempState.dwPacketNumber != lastPacket)
 					{
 						lastPacket = tempState.dwPacketNumber;
-						lock second(mut);
-						protectedData = tempState;
+						lock second(*mut);
+						*protectedData = tempState;
 					}
+					unhandledCount = 0;
 				}
-				std::this_thread::sleep_for(std::chrono::milliseconds(MouseSettings::THREAD_DELAY_POLLER));
+				else
+				{
+					if(unhandledCount < MaxUnhandledBeforeSleep)
+						unhandledCount++;
+				}
+				if (unhandledCount > MaxUnhandledBeforeSleep)
+					std::this_thread::sleep_for(std::chrono::milliseconds(250));
+				std::this_thread::sleep_for(std::chrono::milliseconds(MouseSettings::THREAD_DELAY_INPUT_POLLER_MS));
 			}
 		}
 	};

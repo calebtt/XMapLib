@@ -3,6 +3,7 @@
 #include "MouseMoveThread.h"
 #include "ThumbstickToDelay.h"
 #include "MouseInputPoller.h"
+#include "PolarQuadrantCalc.h"
 #include "Utilities.h"
 namespace sds
 {
@@ -16,7 +17,7 @@ namespace sds
 	{
 		using InternalType = int;
 		using LambdaRunnerType = sds::CPPRunnerGeneric<InternalType>;
-		using lock = LambdaRunnerType::ScopedLockType;
+		using ScopedLockType = LambdaRunnerType::ScopedLockType;
 		std::atomic<StickMap> m_stickmap_info{ StickMap::NEITHER_STICK };
 		std::atomic<SHORT> m_thread_x{ 0 };
 		std::atomic<SHORT> m_thread_y{0};
@@ -28,7 +29,7 @@ namespace sds
 		{
 			m_workThread =
 				std::make_unique<LambdaRunnerType>
-				([this](const sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2& mut, int& protectedData) { workThread(stopCondition, mut, protectedData); });
+				([this](const auto stopCondition, const auto mut, auto protectedData) { workThread(stopCondition, mut, protectedData); });
 		}
 	public:
 		/// <summary>Ctor for default configuration</summary>
@@ -53,17 +54,15 @@ namespace sds
 		{
 			if (m_stickmap_info != info)
 			{
-				this->Stop();
+				Stop();
 				m_stickmap_info = info;
 				if (info != StickMap::NEITHER_STICK)
 				{
-					m_poller.Start();
-					m_workThread->StartThread();
+					Start();
 				}
 				else
 				{
-					m_poller.Stop();
-					m_workThread->StopThread();
+					Stop();
 				}
 			}
 		}
@@ -101,13 +100,13 @@ namespace sds
 				workRunning = m_workThread->IsRunning();
 			return m_poller.IsRunning() && workRunning;
 		}
-		void Start() const noexcept
+		void Start() noexcept
 		{
 			m_poller.Start();
 			if(m_workThread != nullptr)
 				m_workThread->StartThread();
 		}
-		void Stop() const noexcept
+		void Stop() noexcept
 		{
 			m_poller.Stop();
 			if(m_workThread != nullptr)
@@ -116,10 +115,10 @@ namespace sds
 	protected:
 		/// <summary>Worker thread, protected visibility, gets updated data from ProcessState() function to use.
 		/// Accesses the std::atomic m_thread_x and m_thread_y members. chrono lib instances may throw exceptions.</summary>
-		void workThread(const sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2&, int&)
+		void workThread(const auto stopCondition, const auto, auto)
 		{
-			ThumbstickToDelay xThread(this->GetSensitivity(), m_local_player, m_stickmap_info, true);
-			ThumbstickToDelay yThread(this->GetSensitivity(), m_local_player, m_stickmap_info, false);
+			using sds::Utilities::ToA;
+			ThumbstickToDelay controller(this->GetSensitivity(), m_local_player, m_stickmap_info);
 			MouseMoveThread mover;
 			//thread main loop
 			while (!(*stopCondition))
@@ -130,12 +129,11 @@ namespace sds
 				//is X or Y negative, and if the axis is moving
 				const SHORT tx = m_thread_x;
 				const SHORT ty = m_thread_y;
-				const size_t xDelay = xThread.GetDelayFromThumbstickValue(tx, ty);
-				const size_t yDelay = yThread.GetDelayFromThumbstickValue(tx, ty);
+				const auto [xDelay, yDelay] = controller.GetDelaysFromThumbstickValues(tx, ty);
 				const bool ixp = tx > 0;
 				const bool iyp = ty > 0;
-				mover.UpdateState(xDelay, yDelay, ixp, iyp, xThread.DoesAxisRequireMoveAlt(tx, ty), yThread.DoesAxisRequireMoveAlt(tx, ty));
-				std::this_thread::sleep_for(std::chrono::milliseconds(MouseSettings::THREAD_DELAY_POLLER));
+				mover.UpdateState(xDelay, yDelay, ixp, iyp, controller.IsBeyondDeadzone(tx), controller.IsBeyondDeadzone(ty));
+				std::this_thread::sleep_for(std::chrono::milliseconds(4));
 			}
 		}
 	private:

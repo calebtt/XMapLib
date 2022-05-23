@@ -44,7 +44,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <EnableASAN>false</EnableASAN>
+    <EnableASAN>true</EnableASAN>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -168,9 +168,11 @@
     <ClInclude Include="DelayManager.h" />
     <ClInclude Include="MouseInputPoller.h" />
     <ClInclude Include="MouseMoveThread.h" />
+    <ClInclude Include="PolarCalc.h" />
+    <ClInclude Include="PolarQuadrantCalc.h" />
+    <ClInclude Include="ReadRadiusScaleValues.h" />
     <ClInclude Include="SendKeyInput.h" />
     <ClInclude Include="SendMouseInput.h" />
-    <ClInclude Include="SensitivityMapper.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StickMap.h" />
     <ClInclude Include="ThumbstickToDelay.h" />
@@ -186,6 +188,11 @@
     <ClInclude Include="MousePlayerInfo.h" />
     <ClInclude Include="MouseSettings.h" />
     <ClInclude Include="KeyboardTranslator.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="adjustment_values.txt">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+    </CopyFileToFolders>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

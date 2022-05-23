@@ -61,7 +61,7 @@ int main()
 	std::osyncstream ss(std::cout);
 	AddTestKeyMappings(keyer, ss);
 	GetterExit getter(keyer);
-	std::string err = mouser.SetSensitivity(75); // 75 out of 100
+	std::string err = mouser.SetSensitivity(100); //sensitivity
 	Utilities::LogError(err); // won't do anything if the string is empty
 	mouser.SetStick(StickMap::RIGHT_STICK);
 	
@@ -78,12 +78,14 @@ int main()
 			ss << "Controller reported as: " << "Connected." << std::endl;
 			keyer.Start();
 			mouser.Start();
+			ss.emit();
 		}
 		if ((!isControllerConnected) && isThreadRunning)
 		{
 			ss << "Controller reported as: " << "Disconnected." << std::endl;
 			keyer.Stop();
 			mouser.Stop();
+			ss.emit();
 		}
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	} while (!getter());

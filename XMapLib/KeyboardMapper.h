@@ -17,25 +17,21 @@ namespace sds
 		sds::KeyboardPlayerInfo m_localPlayerInfo{};
 		sds::KeyboardInputPoller m_poller{};
 		sds::KeyboardTranslator m_translator{};
-		std::unique_ptr<LambdaRunnerType> m_workThread{};
-		void InitWorkThread() noexcept
+		LambdaRunnerType m_workThread;
+		auto GetLambda()
 		{
-			m_workThread =
-				std::make_unique<LambdaRunnerType>
-				([this](auto& stopCondition, auto& mut, auto& protectedData) { workThread(stopCondition, mut, protectedData); });
+			return [this](const auto stopCondition, const auto mut, auto protectedData) { workThread(stopCondition, mut, protectedData); };
 		}
 	public:
 		/// <summary>Ctor for default configuration</summary>
-		KeyboardMapper()
+		KeyboardMapper() : m_workThread(GetLambda())
 		{
-			InitWorkThread();
-			Start();
+			SetThreadPriority(m_workThread.GetNativeHandle(), THREAD_PRIORITY_ABOVE_NORMAL);
 		}
 		/// <summary>Ctor allows setting a custom KeyboardPlayerInfo</summary>
-		explicit KeyboardMapper(const sds::KeyboardPlayerInfo& player) : m_localPlayerInfo(player)
+		explicit KeyboardMapper(const sds::KeyboardPlayerInfo& player) : m_localPlayerInfo(player), m_workThread(GetLambda())
 		{
-			InitWorkThread();
-			Start();
+			SetThreadPriority(m_workThread.GetNativeHandle(), THREAD_PRIORITY_ABOVE_NORMAL);
 		}
 		KeyboardMapper(const KeyboardMapper& other) = delete;
 		KeyboardMapper(KeyboardMapper&& other) = delete;
@@ -52,18 +48,19 @@ namespace sds
 		}
 		[[nodiscard]] bool IsRunning() const
 		{
-			return m_poller.IsRunning() && m_workThread->IsRunning();
+			return m_poller.IsRunning() && m_workThread.IsRunning();
 		}
-		void Start() const noexcept
+		void Start() noexcept
 		{
 			m_poller.Start();
-			m_workThread->StartThread();
+			m_workThread.StartThread();
 		}
 		void Stop() noexcept
 		{
 			m_translator.CleanupInProgressEvents();
+			m_workThread.StopThread();
 			m_poller.Stop();
-			m_workThread->StopThread();
+			
 		}
 		std::string AddMap(KeyboardKeyMap button)
 		{
@@ -84,7 +81,7 @@ namespace sds
 		}
 	protected:
 		/// <summary>Worker thread, protected visibility.</summary>
-		void workThread(const auto& stopCondition, auto&, auto&)
+		void workThread(const auto stopCondition, const auto, auto)
 		{
 			//thread main loop
 			while (!(*stopCondition))
@@ -94,7 +91,7 @@ namespace sds
 				{
 					m_translator.ProcessKeystroke(cur);
 				}
-				std::this_thread::sleep_for(std::chrono::milliseconds(KeyboardSettings::THREAD_DELAY_POLLER));
+				std::this_thread::sleep_for(std::chrono::milliseconds(4));
 			}
 		}
 	};

@@ -22,7 +22,7 @@ namespace sds
 		{
 			m_workThread =
 				std::make_unique<LambdaRunnerType>
-				([this](const sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2& mut, auto& protectedData) { workThread(stopCondition, mut, protectedData); });
+				([this](const auto stopCondition, const auto mut, auto protectedData) { workThread(stopCondition, mut, protectedData); });
 		}
 	public:
 		MouseMoveThread() noexcept
@@ -47,7 +47,7 @@ namespace sds
 			m_is_y_moving = isYMoving;
 		}
 	protected:
-		void workThread(const sds::LambdaArgs::LambdaArg1& stopCondition, sds::LambdaArgs::LambdaArg2&, InternalType&) const noexcept
+		void workThread(const auto stopCondition, auto, auto) const noexcept
 		{
 			using namespace std::chrono;
 			Utilities::SendMouseInput keySend;
@@ -64,6 +64,7 @@ namespace sds
 				const bool isYPos = m_is_y_positive;
 				const size_t xDelay = m_x_axis_delay;
 				const size_t yDelay = m_y_axis_delay;
+
 				const bool isXPast = xTime.IsElapsed();
 				const bool isYPast = yTime.IsElapsed();
 				if (isXM || isYM)

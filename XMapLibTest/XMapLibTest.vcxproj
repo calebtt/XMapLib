@@ -184,8 +184,6 @@
     <ClInclude Include="TestMapFunctions.h" />
     <ClInclude Include="TestMapper.h" />
     <ClInclude Include="TestMouse.h" />
-    <ClInclude Include="TestSensitivityMap.h" />
-    <ClInclude Include="TestThumbstickToDelay.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

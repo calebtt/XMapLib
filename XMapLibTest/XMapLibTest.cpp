@@ -4,9 +4,7 @@
 
 #include "CppUnitTest.h"
 #include "TestMapper.h"
-#include "TestSensitivityMap.h"
 #include "TestMouse.h"
-#include "TestThumbstickToDelay.h"
 #include "TestMapFunctions.h"
 #include "../XMapLib/MouseSettings.h"
 
@@ -26,7 +24,6 @@ namespace XMapLibTest
 			//Assert that certain constants are certain values, to not invalidate the tests.
 			Assert::AreEqual(MouseSettings::MICROSECONDS_MAX, 18000);
 			Assert::AreEqual(MouseSettings::MICROSECONDS_MIN, 500);
-			Assert::AreEqual(MouseSettings::MICROSECONDS_MIN_MAX, MouseSettings::MICROSECONDS_MIN*3);
 			Assert::AreEqual(MouseSettings::SENSITIVITY_MAX, 100);
 			Assert::AreEqual(MouseSettings::SENSITIVITY_MIN, 1);
 			Logger::WriteMessage("End TestAssertSettings()");
