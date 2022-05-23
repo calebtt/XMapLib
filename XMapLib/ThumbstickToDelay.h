@@ -1,5 +1,5 @@
 #pragma once
-#include "PolarQuadrantCalc.h"
+#include "PolarCalc.h"
 #include "stdafx.h"
 #include "Utilities.h"
 #include "ReadRadiusScaleValues.h"
@@ -92,9 +92,10 @@ namespace sds
 			using sds::Utilities::ToA;
 			static constexpr double SensMax{ 100.0 };
 			static constexpr double PolarRadiusMax{ MouseSettings::ThumbstickValueMax };
+			PolarCalc pc(MouseSettings::ThumbstickValueMax, Utilities::LogError);
 			//get some polar info
-			const auto fullInfo = PolarQuadrantCalc::ComputePolarCompleteInfo(cartesianX, cartesianY);
-			auto [xPolarMag, yPolarMag] = fullInfo.adjusted_magnitudes;
+			auto fullInfo = pc.ComputePolarCompleteInfo(cartesianX, cartesianY);
+			auto &[xPolarMag, yPolarMag] = fullInfo.adjusted_magnitudes;
 
 			//use stored scaling values to convert polar radii
 			const unsigned fixedAngle = ToA<unsigned>(std::abs(fullInfo.polar_info.polar_theta_angle * 100.0));

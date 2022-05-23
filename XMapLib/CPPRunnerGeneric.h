@@ -18,6 +18,8 @@ namespace sds
 	///	as well as stopping and starting the running thread.
 	///	If you want to use this class, make a function (or lambda function) with parameters
 	///	of the form [void] function_name( const LambdaArgs::LambdaArg1 stopCondition, LambdaArgs::LambdaArg2 theMutex, UserType protectedDataYouWantToAccess )
+	///	**
+	///	Data is owned and operated on by a running thread, and if stop() is requested, that data will no longer be reachable.
 	/// </summary>
 	template<typename InternalData>
 	requires std::is_default_constructible_v<InternalData>
