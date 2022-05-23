@@ -17,6 +17,7 @@ namespace sds::Utilities
 			//as long as each thread has it's own osyncstream object.
 			std::osyncstream sout(std::cerr);
 			sout << s << std::endl;
+			sout.emit();
 		}
 	}
 }

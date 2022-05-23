@@ -67,9 +67,10 @@ namespace sds
 			m_radius_scale_values = ReadRadiusScaleValues::GetScalingValues();
 			if (m_radius_scale_values.empty())
 				Utilities::LogError("Error in ThumbstickToDelay::ThumbstickToDelay(int,MousePlayerInfo,StickMap), failed to read radius scaling values from config file!");
-			std::string mapSize = "Radius scale value map size: ";
-			mapSize += m_radius_scale_values.size();
-			Utilities::LogError(mapSize.c_str());
+			std::stringstream ss;
+			ss << "Radius scale value map size: ";
+			ss << m_radius_scale_values.size();
+			Utilities::LogError(ss.str());
 		}
 		ThumbstickToDelay() = delete;
 		ThumbstickToDelay(const ThumbstickToDelay& other) = delete;
@@ -79,10 +80,9 @@ namespace sds
 		~ThumbstickToDelay() = default;
 		/// <summary>Main func for use.</summary>
 		///	<returns>pair X,Y Delay in US</returns>
-		[[nodiscard]] auto GetDelaysFromThumbstickValues(const int cartesianX, const int cartesianY) const noexcept -> std::pair<std::size_t,std::size_t>
+		[[nodiscard]] auto GetDelaysFromThumbstickValues(const int cartesianX, const int cartesianY) const noexcept
 		{
-			const auto delayPair = BuildDelayInfo(cartesianX, cartesianY, MouseSettings::MICROSECONDS_MIN, MouseSettings::MICROSECONDS_MAX);
-			return delayPair;
+			return BuildDelayInfo(cartesianX, cartesianY, MouseSettings::MICROSECONDS_MIN, MouseSettings::MICROSECONDS_MAX);
 		}
 		///<summary> Calculates microsecond delay values from cartesian X and Y thumbstick values.
 		///Probably needs optimized.</summary>
@@ -90,7 +90,7 @@ namespace sds
 			const auto cartesianX,
 			const auto cartesianY,
 			const double us_delay_min,
-			const double us_delay_max) const noexcept
+			const double us_delay_max) const noexcept -> std::pair<std::size_t, std::size_t>
 		{
 			//TODO this should only use the range between polar_deadzone and polarradiusmax, also there exists a bug lowering the movement speed
 			//TODO should make the sensitivity function change the microsec delay minimum, perhaps
@@ -100,12 +100,13 @@ namespace sds
 			static constexpr double PolarRadiusMax{ MouseSettings::ThumbstickValueMax };
 			constexpr std::string_view ErrBadAngle = "Error in ThumbstickToDelay::BuildDelayInfo(), fixed theta angle out of bounds.";
 			PolarCalc pc(MouseSettings::ThumbstickValueMax, Utilities::LogError);
-			//get polar X and Y magnitudes from cartesian X and Y.
+			//get polar X and Y magnitudes from cartesian X and Y, theta angle, and quadrant number.
 			auto fullInfo = pc.ComputePolarCompleteInfo(cartesianX, -cartesianY);
 			auto &[xPolarMag, yPolarMag] = fullInfo.adjusted_magnitudes;
+			const auto& quadrantNumber = fullInfo.quadrant_info.quadrant_number;
 			//use stored scaling values to convert polar radii
-			const unsigned fixedAngle = ToA<unsigned>(ConstAbs(fullInfo.polar_info.polar_theta_angle) * 100.0);
-
+			const auto fixedAngle = ToA<unsigned>(ConstAbs(fullInfo.polar_info.polar_theta_angle) * 100.0);
+			
 			if (fixedAngle < m_radius_scale_values.size() && fixedAngle > 0)
 			{
 				xPolarMag *= m_radius_scale_values[fixedAngle];
@@ -119,9 +120,7 @@ namespace sds
 				ss << fixedAngle << "]\n";
 				Utilities::LogError(ss.str());
 			}
-			//TODO, add reading the scaling values file using readradiusscalevalues
-			//and make sure this is returning good delay values. Apply scaling factors to all quadrants.
-
+			//make sure this is returning good delay values. Apply scaling factors to all quadrants.
 			const double percentageX = (xPolarMag / PolarRadiusMax);
 			const double percentageY = (yPolarMag / PolarRadiusMax);
 

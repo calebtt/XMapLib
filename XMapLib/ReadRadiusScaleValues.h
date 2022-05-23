@@ -18,22 +18,24 @@ namespace sds
 			LockType tempLock(m_fileMutex);
 			std::vector<double> scalingValues;
 			std::ifstream inFile(MouseSettings::SCALING_VALUES_FNAME.data());
-			std::string line;
-			std::stringstream ss;
-			while(std::getline(inFile, line))
+			std::string currentLine;
+			std::stringstream lineStream;
+			while(std::getline(inFile, currentLine))
 			{
-				ss.clear();
-				ss.str(line);
+				lineStream.clear();
+				lineStream.str(currentLine);
 				std::string token;
 				double value;
-				ss >> token;
-				ss >> value;
-				scalingValues.emplace_back(value);
-				if(ss.bad() || !ss.eof())
-				{
+				//parse value
+				lineStream >> token;
+				lineStream >> value;
+				//if line stringstream error state or contains more characters, fail.
+				if(lineStream.bad() || !lineStream.eof())
 					return std::vector<double>{};
-				}
+				//otherwise, emplace it into the vector
+				scalingValues.emplace_back(value);
 			}
+			//if file stream in error state or not at the end of the file, fail.
 			if(inFile.bad() || !inFile.eof())
 				return std::vector<double>{};
 			return scalingValues;
