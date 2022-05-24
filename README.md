@@ -1,5 +1,6 @@
 # XMapLib
-A closer to the metal library for Xbox controller to keyboard and mouse input.
+[![MSBuild](https://github.com/calebtt/XMapLib/actions/workflows/msbuild.yml/badge.svg)](https://github.com/calebtt/XMapLib/actions/workflows/msbuild.yml)
+<p><i>A closer to the metal library for Xbox controller to keyboard and mouse input.</i></p>
 <b><p>Current Features</b>
 <ul>
   <li>Mapping of controller input to keyboard and mouse input on Windows.</li>
