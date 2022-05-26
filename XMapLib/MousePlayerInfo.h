@@ -41,7 +41,7 @@ namespace sds
 			return *this;
 		}
 		//move constructor
-		MousePlayerInfo(MousePlayerInfo &&sp) = delete;
+		MousePlayerInfo(MousePlayerInfo&& sp) = delete;
 		//Move assignment operator
 		MousePlayerInfo &operator=(MousePlayerInfo &&sp) = delete;
 		~MousePlayerInfo() = default;

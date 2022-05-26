@@ -11,16 +11,22 @@ namespace sds
 	/// This class must be re-instantiated to use new deadzone values.</summary>
 	class ThumbstickToDelay
 	{
+		using MultFloat = float;
+		using SensInt = int;
+		using DzInt = int;
+		using ScaleFloat = ReadRadiusScaleValues::FloatType;
+		using ScaleRange = ReadRadiusScaleValues::RangeType;
 	public:
 	private:
 		bool m_is_deadzone_activated{ false };
-		float m_alt_deadzone_multiplier{ MouseSettings::ALT_DEADZONE_MULT_DEFAULT };
-		int m_axis_sensitivity{ MouseSettings::SENSITIVITY_DEFAULT };
-		int m_polar_magnitude_deadzone{ MouseSettings::DEADZONE_DEFAULT };
-		MousePlayerInfo m_player_info{};
-		StickMap m_which_stick;
-		std::vector<double> m_radius_scale_values;
-		//Used to make some assertions about the settings values this class depends upon.
+		const MousePlayerInfo& m_player_info;
+		const SensInt m_axis_sensitivity;
+		const StickMap m_which_stick;
+		const MultFloat m_alt_deadzone_multiplier;
+		const DzInt m_polar_magnitude_deadzone;
+		const ScaleRange m_radius_scale_values;
+
+		///<summary> Used to make some assertions about the settings values this class depends upon. </summary>
 		static void AssertSettings()
 		{
 			//Assertions about the settings values used by this class.
@@ -33,44 +39,60 @@ namespace sds
 			if constexpr (MouseSettings::SENSITIVITY_MAX > 100)
 				Utilities::LogError("Exception in ThumbstickToDelay() ctor, SENSITIVITY_MAX > 100");
 		}
-		//Returns the polar rad dz, or the alternate if the dz is already activated.
-		[[nodiscard]] int GetDeadzoneCurrentValue() const noexcept
+		/// <summary> Validates StickMap ctor args, neither stick is not a valid setting
+		///	for this class, it will default to right stick processing when used. </summary>
+		[[nodiscard]] constexpr auto ValidateStickMap(const StickMap sm) const noexcept
 		{
-			using sds::Utilities::ToA;
-			if (m_is_deadzone_activated)
-				return ToA<int>(ToA<float>(m_polar_magnitude_deadzone) * m_alt_deadzone_multiplier);
-			return m_polar_magnitude_deadzone;
+			//error checking StickMap stick setting
+			if (sm == StickMap::NEITHER_STICK)
+				return StickMap::RIGHT_STICK;
+			return sm;
+		}
+		/// <summary> Used to validate alt deadzone multiplier arg. </summary>
+		[[nodiscard]] constexpr auto ValidateAltMultiplier(const MultFloat mf) const noexcept
+		{
+			return MouseSettings::ALT_DEADZONE_MULT_DEFAULT;
+		}
+		/// <summary> Used to validate sensitivity arg value. </summary>
+		[[nodiscard]] constexpr auto ValidateSensitivity(const SensInt si) const noexcept
+		{
+			//range bind sensitivity
+			return std::clamp(si, MouseSettings::SENSITIVITY_MIN, MouseSettings::SENSITIVITY_MAX);
+		}
+		/// <summary> Used to validate polar deadzone arg value. </summary>
+		[[nodiscard]] constexpr auto ValidatePolarDz(const StickMap sm, const MousePlayerInfo &mpi) const noexcept
+		{
+			//error checking deadzone arg range, because it might crash the program if the
+			//delay returned is some silly value
+			const int cdz = sm == StickMap::LEFT_STICK ? mpi.left_polar_dz : mpi.right_polar_dz;
+			if (MouseSettings::IsValidDeadzoneValue(cdz))
+				return cdz;
+			return MouseSettings::DEADZONE_DEFAULT;
+		}
+		/// <summary> Validation func for retrieving the polar angle scaling values. </summary>
+		[[nodiscard]] auto ValidateScaleValues() const noexcept
+		{
+			//read radius scale values config file
+			auto tempValues = ReadRadiusScaleValues::GetScalingValues();
+			if (tempValues.empty())
+				Utilities::LogError("Error in ThumbstickToDelay::ThumbstickToDelay(int,MousePlayerInfo,StickMap), failed to read radius scaling values from config file!");
+			return tempValues;
 		}
 	public:
-		/// <summary>Ctor for dual axis sensitivity and deadzone processing.
-		/// Allows getting sensitivity values for the current axis, from using alternate deadzones and sensitivity values for each axis.
-		/// In effect, the delay values returned will be influenced by the state of the other axis.</summary>
-		/// <exception cref="std::string"> logs std::string if XinSettings values are unusable. </exception>
+		/// <summary> Constructor for single axis sensitivity and deadzone processing. </summary>
+		/// <exception cref="string"> logs text string if MouseSettings values are unusable. </exception>
 		/// <param name="sensitivity">int sensitivity value</param>
 		/// <param name="player">MousePlayerInfo struct full of deadzone information</param>
 		/// <param name="whichStick">StickMap enum denoting which thumbstick</param>
 		ThumbstickToDelay(const int sensitivity, const MousePlayerInfo &player, const StickMap whichStick) noexcept
-		: m_player_info(player), m_which_stick(whichStick)
+		: m_player_info(player),
+		m_axis_sensitivity(ValidateSensitivity(sensitivity)),
+		m_which_stick(ValidateStickMap(whichStick)),
+		m_alt_deadzone_multiplier(ValidateAltMultiplier(0)),
+		m_polar_magnitude_deadzone(ValidatePolarDz(m_which_stick, player)),
+		m_radius_scale_values(ValidateScaleValues())
 		{
 			AssertSettings();
-			//error checking mousemap stick setting
-			if (m_which_stick == StickMap::NEITHER_STICK)
-				m_which_stick = StickMap::RIGHT_STICK;
-			//range bind sensitivity
-			m_axis_sensitivity = std::clamp(sensitivity, MouseSettings::SENSITIVITY_MIN, MouseSettings::SENSITIVITY_MAX);
-			//error checking deadzone arg range, because it might crash the program if the
-			//delay returned is some silly value
-			const int cdz = m_which_stick == StickMap::LEFT_STICK ? player.left_polar_dz : player.right_polar_dz;
-			if (MouseSettings::IsValidDeadzoneValue(cdz))
-				m_polar_magnitude_deadzone = cdz;
-			//read radius scale values config file
-			m_radius_scale_values = ReadRadiusScaleValues::GetScalingValues();
-			if (m_radius_scale_values.empty())
-				Utilities::LogError("Error in ThumbstickToDelay::ThumbstickToDelay(int,MousePlayerInfo,StickMap), failed to read radius scaling values from config file!");
-			std::stringstream ss;
-			ss << "Radius scale value map size: ";
-			ss << m_radius_scale_values.size();
-			Utilities::LogError(ss.str());
 		}
 		ThumbstickToDelay() = delete;
 		ThumbstickToDelay(const ThumbstickToDelay& other) = delete;
@@ -83,6 +105,14 @@ namespace sds
 		[[nodiscard]] auto GetDelaysFromThumbstickValues(const int cartesianX, const int cartesianY) const noexcept
 		{
 			return BuildDelayInfo(cartesianX, cartesianY, MouseSettings::MICROSECONDS_MIN, MouseSettings::MICROSECONDS_MAX);
+		}
+		///<summary> Returns the polar rad dz, or the alternate if the dz is already activated.</summary>
+		[[nodiscard]] constexpr int GetDeadzoneCurrentValue() const noexcept
+		{
+			using sds::Utilities::ToA;
+			if (m_is_deadzone_activated)
+				return ToA<int>(ToA<float>(m_polar_magnitude_deadzone) * m_alt_deadzone_multiplier);
+			return m_polar_magnitude_deadzone;
 		}
 		///<summary> Calculates microsecond delay values from cartesian X and Y thumbstick values.
 		///Probably needs optimized.</summary>

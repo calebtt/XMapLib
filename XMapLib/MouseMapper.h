@@ -39,6 +39,7 @@ namespace sds
 		}
 		/// <summary>Ctor allows setting a custom MousePlayerInfo</summary>
 		explicit MouseMapper(const sds::MousePlayerInfo& player) noexcept : m_local_player(player) { InitWorkThread(); }
+		explicit MouseMapper(sds::MousePlayerInfo&& player) noexcept : m_local_player(std::move(player)) { InitWorkThread(); }
 		MouseMapper(const MouseMapper& other) = delete;
 		MouseMapper(MouseMapper&& other) = delete;
 		MouseMapper& operator=(const MouseMapper& other) = delete;
