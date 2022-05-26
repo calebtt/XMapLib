@@ -56,7 +56,7 @@ namespace sds
 			QuadrantInfoPack quadrant_info{};
 			AdjustedMagnitudePack adjusted_magnitudes{};
 		};
-		[[nodiscard]] PolarCompleteInfoPack ComputePolarCompleteInfo(const FloatingType xStickValue, const FloatingType yStickValue) noexcept
+		[[nodiscard]] PolarCompleteInfoPack ComputePolarCompleteInfo(const FloatingType xStickValue, const FloatingType yStickValue) const noexcept
 		{
 			PolarCompleteInfoPack tempPack{};
 			tempPack.polar_info = ComputePolarPair(xStickValue, yStickValue);
@@ -65,7 +65,7 @@ namespace sds
 			return tempPack;
 		}
 		//compute adjusted magnitudes
-		[[nodiscard]] AdjustedMagnitudePack ComputeAdjustedMagnitudes(const PolarInfoPack polarInfo, const QuadrantInfoPack quadInfo) noexcept
+		[[nodiscard]] AdjustedMagnitudePack ComputeAdjustedMagnitudes(const PolarInfoPack polarInfo, const QuadrantInfoPack quadInfo) const noexcept
 		{
 			const auto& [polarRadius, polarTheta] = polarInfo;
 			const auto& [quadrantSentinelPair, quadrantNumber] = quadInfo;
@@ -78,7 +78,7 @@ namespace sds
 			return TrimMagnitudeToSentinel(xProportion, yProportion);
 		}
 		//compute polar coord pair
-		[[nodiscard]] PolarInfoPack ComputePolarPair(const FloatingType xStickValue, const FloatingType yStickValue) noexcept
+		[[nodiscard]] PolarInfoPack ComputePolarPair(const FloatingType xStickValue, const FloatingType yStickValue) const noexcept
 		{
 			constexpr FloatingType nonZeroValue = 0.01; // cannot compute with both values at 0, this is used instead
 			const bool areBothZero = xStickValue == 0.0 && yStickValue == 0.0;
@@ -92,7 +92,7 @@ namespace sds
 		}
 		/// <summary> Retrieves begin and end range values for the quadrant the polar theta (angle) value resides in, and the quadrant number (NOT zero indexed!) </summary>
 		/// <returns> Pair[Pair[double,double], int] wherein the inner pair is the quadrant range, and the outer int is the quadrant number. </returns>
-		[[nodiscard]] QuadrantInfoPack GetQuadrantInfo(const FloatingType polarTheta) noexcept
+		[[nodiscard]] QuadrantInfoPack GetQuadrantInfo(const FloatingType polarTheta) const noexcept
 		{
 			constexpr std::string_view BAD_QUAD = "Invalid value that does not map to a quadrant in GetQuadrantInfo(const FloatingType)";
 			size_t index{};

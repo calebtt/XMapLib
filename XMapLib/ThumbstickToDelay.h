@@ -25,6 +25,7 @@ namespace sds
 		const MultFloat m_alt_deadzone_multiplier;
 		const DzInt m_polar_magnitude_deadzone;
 		const ScaleRange m_radius_scale_values;
+		PolarCalc m_pc{ MouseSettings::ThumbstickValueMax, Utilities::LogError };
 
 		///<summary> Used to make some assertions about the settings values this class depends upon. </summary>
 		static void AssertSettings()
@@ -49,7 +50,7 @@ namespace sds
 			return sm;
 		}
 		/// <summary> Used to validate alt deadzone multiplier arg. </summary>
-		[[nodiscard]] constexpr auto ValidateAltMultiplier(const MultFloat mf) const noexcept
+		[[nodiscard]] constexpr auto ValidateAltMultiplier() const noexcept
 		{
 			return MouseSettings::ALT_DEADZONE_MULT_DEFAULT;
 		}
@@ -88,7 +89,7 @@ namespace sds
 		: m_player_info(player),
 		m_axis_sensitivity(ValidateSensitivity(sensitivity)),
 		m_which_stick(ValidateStickMap(whichStick)),
-		m_alt_deadzone_multiplier(ValidateAltMultiplier(0)),
+		m_alt_deadzone_multiplier(ValidateAltMultiplier()),
 		m_polar_magnitude_deadzone(ValidatePolarDz(m_which_stick, player)),
 		m_radius_scale_values(ValidateScaleValues())
 		{
@@ -114,47 +115,48 @@ namespace sds
 				return ToA<int>(ToA<float>(m_polar_magnitude_deadzone) * m_alt_deadzone_multiplier);
 			return m_polar_magnitude_deadzone;
 		}
+
+		[[nodiscard]] auto ScaleValues(const auto cartesianX, const auto cartesianY) const noexcept
+		{
+			using Utilities::ToA;
+			using Utilities::ConstAbs;
+			// theta angle of vertical edge of quadrant 1
+			static constexpr unsigned MaxTheta = ToA<unsigned>((std::numbers::pi / 2.0)*100u);
+			//get polar X and Y magnitudes, and theta angle from cartesian X and Y
+			auto fullInfo = m_pc.ComputePolarCompleteInfo(cartesianX, -cartesianY);
+			auto &[xPolarMag, yPolarMag] = fullInfo.adjusted_magnitudes;
+
+			// polar theta angle * 100 converted to an integer value, index into the scaling value array
+			auto fixedAngle = ToA<unsigned>(ConstAbs(fullInfo.polar_info.polar_theta_angle) * 100.0);
+			//convert from quadrant 2 or 3 to 1 or 4
+			if (fixedAngle >= MaxTheta)
+				fixedAngle -= MaxTheta;
+			//fix the scaling value to apply only half of it's difference, for each axis
+			//because we are not using it on the polar radius but rather separate components of it
+			const auto fixedScaleValue = std::lerp(m_radius_scale_values[fixedAngle], 1.01, 0.5);
+			xPolarMag *= fixedScaleValue;
+			yPolarMag *= fixedScaleValue;
+			return std::make_pair(xPolarMag, yPolarMag);
+		}
+
 		///<summary> Calculates microsecond delay values from cartesian X and Y thumbstick values.
 		///Probably needs optimized.</summary>
 		auto BuildDelayInfo(
 			const auto cartesianX,
 			const auto cartesianY,
-			const double us_delay_min,
-			const double us_delay_max) const noexcept -> std::pair<std::size_t, std::size_t>
+			const auto us_delay_min,
+			const auto us_delay_max) const noexcept -> std::pair<std::size_t, std::size_t>
 		{
-			//TODO this should only use the range between polar_deadzone and polarradiusmax, also there exists a bug lowering the movement speed
-			//TODO should make the sensitivity function change the microsec delay minimum, perhaps
 			using Utilities::ToA;
 			using Utilities::ConstAbs;
-			static constexpr double SensMax{ 100.0 };
-			static constexpr double PolarRadiusMax{ MouseSettings::ThumbstickValueMax };
 			constexpr std::string_view ErrBadAngle = "Error in ThumbstickToDelay::BuildDelayInfo(), fixed theta angle out of bounds.";
-			PolarCalc pc(MouseSettings::ThumbstickValueMax, Utilities::LogError);
-			//get polar X and Y magnitudes from cartesian X and Y, theta angle, and quadrant number.
-			auto fullInfo = pc.ComputePolarCompleteInfo(cartesianX, -cartesianY);
-			auto &[xPolarMag, yPolarMag] = fullInfo.adjusted_magnitudes;
-			const auto& quadrantNumber = fullInfo.quadrant_info.quadrant_number;
-			//use stored scaling values to convert polar radii
-			const auto fixedAngle = ToA<unsigned>(ConstAbs(fullInfo.polar_info.polar_theta_angle) * 100.0);
-			
-			if (fixedAngle < m_radius_scale_values.size() && fixedAngle > 0)
-			{
-				xPolarMag *= m_radius_scale_values[fixedAngle];
-				yPolarMag *= m_radius_scale_values[fixedAngle];
-				//std::cout << "Fixed Angle: " << fixedAngle << " Fixed X: " << xPolarMag << " Fixed Y: " << yPolarMag << '\n';
-			}
-			else
-			{
-				std::stringstream ss;
-				ss << ErrBadAngle << " Angle:[";
-				ss << fixedAngle << "]\n";
-				Utilities::LogError(ss.str());
-			}
-			//make sure this is returning good delay values. Apply scaling factors to all quadrants.
+			const double PolarRadiusMax = { MouseSettings::ThumbstickValueMax };
+			ScaleValues<auto, auto, auto, auto>(cartesianX, cartesianY, PolarRadiusMax);
+
+			// make sure this is returning good delay values. Apply scaling factors to all quadrants.
 			const double percentageX = (xPolarMag / PolarRadiusMax);
 			const double percentageY = (yPolarMag / PolarRadiusMax);
 
-			//const auto inverseX = 1.0 / percentageX;
 			const auto inverseX = 1.0 - (percentageX);
 			//const auto inverseY = 1.0 / percentageY;
 			const auto inverseY = 1.0 - (percentageY);
