@@ -64,7 +64,7 @@ namespace sds
 			tempPack.adjusted_magnitudes = ComputeAdjustedMagnitudes(tempPack.polar_info, tempPack.quadrant_info);
 			return tempPack;
 		}
-		//compute adjusted X and Y polar magnitudes
+		//computes X and Y polar magnitudes from polar radius
 		[[nodiscard]] AdjustedMagnitudePack ComputeAdjustedMagnitudes(const PolarInfoPack polarInfo, const QuadrantInfoPack quadInfo) const noexcept
 		{
 			const auto& [polarRadius, polarTheta] = polarInfo;

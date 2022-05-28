@@ -71,7 +71,6 @@ namespace sds
 		/// <summary> Constructor for single axis sensitivity and deadzone processing. </summary>
 		/// <exception cref="string"> logs text string if MouseSettings values are unusable. </exception>
 		/// <param name="sensitivity">int sensitivity value</param>
-		/// <param name="player">MousePlayerInfo struct full of deadzone information</param>
 		/// <param name="whichStick">StickMap enum denoting which thumbstick</param>
 		///	<param name="ms">Mouse Settings struct containing some default values</param>
 		ThumbstickToDelay(
@@ -99,7 +98,6 @@ namespace sds
 		[[nodiscard]] auto GetDelaysFromThumbstickValues(const int cartesianX, const int cartesianY)
 		const noexcept -> std::pair<size_t,size_t>
 		{
-			//TODO remember to scale the polar radius before separating into distinct X and Y components
 			return BuildDelayInfo(cartesianX, -cartesianY);
 		}
 
