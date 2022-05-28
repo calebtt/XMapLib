@@ -3,7 +3,7 @@
 #include "MouseMoveThread.h"
 #include "ThumbstickToDelay.h"
 #include "MouseInputPoller.h"
-#include "PolarQuadrantCalc.h"
+#include "ThumbDzInfo.h"
 #include "Utilities.h"
 namespace sds
 {
@@ -23,6 +23,7 @@ namespace sds
 		std::atomic<SHORT> m_thread_y{0};
 		std::atomic<int> m_mouse_sensitivity{ MouseSettings::SENSITIVITY_DEFAULT };
 		sds::MousePlayerInfo m_local_player{};
+		MouseSettings m_ms{};
 		sds::MouseInputPoller m_poller{};
 		std::unique_ptr<LambdaRunnerType> m_workThread{};
 		void InitWorkThread() noexcept
@@ -38,8 +39,18 @@ namespace sds
 			InitWorkThread();
 		}
 		/// <summary>Ctor allows setting a custom MousePlayerInfo</summary>
-		explicit MouseMapper(const sds::MousePlayerInfo& player) noexcept : m_local_player(player) { InitWorkThread(); }
-		explicit MouseMapper(sds::MousePlayerInfo&& player) noexcept : m_local_player(player) { InitWorkThread(); }
+		explicit MouseMapper(const sds::MousePlayerInfo& player, MouseSettings ms = {}) noexcept
+		: m_local_player(player),
+		m_ms(ms)
+		{
+			InitWorkThread();
+		}
+		explicit MouseMapper(sds::MousePlayerInfo&& player, MouseSettings ms = {}) noexcept
+		: m_local_player(player),
+		m_ms(ms)
+		{
+			InitWorkThread();
+		}
 		MouseMapper(const MouseMapper& other) = delete;
 		MouseMapper(MouseMapper&& other) = delete;
 		MouseMapper& operator=(const MouseMapper& other) = delete;
@@ -119,7 +130,8 @@ namespace sds
 		void workThread(const auto stopCondition, const auto, auto)
 		{
 			using sds::Utilities::ToA;
-			ThumbstickToDelay controller(this->GetSensitivity(), m_local_player, m_stickmap_info);
+			ThumbstickToDelay delayCalculator(this->GetSensitivity(), m_stickmap_info);
+			ThumbDzInfo deadzoneInfoCalculator(m_local_player, m_stickmap_info);
 			MouseMoveThread mover;
 			//thread main loop
 			while (!(*stopCondition))
@@ -130,10 +142,15 @@ namespace sds
 				//is X or Y negative, and if the axis is moving
 				const SHORT tx = m_thread_x;
 				const SHORT ty = m_thread_y;
-				const auto [xDelay, yDelay] = controller.GetDelaysFromThumbstickValues(tx, ty);
+				const auto [xDelay, yDelay] = delayCalculator.GetDelaysFromThumbstickValues(tx, ty);
 				const bool ixp = tx > 0;
 				const bool iyp = ty > 0;
-				mover.UpdateState(xDelay, yDelay, ixp, iyp, controller.IsBeyondDeadzone(tx), controller.IsBeyondDeadzone(ty));
+				const std::pair<bool,bool> isBeyondDz = deadzoneInfoCalculator.IsBeyondDeadzone(tx, ty);
+				mover.UpdateState(xDelay, yDelay, ixp, iyp, isBeyondDz.first, isBeyondDz.second);
+				//debugging info
+				//std::stringstream ss;
+				//ss << "[X]:[" << xDelay << "] [Y]:[" << yDelay << "]\n";
+				//Utilities::LogError(ss.str().c_str());
 				std::this_thread::sleep_for(std::chrono::milliseconds(4));
 			}
 		}

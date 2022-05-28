@@ -98,14 +98,14 @@
     <ClInclude Include="CPPRunnerGeneric.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="PolarQuadrantCalc.h">
-      <Filter>Header Files\Mouse</Filter>
-    </ClInclude>
     <ClInclude Include="ReadRadiusScaleValues.h">
       <Filter>Header Files\Mouse</Filter>
     </ClInclude>
     <ClInclude Include="PolarCalc.h">
       <Filter>Header Files\Mouse</Filter>
+    </ClInclude>
+    <ClInclude Include="ThumbDzInfo.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

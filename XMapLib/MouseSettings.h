@@ -15,9 +15,11 @@ namespace sds
 		//Input Poller thread delay, in milliseconds.
 		static constexpr int THREAD_DELAY_INPUT_POLLER_MS{ 4 };
 		//ThumbstickValueMax is the sentinel abs value a controller thumbstick should report.
-		static constexpr short ThumbstickValueMax{ 32'766 };
+		static constexpr int ThumbstickValueMax{ 32'766 };
 		//ThumbstickValueMin is the sentinel min value a controller thumbstick should report.
-		static constexpr short ThumbstickValueMin{ -ThumbstickValueMax };
+		static constexpr int ThumbstickValueMin{ -ThumbstickValueMax };
+		//PolarRadiusValueMax is the sentinel abs value of a computed polar radius.
+		static constexpr int PolarRadiusValueMax{ 39'000 };
 		//Sensitivity Min is the minimum mouse sensitivity value allowed, used in several places.
 		static constexpr int SENSITIVITY_MIN{ 1 };
 		//Sensitivity Max is the maximum mouse sensitivity value allowed, used in several places.
@@ -36,7 +38,7 @@ namespace sds
 		static constexpr int DEADZONE_DEFAULT{ XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE };
 		//Alt Deadzone Default is the multiplier to use when a deadzone is already activated,
 		//the deadzone value for the other axis is lessened via this value.
-		static constexpr float ALT_DEADZONE_MULT_DEFAULT{ 0.5f };
+		static constexpr float ALT_DEADZONE_MULT_DEFAULT{ 0.35f };
 		//File name for the file containing the thumbstick scaling values.
 		static constexpr std::string_view SCALING_VALUES_FNAME{ "adjustment_values.txt" };
 		//Static assertions about the const members

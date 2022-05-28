@@ -11,67 +11,55 @@ namespace sds
 	/// This class must be re-instantiated to use new deadzone values.</summary>
 	class ThumbstickToDelay
 	{
-		using MultFloat = float;
-		using SensInt = int;
-		using DzInt = int;
+		using MultFloat = decltype(MouseSettings::ALT_DEADZONE_MULT_DEFAULT);
+		using SensInt = decltype(MouseSettings::SENSITIVITY_DEFAULT);
+		using DzInt = decltype(MouseSettings::DEADZONE_DEFAULT);
+		using PRadInt = decltype(MouseSettings::PolarRadiusValueMax);
 		using ScaleFloat = ReadRadiusScaleValues::FloatType;
 		using ScaleRange = ReadRadiusScaleValues::RangeType;
+		//***
+		//TODO use an unordered_map to hashmap angle to computed value,
+		//And even pre-compute them eventually (all values).
+		//***
 	public:
 	private:
-		bool m_is_deadzone_activated{ false };
-		const MousePlayerInfo& m_player_info;
 		const SensInt m_axis_sensitivity;
 		const StickMap m_which_stick;
-		const MultFloat m_alt_deadzone_multiplier;
-		const DzInt m_polar_magnitude_deadzone;
+		const MouseSettings &m_mouse_settings;
 		const ScaleRange m_radius_scale_values;
-		PolarCalc m_pc{ MouseSettings::ThumbstickValueMax, Utilities::LogError };
+		PolarCalc m_pc;
 
 		///<summary> Used to make some assertions about the settings values this class depends upon. </summary>
-		static void AssertSettings()
+		static void AssertSettings(const MouseSettings &ms) noexcept
 		{
 			//Assertions about the settings values used by this class.
-			if constexpr (MouseSettings::MICROSECONDS_MIN >= MouseSettings::MICROSECONDS_MAX)
+			if constexpr (ms.MICROSECONDS_MIN >= ms.MICROSECONDS_MAX)
 				Utilities::LogError("Exception in ThumbstickToDelay() ctor, MICROSECONDS_MIN >= MICROSECONDS_MAX");
-			if constexpr (MouseSettings::SENSITIVITY_MIN >= MouseSettings::SENSITIVITY_MAX)
+			if constexpr (ms.SENSITIVITY_MIN >= ms.SENSITIVITY_MAX)
 				Utilities::LogError("Exception in ThumbstickToDelay() ctor, SENSITIVITY_MIN >= SENSITIVITY_MAX");
-			if constexpr (MouseSettings::SENSITIVITY_MIN <= 0)
+			if constexpr (ms.SENSITIVITY_MIN <= 0)
 				Utilities::LogError("Exception in ThumbstickToDelay() ctor, SENSITIVITY_MIN <= 0");
-			if constexpr (MouseSettings::SENSITIVITY_MAX > 100)
+			if constexpr (ms.SENSITIVITY_MAX > 100)
 				Utilities::LogError("Exception in ThumbstickToDelay() ctor, SENSITIVITY_MAX > 100");
 		}
 		/// <summary> Validates StickMap ctor args, neither stick is not a valid setting
 		///	for this class, it will default to right stick processing when used. </summary>
-		[[nodiscard]] constexpr auto ValidateStickMap(const StickMap sm) const noexcept
+		[[nodiscard]] static constexpr auto ValidateStickMap(const StickMap sm)  noexcept
 		{
 			//error checking StickMap stick setting
 			if (sm == StickMap::NEITHER_STICK)
 				return StickMap::RIGHT_STICK;
 			return sm;
 		}
-		/// <summary> Used to validate alt deadzone multiplier arg. </summary>
-		[[nodiscard]] constexpr auto ValidateAltMultiplier() const noexcept
-		{
-			return MouseSettings::ALT_DEADZONE_MULT_DEFAULT;
-		}
+
 		/// <summary> Used to validate sensitivity arg value. </summary>
-		[[nodiscard]] constexpr auto ValidateSensitivity(const SensInt si) const noexcept
+		[[nodiscard]] static constexpr auto ValidateSensitivity(const SensInt si, const MouseSettings &ms)  noexcept
 		{
 			//range bind sensitivity
-			return std::clamp(si, MouseSettings::SENSITIVITY_MIN, MouseSettings::SENSITIVITY_MAX);
-		}
-		/// <summary> Used to validate polar deadzone arg value. </summary>
-		[[nodiscard]] constexpr auto ValidatePolarDz(const StickMap sm, const MousePlayerInfo &mpi) const noexcept
-		{
-			//error checking deadzone arg range, because it might crash the program if the
-			//delay returned is some silly value
-			const int cdz = sm == StickMap::LEFT_STICK ? mpi.left_polar_dz : mpi.right_polar_dz;
-			if (MouseSettings::IsValidDeadzoneValue(cdz))
-				return cdz;
-			return MouseSettings::DEADZONE_DEFAULT;
+			return std::clamp(si, ms.SENSITIVITY_MIN, ms.SENSITIVITY_MAX);
 		}
 		/// <summary> Validation func for retrieving the polar angle scaling values. </summary>
-		[[nodiscard]] auto ValidateScaleValues() const noexcept
+		[[nodiscard]] static auto ValidateScaleValues() noexcept
 		{
 			//read radius scale values config file
 			auto tempValues = ReadRadiusScaleValues::GetScalingValues();
@@ -85,15 +73,18 @@ namespace sds
 		/// <param name="sensitivity">int sensitivity value</param>
 		/// <param name="player">MousePlayerInfo struct full of deadzone information</param>
 		/// <param name="whichStick">StickMap enum denoting which thumbstick</param>
-		ThumbstickToDelay(const int sensitivity, const MousePlayerInfo &player, const StickMap whichStick) noexcept
-		: m_player_info(player),
-		m_axis_sensitivity(ValidateSensitivity(sensitivity)),
+		///	<param name="ms">Mouse Settings struct containing some default values</param>
+		ThumbstickToDelay(
+			const int sensitivity, 
+			const StickMap whichStick,
+			const MouseSettings &ms = {}) noexcept
+		: m_axis_sensitivity(ValidateSensitivity(sensitivity, ms)),
 		m_which_stick(ValidateStickMap(whichStick)),
-		m_alt_deadzone_multiplier(ValidateAltMultiplier()),
-		m_polar_magnitude_deadzone(ValidatePolarDz(m_which_stick, player)),
-		m_radius_scale_values(ValidateScaleValues())
+		m_mouse_settings(ms),
+		m_radius_scale_values(ValidateScaleValues()),
+		m_pc(ms.PolarRadiusValueMax, Utilities::LogError)
 		{
-			AssertSettings();
+			AssertSettings(ms);
 		}
 		ThumbstickToDelay() = delete;
 		ThumbstickToDelay(const ThumbstickToDelay& other) = delete;
@@ -101,82 +92,95 @@ namespace sds
 		ThumbstickToDelay& operator=(const ThumbstickToDelay& other) = delete;
 		ThumbstickToDelay& operator=(ThumbstickToDelay&& other) = delete;
 		~ThumbstickToDelay() = default;
-		/// <summary>Main func for use.</summary>
+
+		/// <summary>Main func for use. NOTE cartesian Y is inverted HERE due to thumbstick hardware. This
+		/// might change when a cross-platform build is implemented. </summary>
 		///	<returns>pair X,Y Delay in US</returns>
-		[[nodiscard]] auto GetDelaysFromThumbstickValues(const int cartesianX, const int cartesianY) const noexcept
+		[[nodiscard]] auto GetDelaysFromThumbstickValues(const int cartesianX, const int cartesianY)
+		const noexcept -> std::pair<size_t,size_t>
 		{
-			return BuildDelayInfo(cartesianX, cartesianY, MouseSettings::MICROSECONDS_MIN, MouseSettings::MICROSECONDS_MAX);
-		}
-		///<summary> Returns the polar rad dz, or the alternate if the dz is already activated.</summary>
-		[[nodiscard]] constexpr int GetDeadzoneCurrentValue() const noexcept
-		{
-			using sds::Utilities::ToA;
-			if (m_is_deadzone_activated)
-				return ToA<int>(ToA<float>(m_polar_magnitude_deadzone) * m_alt_deadzone_multiplier);
-			return m_polar_magnitude_deadzone;
-		}
-
-		[[nodiscard]] auto ScaleValues(const auto cartesianX, const auto cartesianY) const noexcept
-		{
-			using Utilities::ToA;
-			using Utilities::ConstAbs;
-			// theta angle of vertical edge of quadrant 1
-			static constexpr unsigned MaxTheta = ToA<unsigned>((std::numbers::pi / 2.0)*100u);
-			//get polar X and Y magnitudes, and theta angle from cartesian X and Y
-			auto fullInfo = m_pc.ComputePolarCompleteInfo(cartesianX, -cartesianY);
-			auto &[xPolarMag, yPolarMag] = fullInfo.adjusted_magnitudes;
-
-			// polar theta angle * 100 converted to an integer value, index into the scaling value array
-			auto fixedAngle = ToA<unsigned>(ConstAbs(fullInfo.polar_info.polar_theta_angle) * 100.0);
-			//convert from quadrant 2 or 3 to 1 or 4
-			if (fixedAngle >= MaxTheta)
-				fixedAngle -= MaxTheta;
-			//fix the scaling value to apply only half of it's difference, for each axis
-			//because we are not using it on the polar radius but rather separate components of it
-			const auto fixedScaleValue = std::lerp(m_radius_scale_values[fixedAngle], 1.01, 0.5);
-			xPolarMag *= fixedScaleValue;
-			yPolarMag *= fixedScaleValue;
-			return std::make_pair(xPolarMag, yPolarMag);
+			//TODO remember to scale the polar radius before separating into distinct X and Y components
+			return BuildDelayInfo(cartesianX, -cartesianY);
 		}
 
 		///<summary> Calculates microsecond delay values from cartesian X and Y thumbstick values.
 		///Probably needs optimized.</summary>
-		auto BuildDelayInfo(
-			const auto cartesianX,
-			const auto cartesianY,
-			const auto us_delay_min,
-			const auto us_delay_max) const noexcept -> std::pair<std::size_t, std::size_t>
+		[[nodiscard]] auto BuildDelayInfo(const auto cartesianX, const auto cartesianY)
+		const -> std::pair<size_t, size_t>
 		{
+			// If someone ever modifies this again, it is important to remember to scale the result of
+			//the polar calculations (based on config file) AFTER translation to delay values.
+			// Correction, scale the polar radius and perform the polar X,Y to delay values calc.
+			// And if that doesn't work, I'm going to try scaling the microsecond delay range.
 			using Utilities::ToA;
 			using Utilities::ConstAbs;
-			constexpr std::string_view ErrBadAngle = "Error in ThumbstickToDelay::BuildDelayInfo(), fixed theta angle out of bounds.";
-			const double PolarRadiusMax = { MouseSettings::ThumbstickValueMax };
-			ScaleValues<auto, auto, auto, auto>(cartesianX, cartesianY, PolarRadiusMax);
 
-			// make sure this is returning good delay values. Apply scaling factors to all quadrants.
-			const double percentageX = (xPolarMag / PolarRadiusMax);
-			const double percentageY = (yPolarMag / PolarRadiusMax);
+			// Get info pack for polar computations
+			PolarCalc::PolarCompleteInfoPack fullInfo{};
 
-			const auto inverseX = 1.0 - (percentageX);
-			//const auto inverseY = 1.0 / percentageY;
-			const auto inverseY = 1.0 - (percentageY);
-			//std::cout << "inverseX: " << inverseX << '\n';
-			//std::cout << "inverseY: " << inverseY << '\n';
-			const auto interpX = std::lerp(us_delay_min, us_delay_max, inverseX);
-			const auto interpY = std::lerp(us_delay_min, us_delay_max, inverseY);
-			//std::cout << "interpX: " << interpX << '\n';
-			//std::cout << "interpY: " << interpY << '\n';
-			return std::make_pair<size_t,size_t>(ToA<size_t>(interpX), ToA<size_t>(interpY));
-			//const auto inverseX = us_delay_max - (integralPercentageX * step + us_delay_min);
-			//const auto inverseY = us_delay_max - (integralPercentageY * step + us_delay_min);
-			//return std::make_pair<size_t, size_t>(ToA<int>(std::clamp(inverseX, us_delay_min, us_delay_max)), ToA<int>(std::clamp(inverseY, us_delay_min, us_delay_max)));
+			// Get scaled polar magnitudes from cartesian thumb values.
+			const auto [xPolarDelay, yPolarDelay] = GetPolarInfo(cartesianX, cartesianY, fullInfo);
+
+			// Scale delay values based on config.
+			return ConvertMagnitudesToDelays(xPolarDelay, yPolarDelay);
 		}
-		///<summary>Takes a cartesian value and returns true if equal or over deadzone. </summary>
-		[[nodiscard]] bool IsBeyondDeadzone(const int cartesianThumbstickValue) const noexcept
+
+		void LerpPolarRadsToDelay(const PolarCalc::AdjustedMagnitudePack& magPack, auto& xLerped, auto& yLerped) const
+		{
+			using Utilities::ToA;
+			// Alias for values in settings struct
+			constexpr PRadInt PolarRadiusMax = m_mouse_settings.PolarRadiusValueMax;
+			constexpr auto UsDelayMin = m_mouse_settings.MICROSECONDS_MIN;
+			constexpr auto UsDelayMax = m_mouse_settings.MICROSECONDS_MAX;
+			// Alias the polar mag per axis values
+			const auto &[xPolarMag, yPolarMag] = magPack;
+			// Lerp to delay values
+			const auto xPercent = 1.0 - ToA<double>(xPolarMag / PolarRadiusMax);
+			const auto yPercent = 1.0 - ToA<double>(yPolarMag / PolarRadiusMax);
+			xLerped = ToA<size_t>(std::lerp(UsDelayMin, UsDelayMax, xPercent));
+			yLerped = ToA<size_t>(std::lerp(UsDelayMin, UsDelayMax, yPercent));
+		}
+
+		///<summary> Computes axis polar radii from cartesian coordinates. Applies scaling based on config file. </summary>
+		[[nodiscard]] auto GetPolarInfo(const auto cartesianX, const auto cartesianY, PolarCalc::PolarCompleteInfoPack &fullInfo)
+		const noexcept -> PolarCalc::AdjustedMagnitudePack
+		{
+			using Utilities::ToA;
+			// Get polar X and Y magnitudes, and theta angle from cartesian X and Y
+			fullInfo = m_pc.ComputePolarCompleteInfo(cartesianX, cartesianY);
+			//get scaling mult for theta
+			const auto scalingMultiplier = ToA<float>(GetScalingMultiplier(fullInfo.polar_info.polar_theta_angle));
+			//here, applying scaling value to polar radius before extraction into separate components
+			fullInfo.polar_info.polar_radius *= scalingMultiplier;
+			return m_pc.ComputeAdjustedMagnitudes(fullInfo.polar_info, fullInfo.quadrant_info );
+		}
+
+		[[nodiscard]] auto GetScalingMultiplier(const float polarThetaAngle) const noexcept
 		{
 			using Utilities::ToA;
 			using Utilities::ConstAbs;
-			return ConstAbs(cartesianThumbstickValue) >= GetDeadzoneCurrentValue();
+			// Theta angle of vertical edge of quadrant 1
+			static constexpr auto MaxTheta = ToA<unsigned>((std::numbers::pi / 2.0) * 100u);
+			// Polar theta angle * 100 converted to an integer value, index into the scaling value array
+			auto thetaIndex = ToA<unsigned>(ConstAbs(polarThetaAngle) * 100.0f);
+			// Convert from quadrant 2 or 3 to 1 or 4
+			if (thetaIndex >= MaxTheta)
+				thetaIndex -= MaxTheta;
+			// return scaling multiplier
+			return m_radius_scale_values[thetaIndex];
+		}
+
+		[[nodiscard]] auto ConvertMagnitudesToDelays(const auto xPolarMag, const auto yPolarMag)
+		const noexcept -> std::pair<size_t, size_t>
+		{
+			using Utilities::ToA;
+			using Utilities::ConstAbs;
+			const float xPercentOfRadius = xPolarMag / ToA<float>(m_mouse_settings.PolarRadiusValueMax);
+			const float yPercentOfRadius = yPolarMag / ToA<float>(m_mouse_settings.PolarRadiusValueMax);
+			auto xResult = ToA<size_t>(std::lerp(m_mouse_settings.MICROSECONDS_MIN, m_mouse_settings.MICROSECONDS_MAX, xPercentOfRadius));
+			auto yResult = ToA<size_t>(std::lerp(m_mouse_settings.MICROSECONDS_MIN, m_mouse_settings.MICROSECONDS_MAX, yPercentOfRadius));
+
+			return { xResult, yResult };
 		}
 	};
 }

@@ -9,18 +9,18 @@ namespace sds
 	private:
 		//number of coordinate plane quadrants (obviously 4)
 		static constexpr auto NUM_QUADRANTS = 4;
-		//double
-		using FloatingType = double;
+		using FloatingType = float;
+		using IntegralType = int;
 		using LogFnType = std::function<void(const char* st)>;
-		static constexpr FloatingType MY_PI{ std::numbers::pi };
-		static constexpr FloatingType MY_PI2{ std::numbers::pi / 2.0 };
+		static constexpr FloatingType MY_PI{ std::numbers::pi_v<FloatingType> };
+		static constexpr FloatingType MY_PI2{ std::numbers::pi_v<FloatingType> / 2.0f };
 
 		//array of boundary values, used to determine which polar quadrant a polar angle resides in
 		static constexpr std::array<const std::pair<FloatingType, FloatingType>, NUM_QUADRANTS> m_quadArray{
-			std::make_pair(0.0, MY_PI2),
+			std::make_pair(FloatingType{}, MY_PI2),
 			std::make_pair(MY_PI2, MY_PI),
 			std::make_pair(-MY_PI, -MY_PI2),
-			std::make_pair(-MY_PI2, 0.0)
+			std::make_pair(-MY_PI2, FloatingType{})
 		};
 		//used to trim the adjusted magnitude values from the thumbstick, max on my hardware close to 32k.
 		const FloatingType MagnitudeSentinel{};
@@ -56,7 +56,7 @@ namespace sds
 			QuadrantInfoPack quadrant_info{};
 			AdjustedMagnitudePack adjusted_magnitudes{};
 		};
-		[[nodiscard]] PolarCompleteInfoPack ComputePolarCompleteInfo(const FloatingType xStickValue, const FloatingType yStickValue) const noexcept
+		[[nodiscard]] PolarCompleteInfoPack ComputePolarCompleteInfo(const IntegralType xStickValue, const IntegralType yStickValue) const noexcept
 		{
 			PolarCompleteInfoPack tempPack{};
 			tempPack.polar_info = ComputePolarPair(xStickValue, yStickValue);
@@ -64,7 +64,7 @@ namespace sds
 			tempPack.adjusted_magnitudes = ComputeAdjustedMagnitudes(tempPack.polar_info, tempPack.quadrant_info);
 			return tempPack;
 		}
-		//compute adjusted magnitudes
+		//compute adjusted X and Y polar magnitudes
 		[[nodiscard]] AdjustedMagnitudePack ComputeAdjustedMagnitudes(const PolarInfoPack polarInfo, const QuadrantInfoPack quadInfo) const noexcept
 		{
 			const auto& [polarRadius, polarTheta] = polarInfo;
@@ -73,22 +73,23 @@ namespace sds
 			//compute proportion of the radius for each axis to be the axial magnitudes, apparently a per-quadrant calculation with my setup.
 			const auto redPortion = (polarTheta - quadrantBeginVal) * polarRadius;
 			const auto blackPortion = (quadrantSentinelVal - polarTheta) * polarRadius;
-			const double xProportion = quadrantNumber % 2 ? blackPortion : redPortion;
-			const double yProportion = quadrantNumber % 2 ? redPortion : blackPortion;
+			const FloatingType xProportion = quadrantNumber % 2 ? blackPortion : redPortion;
+			const FloatingType yProportion = quadrantNumber % 2 ? redPortion : blackPortion;
 			return TrimMagnitudeToSentinel(xProportion, yProportion);
 		}
 		//compute polar coord pair
-		[[nodiscard]] PolarInfoPack ComputePolarPair(const FloatingType xStickValue, const FloatingType yStickValue) const noexcept
+		[[nodiscard]] PolarInfoPack ComputePolarPair(const IntegralType xStickValue, const IntegralType yStickValue) const noexcept
 		{
-			constexpr FloatingType nonZeroValue = 0.01; // cannot compute with both values at 0, this is used instead
-			const bool areBothZero = xStickValue == 0.0 && yStickValue == 0.0;
-			const double xValue = areBothZero ? nonZeroValue : xStickValue;
-			const double yValue = areBothZero ? nonZeroValue : yStickValue;
+			using sds::Utilities::ToA;
+			constexpr IntegralType nonZeroValue{1}; // cannot compute with both values at 0, this is used instead
+			const bool areBothZero = xStickValue == IntegralType{} && yStickValue == IntegralType{};
+			const IntegralType xValue = areBothZero ? nonZeroValue : xStickValue;
+			const IntegralType yValue = areBothZero ? nonZeroValue : yStickValue;
 			const auto xSquared = xValue * xValue;
 			const auto ySquared = yValue * yValue;
-			const auto rad = std::sqrt(xSquared + ySquared);
-			const auto angle = std::atan2(yValue, xValue);
-			return { .polar_radius = rad, .polar_theta_angle = angle };
+			const auto rad = ToA<FloatingType>(std::sqrt(xSquared + ySquared));
+			const auto angle = ToA<FloatingType>(std::atan2(yValue, xValue));
+			return PolarInfoPack{ rad, angle };
 		}
 		/// <summary> Retrieves begin and end range values for the quadrant the polar theta (angle) value resides in, and the quadrant number (NOT zero indexed!) </summary>
 		/// <returns> Pair[Pair[double,double], int] wherein the inner pair is the quadrant range, and the outer int is the quadrant number. </returns>
@@ -106,7 +107,7 @@ namespace sds
 			if (quadrantResult == m_quadArray.end())
 			{
 				LoggingCallback(BAD_QUAD.data());
-				return { {0.0,0.0}, -1 };
+				return { {}, -1 };
 			}
 			return { .quadrant_range = (*quadrantResult), .quadrant_number = static_cast<int>(index) };
 		}

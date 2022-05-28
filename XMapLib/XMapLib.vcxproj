@@ -169,12 +169,12 @@
     <ClInclude Include="MouseInputPoller.h" />
     <ClInclude Include="MouseMoveThread.h" />
     <ClInclude Include="PolarCalc.h" />
-    <ClInclude Include="PolarQuadrantCalc.h" />
     <ClInclude Include="ReadRadiusScaleValues.h" />
     <ClInclude Include="SendKeyInput.h" />
     <ClInclude Include="SendMouseInput.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StickMap.h" />
+    <ClInclude Include="ThumbDzInfo.h" />
     <ClInclude Include="ThumbstickToDelay.h" />
     <ClInclude Include="Utilities.h" />
     <ClInclude Include="VirtualMap.h" />
