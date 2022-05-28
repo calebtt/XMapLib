@@ -24,7 +24,7 @@ namespace sds
 		static constexpr int SENSITIVITY_MIN{ 1 };
 		//Sensitivity Max is the maximum mouse sensitivity value allowed, used in several places.
 		static constexpr int SENSITIVITY_MAX{ 100 };
-		//Sensitivity Default is the default sensitivity value if none is given.
+		//Sensitivity Default is the default sensitivity value if none is given during construction of the mouse object.
 		static constexpr int SENSITIVITY_DEFAULT{ 35 };
 		//Microseconds Min is the minimum delay for the thumbstick axis thread loop at the highest thumbstick value.
 		static constexpr int MICROSECONDS_MIN{ 1100 };

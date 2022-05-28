@@ -109,36 +109,17 @@ namespace sds
 		const -> std::pair<size_t, size_t>
 		{
 			// If someone ever modifies this again, it is important to remember to scale the result of
-			//the polar calculations (based on config file) AFTER translation to delay values.
-			// Correction, scale the polar radius and perform the polar X,Y to delay values calc.
+			// the polar calculations (based on config file) AFTER translation to delay values.
+			// Correction, scale the polar radius FIRST and perform the polar X,Y to delay values calc.
 			// And if that doesn't work, I'm going to try scaling the microsecond delay range.
 			using Utilities::ToA;
 			using Utilities::ConstAbs;
-
 			// Get info pack for polar computations
 			PolarCalc::PolarCompleteInfoPack fullInfo{};
-
 			// Get scaled polar magnitudes from cartesian thumb values.
 			const auto [xPolarDelay, yPolarDelay] = GetPolarInfo(cartesianX, cartesianY, fullInfo);
-
 			// Scale delay values based on config.
 			return ConvertMagnitudesToDelays(xPolarDelay, yPolarDelay);
-		}
-
-		void LerpPolarRadsToDelay(const PolarCalc::AdjustedMagnitudePack& magPack, auto& xLerped, auto& yLerped) const
-		{
-			using Utilities::ToA;
-			// Alias for values in settings struct
-			constexpr PRadInt PolarRadiusMax = m_mouse_settings.PolarRadiusValueMax;
-			constexpr auto UsDelayMin = m_mouse_settings.MICROSECONDS_MIN;
-			constexpr auto UsDelayMax = m_mouse_settings.MICROSECONDS_MAX;
-			// Alias the polar mag per axis values
-			const auto &[xPolarMag, yPolarMag] = magPack;
-			// Lerp to delay values
-			const auto xPercent = 1.0 - ToA<double>(xPolarMag / PolarRadiusMax);
-			const auto yPercent = 1.0 - ToA<double>(yPolarMag / PolarRadiusMax);
-			xLerped = ToA<size_t>(std::lerp(UsDelayMin, UsDelayMax, xPercent));
-			yLerped = ToA<size_t>(std::lerp(UsDelayMin, UsDelayMax, yPercent));
 		}
 
 		///<summary> Computes axis polar radii from cartesian coordinates. Applies scaling based on config file. </summary>
@@ -155,6 +136,7 @@ namespace sds
 			return m_pc.ComputeAdjustedMagnitudes(fullInfo.polar_info, fullInfo.quadrant_info );
 		}
 
+		///<summary> Gets the (config file loaded) scaling value for the given polarThetaAngle. </summary>
 		[[nodiscard]] auto GetScalingMultiplier(const float polarThetaAngle) const noexcept
 		{
 			using Utilities::ToA;
@@ -166,20 +148,30 @@ namespace sds
 			// Convert from quadrant 2 or 3 to 1 or 4
 			if (thetaIndex >= MaxTheta)
 				thetaIndex -= MaxTheta;
+			// Clamp to handle extraordinary input values.
+			thetaIndex = std::clamp(thetaIndex, 0u, MaxTheta);
 			// return scaling multiplier
 			return m_radius_scale_values[thetaIndex];
 		}
 
+		///<summary> Converts polar magnitudes to delay values. Does not apply any scaling, direct linear interpolation of the inverse percentage. </summary>
 		[[nodiscard]] auto ConvertMagnitudesToDelays(const auto xPolarMag, const auto yPolarMag)
 		const noexcept -> std::pair<size_t, size_t>
 		{
 			using Utilities::ToA;
 			using Utilities::ConstAbs;
-			const float xPercentOfRadius = xPolarMag / ToA<float>(m_mouse_settings.PolarRadiusValueMax);
-			const float yPercentOfRadius = yPolarMag / ToA<float>(m_mouse_settings.PolarRadiusValueMax);
-			auto xResult = ToA<size_t>(std::lerp(m_mouse_settings.MICROSECONDS_MIN, m_mouse_settings.MICROSECONDS_MAX, xPercentOfRadius));
-			auto yResult = ToA<size_t>(std::lerp(m_mouse_settings.MICROSECONDS_MIN, m_mouse_settings.MICROSECONDS_MAX, yPercentOfRadius));
-
+			// Alias some settings
+			constexpr PRadInt PolarRadiusMax = m_mouse_settings.PolarRadiusValueMax;
+			constexpr auto UsDelayMin = m_mouse_settings.MICROSECONDS_MIN;
+			constexpr auto UsDelayMax = m_mouse_settings.MICROSECONDS_MAX;
+			// Clamp to range
+			const auto clampedPolarMagX = std::clamp(ToA<double>(xPolarMag), 0.0, ToA<double>(PolarRadiusMax));
+			const auto clampedPolarMagY = std::clamp(ToA<double>(yPolarMag), 0.0, ToA<double>(PolarRadiusMax));
+			// Lerp inverse percentage to delay values
+			const auto xPercent = 1.0 - ToA<double>(clampedPolarMagX / PolarRadiusMax);
+			const auto yPercent = 1.0 - ToA<double>(clampedPolarMagY / PolarRadiusMax);
+			const auto xResult = ToA<size_t>(std::lerp(UsDelayMin, UsDelayMax, xPercent));
+			const auto yResult = ToA<size_t>(std::lerp(UsDelayMin, UsDelayMax, yPercent));
 			return { xResult, yResult };
 		}
 	};

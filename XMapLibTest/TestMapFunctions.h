@@ -12,7 +12,7 @@ namespace XMapLibTest
 		{
 			using namespace sds;
 			using namespace std;
-			Logger::WriteMessage("Begin TestSetMapInfo()");
+			Logger::WriteMessage("Begin TestSearchMap()");
 			const wstring one{ L"one" };
 			const wstring two{ L"two" };
 			const wstring three{ L"three" };
@@ -31,7 +31,7 @@ namespace XMapLibTest
 			TestFound(three, 3);
 			const wstring notFound = L"not found key";
 			Assert::IsFalse(testMap.contains(notFound), L"Testing key definitely not in map returns false.");
-			Logger::WriteMessage("End TestSetMapInfo()");
+			Logger::WriteMessage("End TestSearchMap()");
 		}
 	};
 
