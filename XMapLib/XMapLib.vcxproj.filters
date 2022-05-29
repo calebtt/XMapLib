@@ -105,7 +105,7 @@
       <Filter>Header Files\Mouse</Filter>
     </ClInclude>
     <ClInclude Include="ThumbDzInfo.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Mouse</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
