@@ -27,9 +27,9 @@ namespace sds
 		//Sensitivity Default is the default sensitivity value if none is given during construction of the mouse object.
 		static constexpr int SENSITIVITY_DEFAULT{ 35 };
 		//Microseconds Min is the minimum delay for the thumbstick axis thread loop at the highest thumbstick value.
-		static constexpr int MICROSECONDS_MIN{ 1100 };
+		static constexpr int MICROSECONDS_MIN{ 1500 };
 		//Microseconds Max is the maximum delay for the thumbstick axis thread loop at the lowest thumbstick value.
-		static constexpr int MICROSECONDS_MAX{ 24'000 };
+		static constexpr int MICROSECONDS_MAX{ 32'000 };
 		//Deadzone Min is the minimum allowable value for a thumbstick deadzone.
 		static constexpr int DEADZONE_MIN{ 1 };
 		//Deadzone Max is the maximum allowable value for a thumbstick deadzone.
@@ -38,7 +38,7 @@ namespace sds
 		static constexpr int DEADZONE_DEFAULT{ XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE };
 		//Alt Deadzone Default is the multiplier to use when a deadzone is already activated,
 		//the deadzone value for the other axis is lessened via this value.
-		static constexpr float ALT_DEADZONE_MULT_DEFAULT{ 0.35f };
+		static constexpr float ALT_DEADZONE_MULT_DEFAULT{ 0.45f };
 		//File name for the file containing the thumbstick scaling values.
 		static constexpr std::string_view SCALING_VALUES_FNAME{ "adjustment_values.txt" };
 		//Static assertions about the const members

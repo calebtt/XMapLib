@@ -75,7 +75,7 @@ namespace sds
 			const auto blackPortion = (quadrantSentinelVal - polarTheta) * polarRadius;
 			const FloatingType xProportion = quadrantNumber % 2 ? blackPortion : redPortion;
 			const FloatingType yProportion = quadrantNumber % 2 ? redPortion : blackPortion;
-			return TrimMagnitudeToSentinel(xProportion, yProportion);
+			return AdjustedMagnitudePack{ xProportion, yProportion };
 		}
 		//compute polar coord pair
 		[[nodiscard]] PolarInfoPack ComputePolarPair(const IntegralType xStickValue, const IntegralType yStickValue) const noexcept

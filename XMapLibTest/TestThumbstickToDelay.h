@@ -9,17 +9,17 @@ namespace XMapLibTest
 	TEST_CLASS(TestThumbstickToDelay)
 	{
 	public:
-		TEST_METHOD(TestMagToDelay)
+		TEST_METHOD(TestConvertToDelays)
 		{
 			using namespace sds;
 			using namespace std;
-			Logger::WriteMessage("Begin TestMagToDelay()");
+			Logger::WriteMessage("Begin TestConvertToDelays()");
 			ThumbstickToDelay ttd(100, StickMap::RIGHT_STICK);
-			static constexpr size_t PolarRadiusMax{ 39'000 };
+			static constexpr int PolarRadiusMax{ 39'000 };
 			auto DoCompareTest = [&](const auto firstVal, const auto secondVal, const auto firstShouldBe, const auto secondShouldBe)
 			{
 				//test polar radius magnitude values
-				const auto res = ttd.ConvertMagnitudesToDelays(firstVal, secondVal);
+				const auto res = ttd.ConvertToDelays(firstVal, secondVal);
 				//assert pair returned are the same
 				std::wstringstream ws;
 				ws << "Element of pair returned at mag value X:" << firstVal << " not " << firstShouldBe << '\n';
@@ -32,9 +32,9 @@ namespace XMapLibTest
 			//test out of range values are truncated to fit
 			DoCompareTest(PolarRadiusMax+100, PolarRadiusMax+100, MouseSettings::MICROSECONDS_MIN, MouseSettings::MICROSECONDS_MIN);
 			//test some extreme values
-			DoCompareTest(std::numeric_limits<size_t>::max(), std::numeric_limits<size_t>::max(), MouseSettings::MICROSECONDS_MIN, MouseSettings::MICROSECONDS_MIN);
-			DoCompareTest(std::numeric_limits<size_t>::min(), std::numeric_limits<size_t>::min(), MouseSettings::MICROSECONDS_MAX, MouseSettings::MICROSECONDS_MAX);
-			Logger::WriteMessage("End TestMagToDelay()");
+			DoCompareTest(std::numeric_limits<int>::max(), std::numeric_limits<int>::max(), MouseSettings::MICROSECONDS_MIN, MouseSettings::MICROSECONDS_MIN);
+			DoCompareTest(std::numeric_limits<int>::min(), std::numeric_limits<int>::min(), MouseSettings::MICROSECONDS_MAX, MouseSettings::MICROSECONDS_MAX);
+			Logger::WriteMessage("End TestConvertToDelays()");
 		}
 		TEST_METHOD(TestGetScalingMultiplier)
 		{
@@ -44,16 +44,16 @@ namespace XMapLibTest
 			ThumbstickToDelay ttd(100, StickMap::RIGHT_STICK);
 			static constexpr size_t PolarRadiusMax{ 39'000 };
 			//test theta 0
-			const auto zeroResult = ttd.GetScalingMultiplier(0);
+			const auto zeroResult = ttd.GetScalingMultiplier(0.0);
 			if(zeroResult < 0.0 || zeroResult > 1.0)
 				Assert::Fail(L"Scaling mult out of bounds 0 to 1");
 			//test theta 157 (first quadrant max)
-			const auto maxResult = ttd.GetScalingMultiplier(157);
+			const auto maxResult = ttd.GetScalingMultiplier(0.157);
 			if (maxResult < 0.0 || maxResult > 1.0)
 				Assert::Fail(L"Scaling mult out of bounds 0 to 1");
 			//test some out of bounds values ( should still return in bounds result, is pretty fault tolerant )
-			const auto oobResult = ttd.GetScalingMultiplier(999);
-			if (maxResult < 0.0 || maxResult > 1.0)
+			const auto oobResult = ttd.GetScalingMultiplier(999.0);
+			if (oobResult < 0.0 || oobResult > 1.0)
 				Assert::Fail(L"Scaling mult out of bounds 0 to 1");
 			Logger::WriteMessage("End TestGetScalingMultiplier()");
 		}

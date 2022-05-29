@@ -23,8 +23,8 @@ namespace XMapLibTest
 			using namespace std;
 			Logger::WriteMessage("Begin TestAssertSettings()");
 			//Assert that certain constants are certain values, to not invalidate the tests.
-			Assert::AreEqual(MouseSettings::MICROSECONDS_MAX, 24'000);
-			Assert::AreEqual(MouseSettings::MICROSECONDS_MIN, 1'100);
+			Assert::AreEqual(MouseSettings::MICROSECONDS_MAX, 32'000);
+			Assert::AreEqual(MouseSettings::MICROSECONDS_MIN, 1'500);
 			Assert::AreEqual(MouseSettings::SENSITIVITY_MAX, 100);
 			Assert::AreEqual(MouseSettings::SENSITIVITY_MIN, 1);
 			Logger::WriteMessage("End TestAssertSettings()");

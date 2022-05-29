@@ -13,6 +13,9 @@ namespace sds
 		using DataType = std::vector<XINPUT_KEYSTROKE>;
 		using LambdaRunnerType = sds::CPPRunnerGeneric<DataType>;
 		using ScopedLockType = LambdaRunnerType::ScopedLockType;
+		// The number of empty XInput structs before another empty state is added, this
+		// helps to keep the path associated with processing them "hot" and not yield()ing it's time
+		// when it should be ready to process a valid state.
 		const int EMPTY_COUNT{ 500 };
 		KeyboardPlayerInfo m_local_player{};
 		LambdaRunnerType m_workThread;
@@ -82,13 +85,14 @@ namespace sds
 		/// <summary>Worker thread used by m_workThread. Updates the protectedData with mutex protection. The copied shared_ptr is intentional.</summary>
 		void workThread(const auto stopCondition, const auto mut, auto protectedData)
 		{
+			// Lambda for adding an element to the container, it restricts the maximum count of unprocessed states in the container.
 			auto addElement = [&](const XINPUT_KEYSTROKE& state)
 			{
 				ScopedLockType addLock(*mut);
 				if (protectedData->size() < KeyboardSettings::MAX_STATE_COUNT)
 					protectedData->push_back(state);
 				else
-					Utilities::LogError("KeyboardInputPoller::addElement(): State buffer dropping states.");
+					Utilities::LogError("KeyboardInputPoller::workThread::addElement(): State buffer dropping states.");
 			};
 			XINPUT_KEYSTROKE tempState{};
 			int currentCount = 0;
@@ -112,6 +116,7 @@ namespace sds
 				//no loop delay is tolerable here, essentially. A missed state is a real problem.
 				//but someday with a low cpu usage custom timer, added into this class,
 				//it should be possible to get performant microsecond loop delays here.
+				// (if the performance hit from using a high perf timer is worse than running this loop it's no use)
 			}
 		}
 	};
