@@ -8,7 +8,9 @@ namespace sds
 {
 	/// <summary>Basic logic for mapping thumbstick values to work thread delay values.
 	/// A single instance for a single thumbstick axis is to be used.
-	/// This class must be re-instantiated to use new deadzone values.</summary>
+	/// This class must be re-instantiated to use new deadzone values.
+	/// On the horizon is TMP precomputing each combination of X,Y
+	/// that would yield a distinct result.</summary>
 	class ThumbstickToDelay
 	{
 		using MultFloat = decltype(MouseSettings::ALT_DEADZONE_MULT_DEFAULT);
@@ -17,10 +19,6 @@ namespace sds
 		using PRadInt = decltype(MouseSettings::PolarRadiusValueMax);
 		using ScaleFloat = ReadRadiusScaleValues::FloatType;
 		using ScaleRange = ReadRadiusScaleValues::RangeType;
-		//***
-		//TODO use an unordered_map to hashmap angle to computed value,
-		//And even pre-compute them eventually (all values).
-		//***
 	public:
 	private:
 		// Additional multiplier applied to polar radius scaling values for cartesian adjustments.
