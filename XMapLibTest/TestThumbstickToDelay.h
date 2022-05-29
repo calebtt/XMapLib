@@ -33,7 +33,7 @@ namespace XMapLibTest
 			DoCompareTest(PolarRadiusMax+100, PolarRadiusMax+100, MouseSettings::MICROSECONDS_MIN, MouseSettings::MICROSECONDS_MIN);
 			//test some extreme values
 			DoCompareTest(std::numeric_limits<int>::max(), std::numeric_limits<int>::max(), MouseSettings::MICROSECONDS_MIN, MouseSettings::MICROSECONDS_MIN);
-			DoCompareTest(std::numeric_limits<int>::min(), std::numeric_limits<int>::min(), MouseSettings::MICROSECONDS_MAX, MouseSettings::MICROSECONDS_MAX);
+			DoCompareTest(std::numeric_limits<int>::min(), std::numeric_limits<int>::min(), MouseSettings::MICROSECONDS_MIN, MouseSettings::MICROSECONDS_MIN);
 			Logger::WriteMessage("End TestConvertToDelays()");
 		}
 		TEST_METHOD(TestGetScalingMultiplier)
