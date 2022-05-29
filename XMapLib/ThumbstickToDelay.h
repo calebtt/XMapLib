@@ -23,10 +23,18 @@ namespace sds
 		//***
 	public:
 	private:
+		// Additional multiplier applied to polar radius scaling values for cartesian adjustments.
+		static constexpr double AdditionalMultiplier{ 1.36 };
+		// Axis sensitivity, 1-100
 		const SensInt m_axis_sensitivity;
+		// Denotes left stick, right stick, or neither.
 		const StickMap m_which_stick;
+		// cref to MouseSettings info struct, contains some program information occasionally used.
 		const MouseSettings &m_mouse_settings;
+		// Container holding polar radius scaling values, index is an integer representation of the
+		// theta angle for 1st quadrant, 0 to 157
 		const ScaleRange m_radius_scale_values;
+		// Utility class for performing polar coordinate calculations.
 		PolarCalc m_pc;
 
 		///<summary> Used to make some assertions about the settings values this class depends upon. </summary>
@@ -48,23 +56,26 @@ namespace sds
 		{
 			//error checking StickMap stick setting
 			if (sm == StickMap::NEITHER_STICK)
+			{
+				Utilities::LogError("Error in ThumbstickToDelay::ValidateStickMap(StickMap): NEITHER_STICK selected stick, choosing RIGHT_STICK.");
 				return StickMap::RIGHT_STICK;
+			}
 			return sm;
 		}
-
-		/// <summary> Used to validate sensitivity arg value. </summary>
+		/// <summary> Used to validate sensitivity arg value to within range SENSITIVITY_MIN to SENSITIVITY_MAX in MouseSettings. </summary>
 		[[nodiscard]] static constexpr auto ValidateSensitivity(const SensInt si, const MouseSettings &ms)  noexcept
 		{
 			//range bind sensitivity
 			return std::clamp(si, ms.SENSITIVITY_MIN, ms.SENSITIVITY_MAX);
 		}
-		/// <summary> Validation func for retrieving the polar angle scaling values. </summary>
-		[[nodiscard]] static auto ValidateScaleValues() noexcept
+		/// <summary> Validation func for retrieving the polar angle scaling values from config file. </summary>
+		[[nodiscard]] static auto ValidateScaleValues(const MouseSettings &ms) noexcept
 		{
 			//read radius scale values config file
-			auto tempValues = ReadRadiusScaleValues::GetScalingValues();
+			ReadRadiusScaleValues rrsv(ms);
+			auto tempValues = rrsv.GetScalingValues();
 			if (tempValues.empty())
-				Utilities::LogError("Error in ThumbstickToDelay::ThumbstickToDelay(int,MousePlayerInfo,StickMap), failed to read radius scaling values from config file!");
+				Utilities::LogError("Error in ThumbstickToDelay::ValidateScaleValues(MouseSettings), failed to read radius scaling values from config file!");
 			return tempValues;
 		}
 	public:
@@ -80,7 +91,7 @@ namespace sds
 		: m_axis_sensitivity(ValidateSensitivity(sensitivity, ms)),
 		m_which_stick(ValidateStickMap(whichStick)),
 		m_mouse_settings(ms),
-		m_radius_scale_values(ValidateScaleValues()),
+		m_radius_scale_values(ValidateScaleValues(ms)),
 		m_pc(ms.PolarRadiusValueMax, Utilities::LogError)
 		{
 			AssertSettings(ms);
@@ -91,22 +102,36 @@ namespace sds
 		ThumbstickToDelay& operator=(const ThumbstickToDelay& other) = delete;
 		ThumbstickToDelay& operator=(ThumbstickToDelay&& other) = delete;
 		~ThumbstickToDelay() = default;
-
-		/// <summary>Main func for use. NOTE cartesian Y is inverted HERE due to thumbstick hardware. This
-		/// might change when a cross-platform build is implemented. </summary>
-		///	<returns>pair X,Y Delay in US</returns>
-		[[nodiscard]] auto GetDelaysFromThumbstickValues(const int cartesianX, const int cartesianY)
-		const noexcept -> std::pair<size_t,size_t>
+		///<summary> Utility function for computing a non-negative inverse of a float percentage plus 1.0 </summary>
+		[[nodiscard]] constexpr auto GetInverseOfPercentagePlusOne(const auto scale) const noexcept
 		{
-			return BuildDelayInfo(cartesianX, -cartesianY);
+			return GetInverseOfPercentage(scale) + 1.0;
 		}
-		///<summary> Utility function for computing the inverse of a float percentage </summary>
+		///<summary> Utility function for computing a non-negative inverse of a float percentage plus 1.0 </summary>
 		[[nodiscard]] constexpr auto GetInverseOfPercentage(const auto scale) const noexcept
 		{
-			const auto invP = (1.0 - scale) + 1.0;
+			const auto invP = (1.0 - scale);
 			if (invP < 0.0)
 				return 0.0;
 			return invP;
+		}
+		///<summary> Utility function for computing a non-negative float percentage. </summary>
+		[[nodiscard]] constexpr auto GetPercentage(const double numerator, const double denominator) const noexcept
+		{
+			const auto P = numerator / denominator;
+			if (P < 0.0)
+				return 0.0;
+			return P;
+		}
+		/// <summary>
+		/// Main func for use. NOTE cartesian Y is inverted HERE due to thumbstick hardware. This
+		///	might change when a cross-platform build is implemented.
+		///	</summary>
+		///	<returns>pair X,Y Delay in US</returns>
+		[[nodiscard]] auto GetDelaysFromThumbstickValues(const int cartesianX, const int cartesianY)
+			const noexcept -> std::pair<size_t, size_t>
+		{
+			return BuildDelayInfo(cartesianX, -cartesianY);
 		}
 		///<summary> Calculates microsecond delay values from cartesian X and Y thumbstick values.
 		///Probably needs optimized.</summary>
@@ -124,7 +149,7 @@ namespace sds
 			const PolarCalc::PolarCompleteInfoPack fullInfo = m_pc.ComputePolarCompleteInfo(cartesianX, cartesianY);
 			// Get scaling mult and inverse
 			const auto mult = GetScalingMultiplier(fullInfo.polar_info.polar_theta_angle);
-			const auto invMult = GetInverseOfPercentage(mult) * 1.36;
+			const auto invMult = GetInverseOfPercentagePlusOne(mult) * AdditionalMultiplier;
 			// Apply scale to cartesian values
 			const auto scaledX = ToA<int>(cartesianX * invMult);
 			const auto scaledY = ToA<int>(cartesianY * invMult);
@@ -132,23 +157,22 @@ namespace sds
 			return ConvertToDelays(scaledX, scaledY);
 		}
 		///<summary> Converts polar magnitudes to delay values. Does not apply any scaling, direct linear interpolation of the inverse percentage. </summary>
-		[[nodiscard]] auto ConvertToDelays(const auto xScaledValue, const auto yScaledValue)
+		[[nodiscard]] auto ConvertToDelays(const double xScaledValue, const double yScaledValue)
 			const noexcept -> std::pair<size_t, size_t>
 		{
 			using Utilities::ToA;
 			using Utilities::ConstAbs;
 			// Alias some settings
-			constexpr PRadInt PolarRadiusMax = m_mouse_settings.ThumbstickValueMax+2;
-			constexpr auto UsDelayMin = m_mouse_settings.MICROSECONDS_MIN;
-			constexpr auto UsDelayMax = m_mouse_settings.MICROSECONDS_MAX;
-			// Clamp to range
-			//const auto clampedPolarMagX = std::clamp(ToA<double>(ConstAbs(xPolarMag)), 0.0, ToA<double>(PolarRadiusMax));
-			//const auto clampedPolarMagY = std::clamp(ToA<double>(ConstAbs(yPolarMag)), 0.0, ToA<double>(PolarRadiusMax));
+			const PRadInt ThumbstickValueMax = m_mouse_settings.ThumbstickValueMax+2;
+			const auto UsDelayMin = m_mouse_settings.MICROSECONDS_MIN;
+			const auto UsDelayMax = m_mouse_settings.MICROSECONDS_MAX;
+			// Abs val
 			const auto absPolarMagX = ConstAbs(xScaledValue);
 			const auto absPolarMagY = ConstAbs(yScaledValue);
 			// Get inverse percentages of value to thumbstick max
-			const auto xPercent = 1.0 - ToA<double>(absPolarMagX / PolarRadiusMax);
-			const auto yPercent = 1.0 - ToA<double>(absPolarMagY / PolarRadiusMax);
+			const auto xPercent = GetInverseOfPercentage(GetPercentage(absPolarMagX, ThumbstickValueMax));
+			const auto yPercent = GetInverseOfPercentage(GetPercentage(absPolarMagY, ThumbstickValueMax));
+
 			const auto clampedX = std::clamp(xPercent, 0.0, 1.0);
 			const auto clampedY = std::clamp(yPercent, 0.0, 1.0);
 			// Linear interpolation into range of delay min and delay max

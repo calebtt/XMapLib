@@ -55,8 +55,9 @@ int main()
 	using namespace sds::Utilities;
 
 	MousePlayerInfo player;
+	MouseSettings ms;
 	KeyboardPlayerInfo kplayer;
-	MouseMapper mouser(player);
+	MouseMapper mouser(player, ms);
 	KeyboardMapper keyer(kplayer);
 	std::osyncstream ss(std::cout);
 	AddTestKeyMappings(keyer, ss);
