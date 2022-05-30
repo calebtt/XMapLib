@@ -44,7 +44,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <EnableASAN>true</EnableASAN>
+    <EnableASAN>false</EnableASAN>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -82,6 +82,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)\$(Platform)\$(Config)</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -174,6 +175,7 @@
     <ClInclude Include="SendMouseInput.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StickMap.h" />
+    <ClInclude Include="TPrior.h" />
     <ClInclude Include="ThumbDzInfo.h" />
     <ClInclude Include="ThumbstickToDelay.h" />
     <ClInclude Include="Utilities.h" />
@@ -192,6 +194,7 @@
   <ItemGroup>
     <CopyFileToFolders Include="adjustment_values.txt">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\caleb\source\repos\XMapLib_revis\XMapLibSharp\bin\Release\net5.0-windows;C:\Users\caleb\source\repos\XMapLib_revis\XMapLibSharp\bin\Debug\net5.0-windows;%(DestinationFolders)</DestinationFolders>
     </CopyFileToFolders>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

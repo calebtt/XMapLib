@@ -107,6 +107,9 @@
     <ClInclude Include="ThumbDzInfo.h">
       <Filter>Header Files\Mouse</Filter>
     </ClInclude>
+    <ClInclude Include="TPrior.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="adjustment_values.txt">

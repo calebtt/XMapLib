@@ -20,6 +20,10 @@ namespace sds
 	///	of the form [void] function_name( const LambdaArgs::LambdaArg1 stopCondition, LambdaArgs::LambdaArg2 theMutex, UserType protectedDataYouWantToAccess )
 	///	**
 	///	Data is owned and operated on by a running thread, and if stop() is requested, that data will no longer be reachable.
+	///	TODO detach()ed thread, mutex, and data objects should be saved into a range and upon destruction join()ed to ensure they are disposed of
+	///	before the termination of the program.
+	///	TODO need a static thread runner type that accepts multiple lambda functions and calls them in sequence.
+	///	Best solution for input polling (all on a single thread).
 	/// </summary>
 	template<typename InternalData>
 	requires std::is_default_constructible_v<InternalData>
@@ -133,14 +137,6 @@ namespace sds
 					m_local_thread->join();
 				m_local_thread.reset();
 			}
-		}
-		/// <summary> Returns native handle to the internal thread. </summary>
-		/// <returns>Native handle to the internal thread. </returns>
-		[[nodiscard]] auto GetNativeHandle() const noexcept
-		{
-			if(m_local_thread != nullptr)
-				return m_local_thread->native_handle();
-			return std::thread::native_handle_type{};
 		}
 		/// <summary>Container type function, adds an element to say, a vector. State updates will not
 		/// occur if stop has been requested.</summary>

@@ -20,18 +20,14 @@ namespace sds
 		{
 			return [this](const auto stopCondition, const auto mut, auto protectedData) { workThread(stopCondition, mut, protectedData); };
 		}
-		static void SetPriority(void* nativeHandle)
-		{
-			SetThreadPriority(nativeHandle, THREAD_PRIORITY_ABOVE_NORMAL);
-		}
 	public:
 		MouseInputPoller() : m_workThread(GetLambda())
 		{
-			SetPriority(m_workThread.GetNativeHandle());
+
 		}
 		explicit MouseInputPoller(const MousePlayerInfo &p) : m_local_player(p), m_workThread(GetLambda())
 		{
-			SetPriority(m_workThread.GetNativeHandle());
+
 		}
 		MouseInputPoller(const MouseInputPoller& other) = delete;
 		MouseInputPoller(MouseInputPoller&& other) = delete;
@@ -78,6 +74,10 @@ namespace sds
 		/// <summary>Worker thread used by m_workThread. Updates the protectedData with mutex protection.</summary>
 		void workThread(const auto stopCondition, const auto mut, const auto protectedData) const noexcept
 		{
+			Utilities::TPrior tp;
+			if (!tp.SetPriorityLow())
+				Utilities::LogError("Failed to set thread priority in MouseInputPoller::workThread(auto,auto,auto)");
+			//local scope here
 			{
 				//zero local_state before use
 				lock first(*mut);

@@ -130,6 +130,9 @@ namespace sds
 		void workThread(const auto stopCondition, const auto, auto)
 		{
 			using sds::Utilities::ToA;
+			Utilities::TPrior tp;
+			if (!tp.SetPriorityLow())
+				Utilities::LogError("Failed to set thread priority in MouseMapper::workThread(auto,auto,auto)");
 			ThumbstickToDelay delayCalculator(this->GetSensitivity(), m_stickmap_info);
 			ThumbDzInfo deadzoneInfoCalculator(m_local_player, m_stickmap_info);
 			MouseMoveThread mover;

@@ -50,6 +50,9 @@ namespace sds
 		void workThread(const auto stopCondition, auto, auto) const noexcept
 		{
 			using namespace std::chrono;
+			Utilities::TPrior tp;
+			if (!tp.SetPriorityLow())
+				Utilities::LogError("Failed to set thread priority in MouseMoveThread::workThread(auto,auto,auto)");
 			Utilities::SendMouseInput keySend;
 			Utilities::DelayManager xTime(MouseSettings::MICROSECONDS_MAX);
 			Utilities::DelayManager yTime(MouseSettings::MICROSECONDS_MAX);

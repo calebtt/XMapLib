@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "CppUnitTest.h"
+#include "../XMapLib/TPrior.h"
 #include "../XMapLib/KeyboardMapper.h"
 
 namespace XMapLibTest
@@ -11,6 +12,7 @@ namespace XMapLibTest
 	public:
 		TEST_METHOD(TestSetMapInfo)
 		{
+			//Testing KeyboardKeyMap
 			using namespace sds;
 			using namespace std;
 			Logger::WriteMessage("Begin TestSetMapInfo()");

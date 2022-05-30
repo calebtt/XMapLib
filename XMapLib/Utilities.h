@@ -5,3 +5,4 @@
 #include "SendMouseInput.h"
 #include "Arithmetic.h"
 #include "DelayManager.h"
+#include "TPrior.h"

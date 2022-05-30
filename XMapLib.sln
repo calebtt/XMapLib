@@ -9,7 +9,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XMapLibTest", "XMapLibTest\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XMapLibDLL", "XMapLibDLL\XMapLibDLL.vcxproj", "{719FF759-0AEB-4234-BFCF-3D45D8B27661}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XMapLibSharp", "XMapLibSharp\XMapLibSharp.csproj", "{A42592DA-0FEC-4F35-98A6-4E13CAEAC0D0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XMapLibSharp", "XMapLibSharp\XMapLibSharp.csproj", "{A42592DA-0FEC-4F35-98A6-4E13CAEAC0D0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

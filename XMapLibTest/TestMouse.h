@@ -26,7 +26,11 @@ namespace XMapLibTest
 			constexpr const long long IntMin = std::numeric_limits<int>::min();
 			Assert::IsFalse(mouse.SetSensitivity(IntMax).empty());
 			Assert::IsFalse(mouse.SetSensitivity(IntMin).empty());
-
+			//test that valid values are being set
+			mouse.SetSensitivity(1);
+			Assert::IsTrue(mouse.GetSensitivity() == 1);
+			mouse.SetSensitivity(100);
+			Assert::IsTrue(mouse.GetSensitivity() == 100);
 		}
 	};
 }

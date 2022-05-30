@@ -23,19 +23,13 @@ namespace sds
 		{
 			return [this](const auto stopCondition, const auto mut, auto protectedData) { workThread(stopCondition, mut, protectedData); };
 		}
-		static void SetPriority(void *nativeHandle)
-		{
-			SetThreadPriority(nativeHandle, THREAD_PRIORITY_TIME_CRITICAL);
-		}
 	public:
 		KeyboardInputPoller() : m_workThread(GetLambda())
 		{
-			SetPriority(m_workThread.GetNativeHandle());
 		}
 		explicit KeyboardInputPoller(const KeyboardPlayerInfo& p)
 		: m_local_player(p), m_workThread(GetLambda())
 		{
-			SetPriority(m_workThread.GetNativeHandle());
 		}
 		KeyboardInputPoller(const KeyboardInputPoller& other) = delete;
 		KeyboardInputPoller(KeyboardInputPoller&& other) = delete;
@@ -85,6 +79,9 @@ namespace sds
 		/// <summary>Worker thread used by m_workThread. Updates the protectedData with mutex protection. The copied shared_ptr is intentional.</summary>
 		void workThread(const auto stopCondition, const auto mut, auto protectedData)
 		{
+			Utilities::TPrior tp;
+			if (!tp.SetPriorityLow())
+				Utilities::LogError("Failed to set thread priority in KeyboardInputPoller::workThread(auto,auto,auto)");
 			// Lambda for adding an element to the container, it restricts the maximum count of unprocessed states in the container.
 			auto addElement = [&](const XINPUT_KEYSTROKE& state)
 			{

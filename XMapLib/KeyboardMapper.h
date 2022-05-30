@@ -2,6 +2,7 @@
 #include "stdafx.h"
 #include "KeyboardInputPoller.h"
 #include "KeyboardTranslator.h"
+#include "Utilities.h"
 
 namespace sds
 {
@@ -26,12 +27,12 @@ namespace sds
 		/// <summary>Ctor for default configuration</summary>
 		KeyboardMapper() : m_workThread(GetLambda())
 		{
-			SetThreadPriority(m_workThread.GetNativeHandle(), THREAD_PRIORITY_ABOVE_NORMAL);
+
 		}
 		/// <summary>Ctor allows setting a custom KeyboardPlayerInfo</summary>
 		explicit KeyboardMapper(const sds::KeyboardPlayerInfo& player) : m_localPlayerInfo(player), m_workThread(GetLambda())
 		{
-			SetThreadPriority(m_workThread.GetNativeHandle(), THREAD_PRIORITY_ABOVE_NORMAL);
+			
 		}
 		KeyboardMapper(const KeyboardMapper& other) = delete;
 		KeyboardMapper(KeyboardMapper&& other) = delete;
@@ -83,6 +84,9 @@ namespace sds
 		/// <summary>Worker thread, protected visibility.</summary>
 		void workThread(const auto stopCondition, const auto, auto)
 		{
+			Utilities::TPrior tp;
+			if (!tp.SetPriorityLow())
+				Utilities::LogError("Failed to set thread priority in KeyboardMapper::workThread(auto,auto,auto)");
 			//thread main loop
 			while (!(*stopCondition))
 			{
