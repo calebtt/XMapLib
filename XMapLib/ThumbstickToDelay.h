@@ -154,7 +154,7 @@ namespace sds
 			// Convert values to delays
 			return ConvertToDelays(scaledX, scaledY);
 		}
-		///<summary> Converts polar magnitudes to delay values. Does not apply any scaling, direct linear interpolation of the inverse percentage. </summary>
+		///<summary> Converts scaled thumbstick values to delay values. Does not apply any scaling, direct linear interpolation of the inverse percentage. </summary>
 		[[nodiscard]] auto ConvertToDelays(const double xScaledValue, const double yScaledValue)
 			const noexcept -> std::pair<size_t, size_t>
 		{
@@ -165,11 +165,11 @@ namespace sds
 			const auto UsDelayMin = m_mouse_settings.MICROSECONDS_MIN;
 			const auto UsDelayMax = m_mouse_settings.MICROSECONDS_MAX;
 			// Abs val
-			const auto absPolarMagX = ConstAbs(xScaledValue);
-			const auto absPolarMagY = ConstAbs(yScaledValue);
+			const auto absCartesianScaledX = ConstAbs(xScaledValue);
+			const auto absCartesianScaledY = ConstAbs(yScaledValue);
 			// Get inverse percentages of value to thumbstick max
-			const auto xPercent = GetInverseOfPercentage(GetPercentage(absPolarMagX, ThumbstickValueMax));
-			const auto yPercent = GetInverseOfPercentage(GetPercentage(absPolarMagY, ThumbstickValueMax));
+			const auto xPercent = GetInverseOfPercentage(GetPercentage(absCartesianScaledX, ThumbstickValueMax));
+			const auto yPercent = GetInverseOfPercentage(GetPercentage(absCartesianScaledY, ThumbstickValueMax));
 
 			const auto clampedX = std::clamp(xPercent, 0.0, 1.0);
 			const auto clampedY = std::clamp(yPercent, 0.0, 1.0);
