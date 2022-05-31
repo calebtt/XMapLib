@@ -1,8 +1,12 @@
 #pragma once
 #include "stdafx.h"
-#include "KeyboardInputPoller.h"
 #include "KeyboardTranslator.h"
+#include "ControllerStatus.h"
 #include "Utilities.h"
+#include "STRunner.h"
+#include "STKeyboardMapping.h"
+#include "STKeyboardPoller.h"
+
 
 namespace sds
 {
@@ -15,88 +19,58 @@ namespace sds
 		using InternalType = int;
 		using LambdaRunnerType = sds::CPPRunnerGeneric<InternalType>;
 		using lock = LambdaRunnerType::ScopedLockType;
-		sds::KeyboardPlayerInfo m_localPlayerInfo{};
-		sds::KeyboardInputPoller m_poller{};
-		sds::KeyboardTranslator m_translator{};
-		LambdaRunnerType m_workThread;
-		auto GetLambda()
-		{
-			return [this](const auto stopCondition, const auto mut, auto protectedData) { workThread(stopCondition, mut, protectedData); };
-		}
-	public:
-		/// <summary>Ctor for default configuration</summary>
-		KeyboardMapper() : m_workThread(GetLambda())
-		{
 
-		}
-		/// <summary>Ctor allows setting a custom KeyboardPlayerInfo</summary>
-		explicit KeyboardMapper(const sds::KeyboardPlayerInfo& player) : m_localPlayerInfo(player), m_workThread(GetLambda())
+		std::shared_ptr<STKeyboardMapping> m_statMapping;
+		std::shared_ptr<STKeyboardPoller> m_statPoller;
+		STRunner m_statRunner;
+		// Needed for iscontrollerconnected funcs
+		const KeyboardPlayerInfo& m_localPlayerInfo;
+	public:
+		/// <summary>Ctor allows setting custom KeyboardPlayerInfo and KeyboardSettings</summary>
+		explicit KeyboardMapper(const KeyboardPlayerInfo& player = {}, const KeyboardSettings& sett = {})
+		: m_localPlayerInfo(player)
 		{
-			
+			m_statPoller = std::make_shared<STKeyboardPoller>(player, sett, Utilities::LogError);
+			m_statMapping = std::make_shared<STKeyboardMapping>(m_statPoller, Utilities::LogError);
+			m_statRunner.AddDataWrapper(m_statPoller);
+			m_statRunner.AddDataWrapper(m_statMapping);
 		}
+		// Other constructors/destructors
 		KeyboardMapper(const KeyboardMapper& other) = delete;
 		KeyboardMapper(KeyboardMapper&& other) = delete;
 		KeyboardMapper& operator=(const KeyboardMapper& other) = delete;
 		KeyboardMapper& operator=(KeyboardMapper&& other) = delete;
-		~KeyboardMapper()
-		{
-			Stop();
-		}
+		~KeyboardMapper() = default;
 
 		[[nodiscard]] bool IsControllerConnected() const
 		{
-			return m_poller.IsControllerConnected();
+			return ControllerStatus::IsControllerConnected(m_localPlayerInfo.player_id);
 		}
 		[[nodiscard]] bool IsRunning() const
 		{
-			return m_poller.IsRunning() && m_workThread.IsRunning();
+			return m_statMapping->IsRunning() && m_statRunner.IsRunning();
 		}
-		void Start() noexcept
+		std::string AddMap(KeyboardKeyMap button) const
 		{
-			m_poller.Start();
-			m_workThread.StartThread();
-		}
-		void Stop() noexcept
-		{
-			m_translator.CleanupInProgressEvents();
-			m_workThread.StopThread();
-			m_poller.Stop();
-			
-		}
-		std::string AddMap(KeyboardKeyMap button)
-		{
-			if (IsRunning())
-				Stop();
-			std::string er = m_translator.AddKeyMap(button);
-			if (er.empty())
-				Start();
-			return er;
+			return m_statMapping->AddMap(button);
 		}
 		[[nodiscard]] std::vector<KeyboardKeyMap> GetMaps() const
 		{
-			return m_translator.GetMaps();
+			return m_statMapping->GetMaps();
 		}
-		void ClearMaps()
+		void ClearMaps() const
 		{
-			m_translator.ClearMaps();
+			m_statMapping->ClearMaps();
 		}
-	protected:
-		/// <summary>Worker thread, protected visibility.</summary>
-		void workThread(const auto stopCondition, const auto, auto)
+		void Start() noexcept
 		{
-			Utilities::TPrior tp;
-			if (!tp.SetPriorityLow())
-				Utilities::LogError("Failed to set thread priority in KeyboardMapper::workThread(auto,auto,auto)");
-			//thread main loop
-			while (!(*stopCondition))
-			{
-				const std::vector<XINPUT_KEYSTROKE> states = m_poller.getAndClearStates();
-				for(const auto &cur: states)
-				{
-					m_translator.ProcessKeystroke(cur);
-				}
-				std::this_thread::sleep_for(std::chrono::milliseconds(4));
-			}
+			m_statMapping->Start();
+			m_statRunner.StartThread();
+		}
+		void Stop() noexcept
+		{
+			m_statMapping->Stop();
+			m_statRunner.StopThread();
 		}
 	};
 }

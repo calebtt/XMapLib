@@ -7,7 +7,7 @@ namespace sds
 	struct KeyboardSettings
 	{
 		//Input Poller maximum number of XINPUT_KEYSTROKE structs to queue before dropping input.
-		static constexpr int MAX_STATE_COUNT{ 128 };
+		static constexpr int MAX_STATE_COUNT{ 1'000 };
 		//Input Poller thread delay, in milliseconds.
 		static constexpr int THREAD_DELAY_POLLER{ 10 };
 		//Microseconds Delay Keyrepeat is the time delay a button has in between activations.

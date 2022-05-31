@@ -165,6 +165,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Arithmetic.h" />
+    <ClInclude Include="ControllerStatus.h" />
     <ClInclude Include="CPPRunnerGeneric.h" />
     <ClInclude Include="DelayManager.h" />
     <ClInclude Include="MouseInputPoller.h" />
@@ -173,15 +174,17 @@
     <ClInclude Include="ReadRadiusScaleValues.h" />
     <ClInclude Include="SendKeyInput.h" />
     <ClInclude Include="SendMouseInput.h" />
+    <ClInclude Include="STKeyboardMapping.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StickMap.h" />
+    <ClInclude Include="STKeyboardPoller.h" />
+    <ClInclude Include="STRunner.h" />
     <ClInclude Include="TPrior.h" />
     <ClInclude Include="ThumbDzInfo.h" />
     <ClInclude Include="ThumbstickToDelay.h" />
     <ClInclude Include="Utilities.h" />
     <ClInclude Include="VirtualMap.h" />
     <ClInclude Include="XELog.h" />
-    <ClInclude Include="KeyboardInputPoller.h" />
     <ClInclude Include="KeyboardMapper.h" />
     <ClInclude Include="KeyboardPlayerInfo.h" />
     <ClInclude Include="KeyboardSettings.h" />

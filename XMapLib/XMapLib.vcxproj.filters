@@ -47,9 +47,6 @@
     <ClInclude Include="MouseInputPoller.h">
       <Filter>Header Files\Mouse</Filter>
     </ClInclude>
-    <ClInclude Include="KeyboardInputPoller.h">
-      <Filter>Header Files\Keyboard</Filter>
-    </ClInclude>
     <ClInclude Include="KeyboardPlayerInfo.h">
       <Filter>Header Files\Keyboard</Filter>
     </ClInclude>
@@ -109,6 +106,18 @@
     </ClInclude>
     <ClInclude Include="TPrior.h">
       <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="STKeyboardMapping.h">
+      <Filter>Header Files\Keyboard</Filter>
+    </ClInclude>
+    <ClInclude Include="STRunner.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="ControllerStatus.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="STKeyboardPoller.h">
+      <Filter>Header Files\Keyboard</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

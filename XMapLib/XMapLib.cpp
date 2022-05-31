@@ -57,8 +57,9 @@ int main()
 	MousePlayerInfo player;
 	MouseSettings ms;
 	KeyboardPlayerInfo kplayer;
+	KeyboardSettings ks;
 	MouseMapper mouser(player, ms);
-	KeyboardMapper keyer(kplayer);
+	KeyboardMapper keyer(kplayer, ks);
 	std::osyncstream ss(std::cout);
 	AddTestKeyMappings(keyer, ss);
 	GetterExit getter(keyer);
