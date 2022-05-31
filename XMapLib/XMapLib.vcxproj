@@ -178,6 +178,8 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StickMap.h" />
     <ClInclude Include="STKeyboardPoller.h" />
+    <ClInclude Include="STMousePoller.h" />
+    <ClInclude Include="STPoller.h" />
     <ClInclude Include="STRunner.h" />
     <ClInclude Include="TPrior.h" />
     <ClInclude Include="ThumbDzInfo.h" />

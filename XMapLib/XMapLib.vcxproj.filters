@@ -119,6 +119,12 @@
     <ClInclude Include="STKeyboardPoller.h">
       <Filter>Header Files\Keyboard</Filter>
     </ClInclude>
+    <ClInclude Include="STMousePoller.h">
+      <Filter>Header Files\Mouse</Filter>
+    </ClInclude>
+    <ClInclude Include="STPoller.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="adjustment_values.txt">
