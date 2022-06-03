@@ -5,10 +5,6 @@
 #include "MouseInputPoller.h"
 #include "ThumbDzInfo.h"
 #include "Utilities.h"
-#include "ControllerStatus.h"
-#include "STRunner.h"
-#include "STPoller.h"
-
 namespace sds
 {
 	/// <summary>
@@ -20,32 +16,21 @@ namespace sds
 	class MouseMapper
 	{
 		using InternalType = int;
-		using LambdaRunnerType = CPPRunnerGeneric<InternalType>;
+		using LambdaRunnerType = sds::CPPRunnerGeneric<InternalType>;
 		using ScopedLockType = LambdaRunnerType::ScopedLockType;
-		using PollerType = STPoller<XINPUT_STATE>;
-		using PollerPtrType = std::shared_ptr<PollerType>;
 		std::atomic<StickMap> m_stickmap_info{ StickMap::NEITHER_STICK };
 		std::atomic<SHORT> m_thread_x{ 0 };
 		std::atomic<SHORT> m_thread_y{0};
 		std::atomic<int> m_mouse_sensitivity{ MouseSettings::SENSITIVITY_DEFAULT };
-		MousePlayerInfo m_local_player{};
+		sds::MousePlayerInfo m_local_player{};
 		MouseSettings m_ms{};
-		// Thread pool class, our work funcs get added to here and called in succession on a separate thread
-		// for performance reasons.
-		STRunner m_runner;
-		// Poller template instance of a function object added to the STRunner for concurrent processing.
-		PollerPtrType m_poller;
-		//MouseInputPoller m_poller{};
+		sds::MouseInputPoller m_poller{};
 		std::unique_ptr<LambdaRunnerType> m_workThread{};
 		void InitWorkThread() noexcept
 		{
-			auto StateFn = [](int pid, XINPUT_STATE& st)
-			{
-				return XInputGetState(pid, &st);
-			};
-			m_workThread = std::make_unique<PollerType>(StateFn, m_local_player.player_id, 1000, Utilities::LogError);
-			//std::make_unique<LambdaRunnerType>
-				//([this](const auto stopCondition, const auto mut, auto protectedData) { workThread(stopCondition, mut, protectedData); });
+			m_workThread =
+				std::make_unique<LambdaRunnerType>
+				([this](const auto stopCondition, const auto mut, auto protectedData) { workThread(stopCondition, mut, protectedData); });
 		}
 	public:
 		/// <summary>Ctor for default configuration</summary>
@@ -118,7 +103,7 @@ namespace sds
 		}
 		[[nodiscard]] bool IsControllerConnected() const noexcept
 		{
-			return ControllerStatus::IsControllerConnected(m_local_player.player_id);
+			return m_poller.IsControllerConnected();
 		}
 		[[nodiscard]] bool IsRunning() const noexcept
 		{
