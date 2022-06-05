@@ -39,9 +39,6 @@ namespace sds
 		static constexpr float ALT_DEADZONE_MULT_DEFAULT{ 0.45f };
 		//File name for the file containing the thumbstick scaling values.
 		static constexpr std::string_view SCALING_VALUES_FNAME{ "adjustment_values.txt" };
-		//Input Poller maximum number of XINPUT_STATE structs to queue before dropping input.
-		static constexpr int MAX_STATE_COUNT{ 1'000 };
-
 		//Static assertions about the const members
 		static_assert(SENSITIVITY_MAX < MICROSECONDS_MAX);
 		static_assert(SENSITIVITY_MIN >= 1);

@@ -71,11 +71,11 @@ namespace sds
 		MouseMapper& operator=(MouseMapper&& other) = delete;
 		~MouseMapper() = default;
 
-		/// <summary><c>SetStick(...)</c> <para>Use this function to establish one stick or the other as the one controlling the mouse movements.
-		/// Set to NEITHER_STICK for no thumbstick mouse movement. Options are RIGHT_STICK, LEFT_STICK, NEITHER_STICK</para></summary>
-		///	<remarks>This will start processing if the stick is something other than "NEITHER"
-		///	<para><strong>**Arbitrary values outside of the enum constants will not be processed successfully.**</strong></para></remarks>
-		/// <param name="info"> a <c>StickMap</c> enum</param>
+		/// <summary>Use this function to establish one stick or the other as the one controlling the mouse movements.
+		/// Set to NEITHER_STICK for no thumbstick mouse movement. Options are RIGHT_STICK, LEFT_STICK, NEITHER_STICK
+		///	This will start processing if the stick is something other than "NEITHER"
+		///	**Arbitrary values outside of the enum constants will not be processed successfully.**</summary>
+		/// <param name="info"> a StickMap enum</param>
 		void SetStick(const StickMap info) noexcept
 		{
 			m_stmapper->SetStick(info);
