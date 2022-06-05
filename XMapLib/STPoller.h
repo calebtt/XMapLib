@@ -1,31 +1,30 @@
 #pragma once
 #include "stdafx.h"
+#include <atomic>
+#include <mutex>
+#include <functional>
+#include <memory>
 #include "STRunner.h"
 
 namespace sds
 {
-	/// <summary> Class template for an encapsulation function object with methods for accessing the data it is operating on.
-	/// <para>It has a member function operator()() called in the STRunner thread loop. This is so many objects such as this can be ran on the same thread.
+	/// <summary><para> <c>STPoller</c> Template for a polling loop to be added to an <c>STRunner</c> thread pool. It has a couple design decisions
+	/// such as adding the polled struct object (template param) to a container and returning a copy of it via GetAndClearStates()</para>
+	///	<para></para></summary>
+	/// <remarks>[Extended definition] Class template for an encapsulation function object with methods for accessing the data it is operating on.
+	/// <para>It has a member function operator()() called in the <c>STRunner</c> thread loop. This is so many objects such as this can be ran on the same thread.
 	///	For performance reasons, typically the work thread in this functor will not be doing much beyond making a system call in a loop and updating something.</para>
-	///	<para>Polling loops like this belong in a single thread without a delay to run them all. Remember that the m_is_enabled member of the base (DataWrapper)
+	///	<para>Polling loops like this belong in a single thread without a delay to run them all. Remember that the <c>m_is_enabled</c> member of the base (<c>STDataWrapper</c>)
 	///	toggles on/off the processing of operator()()</para>
 	///	<para>**This class template is program specific logic, an input poller to get updated states.</para>
 	///	<para>TODO a class that will encapsulate a boolean and a counter, incremented each time an error message is logged,
-	///	used to silence an error message after a certain number of calls to avoid spamming an error log or error output.</para>
-	///	</summary>
+	///	used to silence an error message after a certain number of calls to avoid spamming an error log or error output.</para></remarks>
 	template<class StructType>
-	struct STPoller : public STRunner::DataWrapper
+	struct STPoller : public sds::STDataWrapper
 	{
 	public:
 		using StateContainerType = std::vector<StructType>;
-		// Function pointer to hold the fn wrapping the syscall, it should return the struct we are interested in.
-		// it returns a std::pair with the first element being the state struct, and the second an error code.
-		// An error code of 0 returned should denote no error.
-		// An example lambda could be:
-		//auto StateFn = [](int pid, XINPUT_STATE& st)
-		//{
-		//	return XInputGetState(pid, &st);
-		//};
+		// Function pointer to hold the fn wrapping the syscall, it should return 0 to indicate no error.
 		using SysCallType = std::function<int(int, StructType&)>;
 	private:
 		// This member is used to denote if the state buffer has ever dropped a state,
@@ -41,8 +40,7 @@ namespace sds
 		unsigned m_currentEmptyCount{};
 		// structure that holds our controller state, added here to avoid creation and destruction in the work func.
 		StructType m_tempState{};
-		// Function pointer to hold the fn wrapping the syscall, it should return the struct we are interested in.
-		// it returns a std::pair with the first element being the state struct, and the second an error code.
+		// Function pointer to hold the fn wrapping the syscall, it should return 0 to indicate noerror.
 		SysCallType m_sysCall;
 		// Player ID of the controller we are interested in.
 		const int m_PlayerId;
@@ -52,8 +50,8 @@ namespace sds
 		virtual ~STPoller() override
 		{
 		}
-		explicit STPoller(const SysCallType stateFn, const int pid = 0, const int maxStates = 1'000, const LogFnType fn = nullptr)
-			: DataWrapper(fn), m_sysCall(stateFn), m_PlayerId(pid), m_MaxStateCount(maxStates)
+		explicit STPoller(const SysCallType stateFn, const int playerId = 0, const int maxStates = 1'000, const LogFnType fn = nullptr)
+			: STDataWrapper(fn), m_sysCall(stateFn), m_PlayerId(playerId), m_MaxStateCount(maxStates)
 		{
 			if (stateFn == nullptr && fn != nullptr)
 				fn("Exception in STPoller::STPoller(): SysCallType stateFn cannot be nullptr!");
@@ -84,7 +82,7 @@ namespace sds
 			// zero controller state struct
 			m_tempState = {};
 			// get updated controller state information
-			const auto errState = m_sysCall(m_PlayerId, m_tempState);
+			const auto errState = m_sysCall(m_PlayerId, std::ref(m_tempState));
 			if (errState == 0)
 			{
 				addElement(m_tempState);

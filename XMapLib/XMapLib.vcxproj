@@ -168,19 +168,24 @@
     <ClInclude Include="ControllerStatus.h" />
     <ClInclude Include="CPPRunnerGeneric.h" />
     <ClInclude Include="DelayManager.h" />
-    <ClInclude Include="MouseInputPoller.h" />
-    <ClInclude Include="MouseMoveThread.h" />
+    <ClInclude Include="KeyboardPoller.h" />
+    <ClInclude Include="KeyboardSettingsPack.h" />
+    <ClInclude Include="MouseMoveInfoPacket.h" />
+    <ClInclude Include="MouseMover.h" />
+    <ClInclude Include="MousePoller.h" />
+    <ClInclude Include="MouseSettingsPack.h" />
     <ClInclude Include="PolarCalc.h" />
     <ClInclude Include="ReadRadiusScaleValues.h" />
     <ClInclude Include="SendKeyInput.h" />
     <ClInclude Include="SendMouseInput.h" />
+    <ClInclude Include="STDataWrapper.h" />
     <ClInclude Include="STKeyboardMapping.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StickMap.h" />
-    <ClInclude Include="STKeyboardPoller.h" />
-    <ClInclude Include="STMousePoller.h" />
+    <ClInclude Include="STMouseMapping.h" />
     <ClInclude Include="STPoller.h" />
     <ClInclude Include="STRunner.h" />
+    <ClInclude Include="ThumbStateWrapper.h" />
     <ClInclude Include="TPrior.h" />
     <ClInclude Include="ThumbDzInfo.h" />
     <ClInclude Include="ThumbstickToDelay.h" />
@@ -188,12 +193,8 @@
     <ClInclude Include="VirtualMap.h" />
     <ClInclude Include="XELog.h" />
     <ClInclude Include="KeyboardMapper.h" />
-    <ClInclude Include="KeyboardPlayerInfo.h" />
-    <ClInclude Include="KeyboardSettings.h" />
     <ClInclude Include="KeyboardKeyMap.h" />
     <ClInclude Include="MouseMapper.h" />
-    <ClInclude Include="MousePlayerInfo.h" />
-    <ClInclude Include="MouseSettings.h" />
     <ClInclude Include="KeyboardTranslator.h" />
   </ItemGroup>
   <ItemGroup>

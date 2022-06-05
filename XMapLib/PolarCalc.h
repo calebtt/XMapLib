@@ -1,9 +1,13 @@
 #pragma once
 #include "stdafx.h"
+#include "Utilities.h"
 #include <functional>
 
 namespace sds
 {
+	/// <summary><c>PolarCalc</c> A class for computing polar coordinate plane values from raw controller thumbstick values.
+	/// Provides magnitude per - axis as well as the polar theta angle of the direction and the polar (total) magnitude.
+	///	</summary>
 	class PolarCalc
 	{
 	private:
@@ -11,7 +15,7 @@ namespace sds
 		static constexpr auto NUM_QUADRANTS = 4;
 		using FloatingType = float;
 		using IntegralType = int;
-		using LogFnType = std::function<void(const char* st)>;
+		using LogFnType = std::function<void(const char*)>;
 		static constexpr FloatingType MY_PI{ std::numbers::pi_v<FloatingType> };
 		static constexpr FloatingType MY_PI2{ std::numbers::pi_v<FloatingType> / 2.0f };
 
@@ -29,8 +33,8 @@ namespace sds
 		/// <summary> Ctor, constructs polar quadrant calc object. </summary>
 		/// <param name="magnitudeSentinel"> thumbstick hardware max val for trimming </param>
 		/// <param name="logFunc">logging func callback, called if an error occurs.</param>
-		PolarCalc(FloatingType magnitudeSentinel = 32'766.0, LogFnType logFunc = nullptr)
-			: MagnitudeSentinel(magnitudeSentinel), LoggingCallback(std::move(logFunc)) { }
+		PolarCalc(const FloatingType magnitudeSentinel = 32'766.0, const LogFnType logFunc = nullptr)
+			: MagnitudeSentinel(magnitudeSentinel), LoggingCallback(logFunc) { }
 	public:
 		// [Pair[FloatingType,FloatingType], int] wherein the quadrant_range pair is the quadrant range, and the outer int quadrant_number is the quadrant number.
 		struct QuadrantInfoPack
@@ -106,7 +110,8 @@ namespace sds
 			//This should not happen, but if it does, I want some kind of message about it.
 			if (quadrantResult == m_quadArray.end())
 			{
-				LoggingCallback(BAD_QUAD.data());
+				if(LoggingCallback != nullptr)
+					LoggingCallback(BAD_QUAD.data());
 				return { {}, -1 };
 			}
 			return { .quadrant_range = (*quadrantResult), .quadrant_number = static_cast<int>(index) };

@@ -7,7 +7,7 @@
 namespace sds
 {
 	/// <summary>
-	/// Utility class for holding controller to keyboard maps.
+	/// Utility class for holding controller button to keyboard button maps.
 	/// </summary>
 	struct KeyboardKeyMap
 	{

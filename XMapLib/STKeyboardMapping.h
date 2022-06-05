@@ -1,43 +1,42 @@
 #pragma once
 #include "stdafx.h"
 #include "KeyboardTranslator.h"
-#include "STRunner.h"
-#include "STKeyboardPoller.h"
+#include "STDataWrapper.h"
 
 namespace sds
 {
-	/// <summary> This is an encapsulation function object with methods for accessing the
-	///	data it is operating on. It has a member function operator()() called in the STRunner
-	///	thread loop. This is so many objects such as this can be ran on the same thread.
-	///	For performance reasons, typically the work thread in this functor will not be doing
-	///	much beyond making a system call in a loop and updating something. Polling loops like
-	///	this belong in a single thread without a delay to run them all.
-	///	Remember that the m_is_enabled member of the base (DataWrapper) toggles on/off the processing of operator()()</summary>
-	struct STKeyboardMapping : public sds::STRunner::DataWrapper
+	/// <summary> It's a wrapper around KeyboardTranslator and KeyboardPoller that is added to the STRunner thread pool. Used in main class for use KeyboardMapper.
+	/// Keyboard simulation function object that polls for controller input and processes it as keyboard keystrokes. It is ran on the STRunner thread pool.  </summary>
+	///	<remarks>Remember that the m_is_enabled member of the base (STDataWrapper) toggles on/off the processing of operator()()</remarks>
+	struct STKeyboardMapping : public STDataWrapper
 	{
 	private:
-		std::shared_ptr<STKeyboardPoller> m_poller;
-		KeyboardTranslator m_translator{};
+		// program settings pack for keyboard mapping.
+		const KeyboardSettingsPack m_ksp;
+		// class that contains the keypress handling logic.
+		KeyboardTranslator m_translator;
+		// class that wraps the syscalls for getting a controller update.
+		KeyboardPoller m_poller;
 	public:
 		virtual ~STKeyboardMapping() override
 		{
 			Stop();
 		}
-		explicit STKeyboardMapping(const std::shared_ptr<STKeyboardPoller> &poll, const LogFnType fn = nullptr)
-		: DataWrapper(fn), m_poller(poll)
+		STKeyboardMapping(const KeyboardSettingsPack ksp = {},
+			const LogFnType fn = nullptr
+		)
+		: STDataWrapper(fn),
+		m_ksp(ksp),
+		m_translator(ksp),
+		m_poller(fn)
 		{
 
 		}
 		/// <summary>Worker thread function called in a loop on the STRunner's thread.</summary>
 		virtual void operator()() override
 		{
-			//TODO might want to use a mutex to make sure this isn't in some state of running for the start() stop() funcs
-			//although might not be necessary.
-			const std::vector<XINPUT_KEYSTROKE> states = m_poller->GetAndClearStates();
-			for (const auto& cur : states)
-			{
-				m_translator.ProcessKeystroke(cur);
-			}
+			const auto stateUpdate = m_poller.GetUpdatedState(m_ksp.playerInfo.player_id);
+			m_translator.ProcessKeystroke(stateUpdate);
 		}
 		std::string AddMap(KeyboardKeyMap button)
 		{
@@ -59,18 +58,16 @@ namespace sds
 
 		[[nodiscard]] bool IsRunning() const
 		{
-			return m_poller->IsEnabled() && m_is_enabled;
+			return m_is_enabled;
 		}
 		void Start() noexcept
 		{
-			m_poller->Start();
 			m_is_enabled = true;
 		}
 		void Stop() noexcept
 		{
 			m_translator.CleanupInProgressEvents();
 			m_is_enabled = false;
-			m_poller->Stop();
 		}
 	};
 }

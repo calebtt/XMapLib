@@ -4,6 +4,8 @@
 
 namespace sds::Utilities
 {
+	/// <summary> <c>DelayManager</c> Enables asynchronously waiting for a microsecond precision timer
+	///	to elapse. </summary>
 	class DelayManager
 	{
 		using TimeType = std::chrono::time_point<std::chrono::high_resolution_clock>;

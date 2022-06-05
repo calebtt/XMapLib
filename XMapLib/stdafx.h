@@ -39,7 +39,5 @@
 
 // Include some commonly used global stuff.
 #include "StickMap.h"
-#include "MousePlayerInfo.h"
-#include "KeyboardPlayerInfo.h"
-#include "MouseSettings.h"
-#include "KeyboardSettings.h"
+#include "MouseSettingsPack.h"
+#include "KeyboardSettingsPack.h"

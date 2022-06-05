@@ -7,10 +7,13 @@
 #include "MouseMapper.h"
 
 using namespace std;
+
+// adds a bunch of key mappings for common binds.
 void AddTestKeyMappings(sds::KeyboardMapper& mapper, std::osyncstream &ss);
 
-class GetterExit
-{
+// used to asynchornously await the enter key being pressed, before
+// dumping the contents of the key maps.
+class GetterExit {
 	std::unique_ptr<std::thread> workerThread{};
 	std::atomic<bool> m_exitState{ false };
 	const sds::KeyboardMapper& m_mp;
@@ -20,79 +23,96 @@ public:
 	//Returns a bool indicating if the thread should stop.
 	bool operator()() { return m_exitState; }
 protected:
-	void stopThread()
-	{
+	void stopThread() {
 		if (workerThread)
-		{
 			if (workerThread->joinable())
-			{
 				workerThread->join();
-			}
-		}
 	}
-	void startThread()
-	{
+	void startThread() {
 		workerThread = std::make_unique<std::thread>([this]() { workThread(); });
 	}
-	void workThread()
-	{
+	void workThread() {
 		std::cin.get(); // block and wait for enter key
 		std::cin.clear();
 		std::osyncstream ss(std::cerr);
 		//prints out the maps, for debugging info.
 		auto mapList = m_mp.GetMaps();
-		ranges::for_each(mapList, [&ss](const sds::KeyboardKeyMap& theMap)
-			{
+		ranges::for_each(mapList, [&ss](const sds::KeyboardKeyMap& theMap)	{
 				ss << theMap << endl << endl;
 			});
 		m_exitState = true;
 	}
 };
+
+auto CreateKeyMapper(const std::shared_ptr<sds::STRunner> &runner)
+{
+	using namespace sds;
+	KeyboardSettingsPack ksp;
+	std::unique_ptr<KeyboardMapper> keyer;
+	keyer = std::make_unique<KeyboardMapper>(runner, ksp, Utilities::LogError);
+	return keyer;
+}
+auto CreateMouseMapper(const std::shared_ptr<sds::STRunner>& runner)
+{
+	using namespace sds;
+	MouseSettingsPack msp;
+	std::unique_ptr<MouseMapper> mouser;
+	mouser = std::make_unique<MouseMapper>(runner, msp, Utilities::LogError);
+	return mouser;
+}
 /* Entry Point */
 int main()
 {
 	using namespace sds;
 	using namespace sds::Utilities;
+	//construct some mapping objects...
+	std::shared_ptr<STRunner> threadPool = std::make_shared<STRunner>();
+	threadPool->StartThread();
+	auto mouser = CreateMouseMapper(threadPool);
+	auto keyer = CreateKeyMapper(threadPool);
 
-	MousePlayerInfo player;
-	MouseSettings ms;
-	KeyboardPlayerInfo kplayer;
-	KeyboardSettings ks;
-	MouseMapper mouser(player, ms);
-	KeyboardMapper keyer(kplayer, ks);
 	std::osyncstream ss(std::cout);
-	AddTestKeyMappings(keyer, ss);
-	GetterExit getter(keyer);
-	std::string err = mouser.SetSensitivity(100); //sensitivity
+	AddTestKeyMappings(*keyer, ss);
+	GetterExit getter(*keyer);
+	std::string err = mouser->SetSensitivity(100); //sensitivity
 	Utilities::LogError(err); // won't do anything if the string is empty
-	mouser.SetStick(StickMap::RIGHT_STICK);
-	
+	mouser->SetStick(StickMap::RIGHT_STICK);
+
+	auto IsControllerConnected = [](const int pid)
+	{
+		return ControllerStatus::IsControllerConnected(pid);
+	};
 	ss << "[Enter] to dump keymap contents and quit." << endl;
 	ss << "Xbox controller polling started..." << endl;
-	ss << "Controller reported as: " << (mouser.IsControllerConnected() && keyer.IsControllerConnected() ? "Connected.": "Disconnected.") << std::endl;
+	ss << "Controller reported as: " << (IsControllerConnected(0) ? "Connected." : "Disconnected.") << std::endl;
 	ss.emit();
+
+	// main loop
 	do
 	{
-		const bool isControllerConnected = mouser.IsControllerConnected() && keyer.IsControllerConnected();
-		const bool isThreadRunning = mouser.IsRunning() && keyer.IsRunning();
-		if (!isThreadRunning && isControllerConnected)
+		const bool isControllerConnected = ControllerStatus::IsControllerConnected(0);
+		const bool isThreadRunning = mouser->IsRunning() && keyer->IsRunning();
+		const bool doConnectStart = !isThreadRunning && isControllerConnected;
+		const bool doConnectStop = isThreadRunning && !isControllerConnected;
+		if (doConnectStart)
 		{
-			ss << "Controller reported as: " << "Connected." << std::endl;
-			keyer.Start();
-			mouser.Start();
+			ss << "Controller reported as: Connected. Starting mapping objects." << std::endl;
+			keyer->Start();
+			mouser->Start();
 			ss.emit();
 		}
-		if ((!isControllerConnected) && isThreadRunning)
+		if (doConnectStop)
 		{
-			ss << "Controller reported as: " << "Disconnected." << std::endl;
-			keyer.Stop();
-			mouser.Stop();
+			ss << "Controller reported as: Disconnected. Stopping mapping objects." << std::endl;
+			keyer->Stop();
+			mouser->Stop();
 			ss.emit();
 		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	} while (!getter());
 	return 0;
 }
+
 void AddTestKeyMappings(sds::KeyboardMapper& mapper, std::osyncstream &ss)
 {
 	using namespace sds;

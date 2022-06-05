@@ -30,4 +30,25 @@ namespace sds::Utilities
 		}
 		return val;
 	}
+	///<summary> Utility function for computing a non-negative inverse of a float percentage plus 1.0 </summary>
+	[[nodiscard]] constexpr auto GetInverseOfPercentage(const auto scale) noexcept
+	{
+		const auto invP = (1.0 - scale);
+		if (invP < 0.0)
+			return 0.0;
+		return invP;
+	}
+	///<summary> Utility function for computing a non-negative inverse of a float percentage plus 1.0 </summary>
+	[[nodiscard]] constexpr auto GetInverseOfPercentagePlusOne(const auto scale) noexcept
+	{
+		return GetInverseOfPercentage(scale) + 1.0;
+	}
+	///<summary> Utility function for computing a non-negative float percentage. </summary>
+	[[nodiscard]] constexpr auto GetPercentage(const double numerator, const double denominator) noexcept
+	{
+		const auto P = numerator / denominator;
+		if (P < 0.0)
+			return 0.0;
+		return P;
+	}
 }

@@ -22,6 +22,24 @@
     <Filter Include="Header Files\Keyboard">
       <UniqueIdentifier>{30035b3e-a651-4eb0-a45c-c6f9c1e7cd53}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Utilities\Async">
+      <UniqueIdentifier>{a33d14d8-5416-46dd-8f3e-ebb4d48c5d90}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utilities\Timing">
+      <UniqueIdentifier>{3ad1d1ca-af41-40cb-896c-57dfe1aa5450}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Keyboard\SettingsAndConfig">
+      <UniqueIdentifier>{1bed7456-95b8-4364-8fd9-fbca1b2543cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Mouse\SettingsAndConfig">
+      <UniqueIdentifier>{990d5241-0b82-4351-8c3d-e86a0933de36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utilities\IOHelpers">
+      <UniqueIdentifier>{fa1bad36-c9bf-4349-8421-3c2ac015c567}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Mouse\ThumbInfoWrappers">
+      <UniqueIdentifier>{b8c463e2-24b4-4ab2-b95f-fdfabd2da928}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="XMapLib.cpp">
@@ -41,23 +59,8 @@
     <ClInclude Include="ThumbstickToDelay.h">
       <Filter>Header Files\Mouse</Filter>
     </ClInclude>
-    <ClInclude Include="MouseMoveThread.h">
-      <Filter>Header Files\Mouse</Filter>
-    </ClInclude>
-    <ClInclude Include="MouseInputPoller.h">
-      <Filter>Header Files\Mouse</Filter>
-    </ClInclude>
-    <ClInclude Include="KeyboardPlayerInfo.h">
-      <Filter>Header Files\Keyboard</Filter>
-    </ClInclude>
-    <ClInclude Include="KeyboardSettings.h">
-      <Filter>Header Files\Keyboard</Filter>
-    </ClInclude>
     <ClInclude Include="KeyboardTranslator.h">
       <Filter>Header Files\Keyboard</Filter>
-    </ClInclude>
-    <ClInclude Include="MouseSettings.h">
-      <Filter>Header Files\Mouse</Filter>
     </ClInclude>
     <ClInclude Include="KeyboardKeyMap.h">
       <Filter>Header Files\Keyboard</Filter>
@@ -71,32 +74,11 @@
     <ClInclude Include="KeyboardMapper.h">
       <Filter>Header Files\Keyboard</Filter>
     </ClInclude>
-    <ClInclude Include="MousePlayerInfo.h">
-      <Filter>Header Files\Mouse</Filter>
-    </ClInclude>
     <ClInclude Include="MouseMapper.h">
       <Filter>Header Files\Mouse</Filter>
     </ClInclude>
-    <ClInclude Include="SendKeyInput.h">
-      <Filter>Header Files\Utilities</Filter>
-    </ClInclude>
     <ClInclude Include="Arithmetic.h">
       <Filter>Header Files\Utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="DelayManager.h">
-      <Filter>Header Files\Utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="SendMouseInput.h">
-      <Filter>Header Files\Utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="VirtualMap.h">
-      <Filter>Header Files\Utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="CPPRunnerGeneric.h">
-      <Filter>Header Files\Utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="ReadRadiusScaleValues.h">
-      <Filter>Header Files\Mouse</Filter>
     </ClInclude>
     <ClInclude Include="PolarCalc.h">
       <Filter>Header Files\Mouse</Filter>
@@ -104,26 +86,65 @@
     <ClInclude Include="ThumbDzInfo.h">
       <Filter>Header Files\Mouse</Filter>
     </ClInclude>
-    <ClInclude Include="TPrior.h">
-      <Filter>Header Files\Utilities</Filter>
-    </ClInclude>
     <ClInclude Include="STKeyboardMapping.h">
       <Filter>Header Files\Keyboard</Filter>
     </ClInclude>
-    <ClInclude Include="STRunner.h">
-      <Filter>Header Files\Utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="ControllerStatus.h">
-      <Filter>Header Files\Utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="STKeyboardPoller.h">
-      <Filter>Header Files\Keyboard</Filter>
-    </ClInclude>
-    <ClInclude Include="STMousePoller.h">
+    <ClInclude Include="STMouseMapping.h">
       <Filter>Header Files\Mouse</Filter>
     </ClInclude>
+    <ClInclude Include="MouseMoveInfoPacket.h">
+      <Filter>Header Files\Mouse</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyboardPoller.h">
+      <Filter>Header Files\Keyboard</Filter>
+    </ClInclude>
     <ClInclude Include="STPoller.h">
-      <Filter>Header Files\Utilities</Filter>
+      <Filter>Header Files\Utilities\Async</Filter>
+    </ClInclude>
+    <ClInclude Include="STRunner.h">
+      <Filter>Header Files\Utilities\Async</Filter>
+    </ClInclude>
+    <ClInclude Include="STDataWrapper.h">
+      <Filter>Header Files\Utilities\Async</Filter>
+    </ClInclude>
+    <ClInclude Include="CPPRunnerGeneric.h">
+      <Filter>Header Files\Utilities\Async</Filter>
+    </ClInclude>
+    <ClInclude Include="DelayManager.h">
+      <Filter>Header Files\Utilities\Timing</Filter>
+    </ClInclude>
+    <ClInclude Include="ReadRadiusScaleValues.h">
+      <Filter>Header Files\Mouse\SettingsAndConfig</Filter>
+    </ClInclude>
+    <ClInclude Include="TPrior.h">
+      <Filter>Header Files\Utilities\Async</Filter>
+    </ClInclude>
+    <ClInclude Include="ControllerStatus.h">
+      <Filter>Header Files\Utilities\IOHelpers</Filter>
+    </ClInclude>
+    <ClInclude Include="SendKeyInput.h">
+      <Filter>Header Files\Utilities\IOHelpers</Filter>
+    </ClInclude>
+    <ClInclude Include="SendMouseInput.h">
+      <Filter>Header Files\Utilities\IOHelpers</Filter>
+    </ClInclude>
+    <ClInclude Include="VirtualMap.h">
+      <Filter>Header Files\Utilities\IOHelpers</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyboardSettingsPack.h">
+      <Filter>Header Files\Keyboard\SettingsAndConfig</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseSettingsPack.h">
+      <Filter>Header Files\Mouse\SettingsAndConfig</Filter>
+    </ClInclude>
+    <ClInclude Include="MousePoller.h">
+      <Filter>Header Files\Mouse</Filter>
+    </ClInclude>
+    <ClInclude Include="ThumbStateWrapper.h">
+      <Filter>Header Files\Mouse\ThumbInfoWrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseMover.h">
+      <Filter>Header Files\Mouse</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

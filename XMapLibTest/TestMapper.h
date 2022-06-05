@@ -20,7 +20,7 @@ namespace XMapLibTest
 			//valid characters that may be included.
 			const std::string InputAlphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-=,./`[];\'"
 				+ std::string("!@#$%^&*()_+?{}~");
-			KeyboardMapper mp;
+			KeyboardMapper mp(std::make_shared<STRunner>());
 			auto testMapFunction = [&mp](const auto s, const bool testTrue = true)
 			{
 				std::string ert = "Testmap [input]: ";

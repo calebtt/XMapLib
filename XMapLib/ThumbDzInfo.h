@@ -1,12 +1,12 @@
 #pragma once
 #include "stdafx.h"
-#include "Arithmetic.h"
+#include "MouseSettingsPack.h"
 #include "PolarCalc.h"
 
 namespace sds
 {
-	/// <summary> Manages checking is cartesian thumbstick values are beyond a given
-	///	deadzone value, and holds internal state regarding the deadzone being activated
+	/// <summary> Manages checking if cartesian thumbstick values are beyond a given
+	///	deadzone value, and holds internal state regarding the deadzone being activated,
 	///	as it will scale down after activation. </summary>
 	class ThumbDzInfo
 	{
@@ -19,27 +19,26 @@ namespace sds
 	private:
 		/// <summary> Used to validate polar deadzone arg value. </summary>
 		[[nodiscard]] static constexpr auto ValidatePolarDz(
-			const MousePlayerInfo& mpi,
-			const StickMap sm, 
-			const MouseSettings &ms)  noexcept
+			const StickMap sm,
+			const MouseSettingsPack msp)  noexcept
 		{
 			//error checking deadzone arg range, because it might crash the program if the
 			//delay returned is some silly value
-			const int cdz = sm == StickMap::LEFT_STICK ? mpi.left_polar_dz : mpi.right_polar_dz;
-			if (ms.IsValidDeadzoneValue(cdz))
+			const int cdz = sm == StickMap::LEFT_STICK ? msp.playerInfo.left_polar_dz : msp.playerInfo.right_polar_dz;
+			if (msp.settings.IsValidDeadzoneValue(cdz))
 				return cdz;
-			return ms.DEADZONE_DEFAULT;
+			return msp.settings.DEADZONE_DEFAULT;
 		}
 		/// <summary> Used to validate alt deadzone multiplier arg. </summary>
-		[[nodiscard]] static constexpr auto ValidateAltMultiplier(const MouseSettings &ms)  noexcept
+		[[nodiscard]] static constexpr auto ValidateAltMultiplier(const MouseSettingsPack ms)  noexcept
 		{
-			return ms.ALT_DEADZONE_MULT_DEFAULT;
+			return ms.settings.ALT_DEADZONE_MULT_DEFAULT;
 		}
 	public:
-		ThumbDzInfo(const MousePlayerInfo &mpi, const StickMap sm, const MouseSettings& ms = {})
-		: m_polar_magnitude_deadzone(ValidatePolarDz(mpi, sm, ms)),
-		m_alt_deadzone_multiplier(ValidateAltMultiplier(ms)),
-		m_pc(ms.ThumbstickValueMax)
+		explicit ThumbDzInfo(const StickMap sm, const MouseSettingsPack msp = {})
+		: m_polar_magnitude_deadzone(ValidatePolarDz(sm, msp)),
+		m_alt_deadzone_multiplier(ValidateAltMultiplier(msp)),
+		m_pc(msp.settings.ThumbstickValueMax)
 		{ }
 		///<summary>Takes a cartesian value and returns true if equal or over deadzone. </summary>
 		[[nodiscard]] std::pair<bool,bool> IsBeyondDeadzone(const int cartesianX, const int cartesianY) noexcept

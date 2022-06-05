@@ -1,18 +1,22 @@
 #pragma once
-#include "PolarCalc.h"
 #include "stdafx.h"
+#include "PolarCalc.h"
 #include "Utilities.h"
 #include "ReadRadiusScaleValues.h"
 
 namespace sds
 {
-	/// <summary>Basic logic for mapping thumbstick values to work thread delay values.
-	/// A single instance for a single thumbstick axis is to be used.
+	/// <summary><c>ThumbstickToDelay</c> Basic logic for mapping thumbstick values to work thread delay values.
 	/// This class must be re-instantiated to use new deadzone values.
 	/// On the horizon is TMP precomputing each combination of X,Y
-	/// that would yield a distinct result.</summary>
+	/// that would yield a distinct result.
+	///	<para> TODO implement the new sensitivity value modifications
+	///	</para>
+	/// </summary>
+	///	<remarks>A single instance for both thumbstick axes is to be used.</remarks>
 	class ThumbstickToDelay
 	{
+		using LogFnType = std::function<void(const char*)>;
 		using MultFloat = decltype(MouseSettings::ALT_DEADZONE_MULT_DEFAULT);
 		using SensInt = decltype(MouseSettings::SENSITIVITY_DEFAULT);
 		using DzInt = decltype(MouseSettings::DEADZONE_DEFAULT);
@@ -20,32 +24,51 @@ namespace sds
 		using ScaleFloat = ReadRadiusScaleValues::FloatType;
 		using ScaleRange = ReadRadiusScaleValues::RangeType;
 	public:
+		void SetSensitivity(SensInt newSens) noexcept
+		{
+			m_axis_sensitivity = ValidateSensitivity(newSens, m_mouse_settings);
+		}
+		[[nodiscard]] SensInt GetSensitivity() const noexcept
+		{
+			return m_axis_sensitivity;
+		}
+		void SetStick(StickMap newStick) noexcept
+		{
+			m_which_stick = newStick;
+		}
+		[[nodiscard]] StickMap GetStick() const noexcept
+		{
+			return m_which_stick;
+		}
 	private:
 		// Additional multiplier applied to polar radius scaling values for cartesian adjustments.
 		static constexpr double AdditionalMultiplier{ 1.36 };
 		// Axis sensitivity, 1-100
-		const SensInt m_axis_sensitivity;
+		std::atomic<int> m_axis_sensitivity{};
 		// Denotes left stick, right stick, or neither.
-		const StickMap m_which_stick;
-		// cref to MouseSettings info struct, contains some program information occasionally used.
-		const MouseSettings &m_mouse_settings;
-		// Container holding polar radius scaling values, index is an integer representation of the
-		// theta angle for 1st quadrant, 0 to 157
+		std::atomic<StickMap> m_which_stick;
+		// local copy of MouseSettings info struct, contains some program information occasionally used.
+		const MouseSettingsPack m_mouse_settings;
+		// logging function pointer, used if not null.
+		const LogFnType m_logFn;
+		// container/range holding radius scaling values.
 		const ScaleRange m_radius_scale_values;
 		// Utility class for performing polar coordinate calculations.
 		PolarCalc m_pc;
 
+		//TODO convert this to use the logFn
+
 		///<summary> Used to make some assertions about the settings values this class depends upon. </summary>
-		static void AssertSettings(const MouseSettings &ms) noexcept
+		static void AssertSettings(const MouseSettingsPack &ms) noexcept
 		{
 			//Assertions about the settings values used by this class.
-			if constexpr (ms.MICROSECONDS_MIN >= ms.MICROSECONDS_MAX)
+			if constexpr (ms.settings.MICROSECONDS_MIN >= ms.settings.MICROSECONDS_MAX)
 				Utilities::LogError("Exception in ThumbstickToDelay() ctor, MICROSECONDS_MIN >= MICROSECONDS_MAX");
-			if constexpr (ms.SENSITIVITY_MIN >= ms.SENSITIVITY_MAX)
+			if constexpr (ms.settings.SENSITIVITY_MIN >= ms.settings.SENSITIVITY_MAX)
 				Utilities::LogError("Exception in ThumbstickToDelay() ctor, SENSITIVITY_MIN >= SENSITIVITY_MAX");
-			if constexpr (ms.SENSITIVITY_MIN <= 0)
+			if constexpr (ms.settings.SENSITIVITY_MIN <= 0)
 				Utilities::LogError("Exception in ThumbstickToDelay() ctor, SENSITIVITY_MIN <= 0");
-			if constexpr (ms.SENSITIVITY_MAX > 100)
+			if constexpr (ms.settings.SENSITIVITY_MAX > 100)
 				Utilities::LogError("Exception in ThumbstickToDelay() ctor, SENSITIVITY_MAX > 100");
 		}
 		/// <summary> Validates StickMap ctor args, neither stick is not a valid setting
@@ -61,19 +84,19 @@ namespace sds
 			return sm;
 		}
 		/// <summary> Used to validate sensitivity arg value to within range SENSITIVITY_MIN to SENSITIVITY_MAX in MouseSettings. </summary>
-		[[nodiscard]] static constexpr auto ValidateSensitivity(const SensInt si, const MouseSettings &ms)  noexcept
+		[[nodiscard]] static constexpr auto ValidateSensitivity(const SensInt si, const MouseSettingsPack &ms)  noexcept -> int
 		{
 			//range bind sensitivity
-			return std::clamp(si, ms.SENSITIVITY_MIN, ms.SENSITIVITY_MAX);
+			return std::clamp(si, ms.settings.SENSITIVITY_MIN, ms.settings.SENSITIVITY_MAX);
 		}
 		/// <summary> Validation func for retrieving the polar angle scaling values from config file. </summary>
-		[[nodiscard]] static auto ValidateScaleValues(const MouseSettings &ms) noexcept
+		[[nodiscard]] static auto ValidateScaleValues(const MouseSettingsPack &ms) noexcept
 		{
 			//read radius scale values config file
-			ReadRadiusScaleValues rrsv(ms);
+			ReadRadiusScaleValues rrsv(ms.settings);
 			auto tempValues = rrsv.GetScalingValues();
 			if (tempValues.empty())
-				Utilities::LogError("Error in ThumbstickToDelay::ValidateScaleValues(MouseSettings), failed to read radius scaling values from config file!");
+				Utilities::LogError("Error in ThumbstickToDelay::ValidateScaleValues(MouseSettingsPack), failed to read radius scaling values from config file!");
 			return tempValues;
 		}
 	public:
@@ -85,12 +108,14 @@ namespace sds
 		ThumbstickToDelay(
 			const int sensitivity, 
 			const StickMap whichStick,
-			const MouseSettings &ms = {}) noexcept
+			const MouseSettingsPack ms = {},
+			const LogFnType logFn = nullptr) noexcept
 		: m_axis_sensitivity(ValidateSensitivity(sensitivity, ms)),
 		m_which_stick(ValidateStickMap(whichStick)),
 		m_mouse_settings(ms),
+		m_logFn(logFn),
 		m_radius_scale_values(ValidateScaleValues(ms)),
-		m_pc(ms.PolarRadiusValueMax, Utilities::LogError)
+		m_pc(ms.settings.PolarRadiusValueMax, logFn)
 		{
 			AssertSettings(ms);
 		}
@@ -100,27 +125,7 @@ namespace sds
 		ThumbstickToDelay& operator=(const ThumbstickToDelay& other) = delete;
 		ThumbstickToDelay& operator=(ThumbstickToDelay&& other) = delete;
 		~ThumbstickToDelay() = default;
-		///<summary> Utility function for computing a non-negative inverse of a float percentage plus 1.0 </summary>
-		[[nodiscard]] constexpr auto GetInverseOfPercentagePlusOne(const auto scale) const noexcept
-		{
-			return GetInverseOfPercentage(scale) + 1.0;
-		}
-		///<summary> Utility function for computing a non-negative inverse of a float percentage plus 1.0 </summary>
-		[[nodiscard]] constexpr auto GetInverseOfPercentage(const auto scale) const noexcept
-		{
-			const auto invP = (1.0 - scale);
-			if (invP < 0.0)
-				return 0.0;
-			return invP;
-		}
-		///<summary> Utility function for computing a non-negative float percentage. </summary>
-		[[nodiscard]] constexpr auto GetPercentage(const double numerator, const double denominator) const noexcept
-		{
-			const auto P = numerator / denominator;
-			if (P < 0.0)
-				return 0.0;
-			return P;
-		}
+
 		/// <summary>
 		/// Main func for use. NOTE cartesian Y is inverted HERE due to thumbstick hardware. This
 		///	might change when a cross-platform build is implemented.
@@ -136,6 +141,7 @@ namespace sds
 		[[nodiscard]] auto BuildDelayInfo(const auto cartesianX, const auto cartesianY)
 		const noexcept -> std::pair<size_t, size_t>
 		{
+			using namespace sds::Utilities;
 			// If someone ever modifies this again, it is important to remember to scale the result of
 			// the polar calculations (based on config file) AFTER translation to delay values.
 			// Correction, scale the polar radius FIRST and perform the polar X,Y to delay values calc.
@@ -158,12 +164,11 @@ namespace sds
 		[[nodiscard]] auto ConvertToDelays(const double xScaledValue, const double yScaledValue)
 			const noexcept -> std::pair<size_t, size_t>
 		{
-			using Utilities::ToA;
-			using Utilities::ConstAbs;
+			using namespace sds::Utilities;
 			// Alias some settings
-			const PRadInt ThumbstickValueMax = m_mouse_settings.ThumbstickValueMax+2;
-			const auto UsDelayMin = m_mouse_settings.MICROSECONDS_MIN;
-			const auto UsDelayMax = m_mouse_settings.MICROSECONDS_MAX;
+			const PRadInt ThumbstickValueMax = m_mouse_settings.settings.ThumbstickValueMax+2;
+			const auto UsDelayMin = m_mouse_settings.settings.MICROSECONDS_MIN;
+			const auto UsDelayMax = m_mouse_settings.settings.MICROSECONDS_MAX;
 			// Abs val
 			const auto absCartesianScaledX = ConstAbs(xScaledValue);
 			const auto absCartesianScaledY = ConstAbs(yScaledValue);

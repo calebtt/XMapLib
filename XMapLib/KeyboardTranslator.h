@@ -2,16 +2,15 @@
 #include "stdafx.h"
 #include "Utilities.h"
 #include "KeyboardKeyMap.h"
-
+#include "KeyboardPoller.h"
 #include <iostream>
 #include <chrono>
-
 
 namespace sds
 {
 	/// <summary>
 	/// Contains the logic for determining if a key press or mouse click should occur, uses sds::Utilities::SendKeyInput m_key_send to send the input.
-	///	Function ProcessKeystroke(XINPUT_KEYSTROKE &stroke) is used to process a controller input structure. Handles key-repeat behavior as well.
+	///	Function ProcessKeystroke(KeyboardPoller::KeyStateWrapper &stroke) is used to process a controller input structure. Handles key-repeat behavior as well.
 	/// </summary>
 	class KeyboardTranslator
 	{
@@ -23,19 +22,19 @@ namespace sds
 	private:
 		Utilities::SendKeyInput m_key_send{};
 		std::vector<KeyboardKeyMap> m_map_token_info{};
-		KeyboardPlayerInfo m_local_player{};
+		const KeyboardSettingsPack& m_ksp;
 	public:
-		explicit KeyboardTranslator(const KeyboardPlayerInfo &p) : m_local_player(p)
+		explicit KeyboardTranslator(const KeyboardSettingsPack &ksp = {})
+		: m_ksp(ksp)
 		{
 		}
-		KeyboardTranslator() = default;
 		KeyboardTranslator(const KeyboardTranslator& other) = delete;
 		KeyboardTranslator(KeyboardTranslator&& other) = delete;
 		KeyboardTranslator& operator=(const KeyboardTranslator& other) = delete;
 		KeyboardTranslator& operator=(KeyboardTranslator&& other) = delete;
 		~KeyboardTranslator() = default;
 
-		void ProcessKeystroke(const XINPUT_KEYSTROKE &stroke)
+		void ProcessKeystroke(const KeyboardPoller::KeyStateWrapper &stroke)
 		{
 			//Key update loop
 			KeyUpdateLoop();
@@ -103,7 +102,7 @@ namespace sds
 			}
 		}
 		/// <summary>Normal keypress simulation logic.</summary>
-		void Normal(KeyboardKeyMap &detail, const XINPUT_KEYSTROKE &stroke)
+		void Normal(KeyboardKeyMap &detail, const KeyboardPoller::KeyStateWrapper &stroke)
 		{
 			const bool DoDown = (detail.LastAction == InpType::NONE) && (stroke.Flags & static_cast<WORD>(InpType::KEYDOWN));
 			const bool DoUp = ((detail.LastAction == InpType::KEYDOWN) || (detail.LastAction == InpType::KEYREPEAT)) && (stroke.Flags & static_cast<WORD>(InpType::KEYUP));
@@ -125,7 +124,7 @@ namespace sds
 		{
 			mp.LastAction = action;
 			m_key_send.SendScanCode(mp.MappedToVK, keyDown);
-			mp.LastSentTime.Reset(KeyboardSettings::MICROSECONDS_DELAY_KEYREPEAT); // update last sent time
+			mp.LastSentTime.Reset(m_ksp.settings.MICROSECONDS_DELAY_KEYREPEAT); // update last sent time
 		}
 		/// <summary>Check to see if a different axis of the same thumbstick has been pressed already</summary>
 		/// <param name="detail">Newest element being set to keydown state</param>
@@ -134,15 +133,15 @@ namespace sds
 		[[nodiscard]] bool IsOvertaking(const KeyboardKeyMap &detail, KeyboardKeyMap &outOvertaken)
 		{
 			//Is detail a thumbstick direction map, and if so, which thumbstick.
-			const auto leftAxisIterator = std::ranges::find(KeyboardSettings::THUMBSTICK_L_VK_LIST, detail.SendingElementVK);
-			const auto rightAxisIterator = std::ranges::find(KeyboardSettings::THUMBSTICK_R_VK_LIST, detail.SendingElementVK);
-			const bool leftStick = leftAxisIterator != KeyboardSettings::THUMBSTICK_L_VK_LIST.end();
-			const bool rightStick = rightAxisIterator != KeyboardSettings::THUMBSTICK_R_VK_LIST.end();
+			const auto leftAxisIterator = std::ranges::find(m_ksp.settings.THUMBSTICK_L_VK_LIST, detail.SendingElementVK);
+			const auto rightAxisIterator = std::ranges::find(m_ksp.settings.THUMBSTICK_R_VK_LIST, detail.SendingElementVK);
+			const bool leftStick = leftAxisIterator != m_ksp.settings.THUMBSTICK_L_VK_LIST.end();
+			const bool rightStick = rightAxisIterator != m_ksp.settings.THUMBSTICK_R_VK_LIST.end();
 			//find a key-down'd or repeat'd direction of the same thumbstick
 			if (leftStick || rightStick)
 			{
 				//build list of key-down state maps that match the thumbstick of the current "detail" map.
-				const auto stickSettingList = leftStick ? KeyboardSettings::THUMBSTICK_L_VK_LIST : KeyboardSettings::THUMBSTICK_R_VK_LIST;
+				const auto stickSettingList = leftStick ? m_ksp.settings.THUMBSTICK_L_VK_LIST : m_ksp.settings.THUMBSTICK_R_VK_LIST;
 				auto TestFunc = [&stickSettingList, &detail](const KeyboardKeyMap& elem)
 				{
 					if ((elem.LastAction == InpType::KEYDOWN || elem.LastAction == InpType::KEYREPEAT) && elem.SendingElementVK != detail.SendingElementVK)
@@ -157,6 +156,9 @@ namespace sds
 			}
 			return false;
 		}
+		/// <summary> Specific type of key send to send the input to handle the key-up that occurs
+		///	when a thumbstick is rotated to the right angle to denote a new key. </summary>
+		/// <param name="detail">Which key is being overtaken.</param>
 		void DoOvertaking(KeyboardKeyMap &detail) noexcept
 		{
 			SendTheKey(detail, false, InpType::KEYUP);

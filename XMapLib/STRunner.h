@@ -1,46 +1,25 @@
 #pragma once
 #include "stdafx.h"
+#include <mutex>
+#include <atomic>
+#include <functional>
+#include <memory>
+#include "CPPRunnerGeneric.h"
+#include "STDataWrapper.h"
 
 namespace sds
 {
-	/// <summary>STRunner provides facilities for running multiple functions (with their own data and access synchronization) on
-	///	a single thread, as well as stopping and starting the thread.
-	///	If you want to use this class, make a function object that derives from DataWrapper and pass a shared_ptr to it into AddDataWrapper(...)
-	///	The user provided function object deriving from DataWrapper will need to provide it's own data set to operate on, as well as the
-	///	synchronization for accessing it. A mutex for this purpose is provided by DataWrapper, and the calling of the function can be temporarily
-	///	disabled via the m_is_enabled atomic bool in DataWrapper.
+	/// <summary><para><c>STRunner</c> provides facilities for running multiple functions (with their own data and access synchronization) on
+	///	a single thread, as well as stopping and starting the thread.</para>
+	///	<para>If you want to use this class, make a function object that derives from <c>STDataWrapper</c> and pass a <c>shared_ptr</c>
+	///	to it into <c>AddDataWrapper(...)</c> The user provided function object deriving from DataWrapper will need to provide it's own data set to operate on, as well as the
+	///	synchronization for accessing it. A <c>mutex</c> for this purpose is provided by <c>STDataWrapper</c>, and the calling of the function can be temporarily
+	///	disabled via the <c>m_is_enabled</c> atomic bool in <c>STDataWrapper</c>.</para>
+	///	<para>TODO add benchmarking timers to average each separate function object's execution time.
+	///	</para>
 	/// </summary>
 	class STRunner
 	{
-	public:
-		/// <summary> <para>DataWrapper is a base class for function objects that
-		///	manage their own access to the data they want protected while running
-		///	on another thread. Operator() is overloaded in derived classes to encapsulate
-		///	the code to be ran concurrently, and the user should provide concurrent access
-		///	methods such as "GetCopyOfData()" or "ClearData()".</para>
-		/// <para>Choosing this approach allows many of these function objects to be ran
-		/// on a single extra thread, it is appropriate for polling functions that must be
-		/// ran indefinitely with no loop delay, but do little more than make system calls
-		/// and report the information to somewhere else.</para> </summary>
-		class DataWrapper
-		{
-		public: /* Giant list of using declaration and other aliases. */
-			using MutType = std::mutex; // The type of the mutex used for general access coordination.
-			using EnabledCondType = std::atomic<bool>; // Alias for stop condition type, not pointer wrapped.
-			using ScopedLockType = std::lock_guard<MutType>; // Alias for chosen scoped lock type.
-			using LogFnType = std::function<void(const char* st)>; // Alias for logging function pointer type.
-		protected: /* Section for used data members */
-			const LogFnType LogFn;
-			MutType m_mutex;
-			EnabledCondType m_is_enabled{ true };
-		public:
-			//Constructor, LogFnType is an optional logging function that accepts const char* as the only arg.
-			explicit DataWrapper(const LogFnType fn = nullptr) : LogFn(fn) { }
-			// Pure virtual operator() overload, to be overridden in derived classes.
-			virtual void operator()() = 0;
-			virtual ~DataWrapper() = default;
-			virtual bool IsEnabled() const noexcept { return m_is_enabled; }
-		};
 	public:
 		// Alias for thread class type.
 		using ThreadType = std::thread;
@@ -53,9 +32,13 @@ namespace sds
 		// Alias for logging function pointer type.
 		using LogFnType = std::function<void(const char* st)>;
 		// Alias for container that maps a unique identifier to a function pointer.
-		using FnListType = std::vector<std::shared_ptr<DataWrapper>>;
+		using FnListType = std::vector<std::shared_ptr<STDataWrapper>>;
 
-		STRunner() = default;
+		auto GetLambda()
+		{
+			return [this](const auto stopCondition, const auto mut, auto protectedData) { workThread(stopCondition, mut, protectedData); };
+		}
+		STRunner(const LogFnType logFn = nullptr) : m_threadRunner(GetLambda(), logFn) { }
 		STRunner(const STRunner& other) = delete;
 		STRunner(STRunner&& other) = delete;
 		STRunner& operator=(const STRunner& other) = delete;
@@ -65,75 +48,71 @@ namespace sds
 			StopThread();
 		}
 	protected:
-		// Callback func passed in via ctor, used for reporting error messages.
-		const LogFnType LoggingCallback;
-		// The singular thread each instance of the class will have their user-supplied work fn executing on.
-		std::unique_ptr<ThreadType> m_local_thread;
-		// Atomic stop condition bool.
-		StopCondType m_is_stop_requested{ false };
-		// Container of work function objects to be called.
-		FnListType m_function_list;
-		// Mutex for modifying the function list.
-		MutexType m_functionMutex;
+		// thread runner manager
+		sds::CPPRunnerGeneric<FnListType> m_threadRunner;
 	protected:
-		void workFunction() noexcept
+		void workThread(const auto stopCondition, const auto mut, auto protectedData)
 		{
 			using namespace std::chrono;
+			bool foundFunction = false;
+			bool didMeaningfulWork = false;
 			//while static thread stop not requested
-			while (!m_is_stop_requested)
+			while (!(*stopCondition))
 			{
-				bool foundFunction = false;
-				ScopedLockType tempLock(m_functionMutex);
-				//loop through function list and call operator() if enabled
-				for (auto& elem : m_function_list)
+				//local scope for scoped mutex.
 				{
-					if (elem->IsEnabled())
+					foundFunction = false;
+					didMeaningfulWork = false;
+					ScopedLockType tempLock(*mut);
+					//loop through function list and call operator() if enabled
+					for (const std::shared_ptr<sds::STDataWrapper> &elem : *protectedData)
 					{
-						(*elem)();
-						foundFunction = true;
+						if (elem->IsEnabled())
+						{
+							(*elem)();
+							foundFunction = true;
+							if (elem->DidMeaningfulWork())
+								didMeaningfulWork = true;
+						}
 					}
 				}
-				if (!foundFunction)
+				if (!foundFunction || !didMeaningfulWork)
 					std::this_thread::sleep_for(milliseconds(10));
 			}
 		}
 	public:
-		void AddDataWrapper(const std::shared_ptr<DataWrapper>& dw)
+		/// <summary> Adds a smart pointer to the DataWrapper base class, or a derived type, to
+		///	the internal function list for processing on the thread pool. </summary>
+		///	<remarks>NOTE: the thread must be started before adding DataWrappers!</remarks>
+		/// <param name="dw">smart pointer to DataWrapper or derived class. </param>
+		///	<returns> true on successfully added DataWrapper, false otherwise. </returns>
+		bool AddDataWrapper(const std::shared_ptr<STDataWrapper>& dw)
 		{
-			ScopedLockType tempLock(m_functionMutex);
-			m_function_list.emplace_back(dw);
+			return m_threadRunner.AddState(dw);
 		}
-		/// <summary>Starts running a new thread for the lambda.</summary>
-		///	<returns>true on success, false on failure.</returns>
-		bool StartThread() noexcept
+		void ClearAllWrappers()
 		{
-			if (m_local_thread == nullptr)
-			{
-				// start the thread and copy the smart pointers
-				m_local_thread = std::make_unique<ThreadType>([this]() { workFunction(); });
-				return m_local_thread->joinable();
-			}
-			return false;
+			const auto temp = m_threadRunner.GetAndClearCurrentStates();
+		}
+		[[nodiscard]] FnListType GetWrapperBuffer()
+		{
+			return m_threadRunner.GetCurrentState();
+		}
+		/// <summary>Starts running a new thread for the lambda if one does not exist.</summary>
+		///	<returns>true on success, false on failure.</returns>
+		bool StartThread()
+		{
+			return m_threadRunner.StartThread();
 		}
 		/// <summary>Returns true if thread is running and stop has not been requested.</summary>
 		[[nodiscard]] bool IsRunning() const noexcept
 		{
-			if (m_local_thread != nullptr)
-				return m_local_thread->joinable() && !m_is_stop_requested;
-			return false;
+			return m_threadRunner.IsRunning();
 		}
 		/// <summary>Blocking way to stop a running thread, joins to current thread and waits.</summary>
 		void StopThread() noexcept
 		{
-			if (m_local_thread != nullptr)
-			{
-				// do some work and reset the class data member pointers.
-				m_is_stop_requested = true;
-				// a thread must be joinable() to be joined...
-				if (m_local_thread->joinable())
-					m_local_thread->join();
-				m_local_thread.reset();
-			}
+			m_threadRunner.StopThread();
 		}
 	};
 }

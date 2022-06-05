@@ -1,16 +1,14 @@
 #pragma once
+#include "stdafx.h"
 namespace sds
 {
-	/// <summary>
-	/// Some constants that might someday be configurable, and the functions that help validate associated values.
-	/// </summary>
+	/// <summary> Some mouse movement mapping program specific constants that might someday be configurable,
+	/// and the functions that help validate associated values. </summary>
 	struct MouseSettings
 	{
-		//Pixels Magnitude is the number of pixels each iteration of the loop
-		//sends in ThumbstickAxisThread
+		//Pixels Magnitude is the number of pixels each iteration of the loop sends in MouseMoveThread.
 		static constexpr int PIXELS_MAGNITUDE{ 1 };
-		//Pixels Nomove is the number of pixels each iteration of the loop
-		//sends in ThumbstickAxisThread for the opposite axis the thread is concerned with.
+		//Pixels Nomove is the number of pixels each iteration of the loop sends in MouseMoveThread to indicate no movement.
 		static constexpr int PIXELS_NOMOVE{ 0 };
 		//Input Poller thread delay, in milliseconds.
 		static constexpr int THREAD_DELAY_INPUT_POLLER_MS{ 4 };
@@ -60,5 +58,46 @@ namespace sds
 			return (dz <= DEADZONE_MAX) && (dz >= DEADZONE_MIN);
 		}
 	};
-}
+	/// <summary> Used as a data package to hold player information, includes thumbstick deadzone information.</summary>
+	/// <remarks> A default constructed MousePlayerInfo struct has default values that are usable. </remarks> 
+	struct MousePlayerInfo
+	{
+		using PidType = int;
+		using DzType = int;
+		//ISO CPP guidelines C.45 followed here: https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rc-default
+		std::atomic<DzType> left_polar_dz{ XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE }; // left stick polar radius dz
+		std::atomic<DzType> right_polar_dz{ XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE }; // right stick polar radius dz
+		std::atomic<PidType> player_id{ 0 };
+		//default ctor
+		MousePlayerInfo() = default;
+		//copy constructor
+		MousePlayerInfo(const MousePlayerInfo& sp)
+		{
+			left_polar_dz.exchange(sp.left_polar_dz);
+			right_polar_dz.exchange(sp.right_polar_dz);
+			player_id.exchange(sp.player_id);
+		}
+		//assignment
+		MousePlayerInfo& operator=(const MousePlayerInfo& sp)
+		{
+			if (this == &sp)
+				return *this;
+			left_polar_dz.exchange(sp.left_polar_dz);
+			right_polar_dz.exchange(sp.right_polar_dz);
+			player_id.exchange(sp.player_id);
+			return *this;
+		}
+		//move constructor
+		MousePlayerInfo(MousePlayerInfo&& sp) = delete;
+		//Move assignment operator
+		MousePlayerInfo& operator=(MousePlayerInfo&& sp) = delete;
+		~MousePlayerInfo() = default;
+	};
 
+	///<summary>For no other reason but to make the common task of passing these down the architecture less verbose. </summary>
+	struct MouseSettingsPack
+	{
+		MousePlayerInfo playerInfo;
+		MouseSettings settings;
+	};
+}
