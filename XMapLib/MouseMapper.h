@@ -5,7 +5,6 @@
 #include "Utilities.h"
 #include "ControllerStatus.h"
 #include "STRunner.h"
-#include "STPoller.h"
 #include "STMouseMapping.h"
 
 namespace sds
