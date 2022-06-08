@@ -11,6 +11,7 @@ namespace XMapLibTest
 
 		sds::MouseMapper mouse;
 	public:
+		// Used for testing mousemapper's ability to set sensitivity values, and report erroneous ones.
 		TEST_METHOD(TestSetSensitivity)
 		{
 			//test some good cases

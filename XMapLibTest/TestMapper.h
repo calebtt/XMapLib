@@ -10,7 +10,7 @@ namespace XMapLibTest
 	TEST_CLASS(TestMapper)
 	{
 	public:
-		// This was used to test the functionality of the STL container "map"
+		// Used for testing KeyboardMapper's ability to add maps and report erroneous ones.
 		TEST_METHOD(TestSetMapInfo)
 		{
 			//Testing KeyboardKeyMap

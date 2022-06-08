@@ -8,6 +8,7 @@ namespace XMapLibTest
 	TEST_CLASS(TestMapFunctions)
 	{
 	public:
+		// This was used to test the functionality of the STL container "map"
 		TEST_METHOD(TestSearchMap)
 		{
 			using namespace sds;
