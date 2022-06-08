@@ -11,7 +11,7 @@ using namespace std;
 // adds a bunch of key mappings for common binds.
 void AddTestKeyMappings(sds::KeyboardMapper& mapper, std::osyncstream &ss);
 
-// used to asynchornously await the enter key being pressed, before
+// used to asynchronously await the enter key being pressed, before
 // dumping the contents of the key maps.
 class GetterExit {
 	using KeyboardPtrType = std::shared_ptr<sds::KeyboardMapper>;
