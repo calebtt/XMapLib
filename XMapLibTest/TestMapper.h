@@ -10,11 +10,11 @@ namespace XMapLibTest
 	TEST_CLASS(TestMapper)
 	{
 	public:
+		// This was used to test the functionality of the STL container "map"
 		TEST_METHOD(TestSetMapInfo)
 		{
 			//Testing KeyboardKeyMap
 			using namespace sds;
-			using namespace std;
 			Logger::WriteMessage("Begin TestSetMapInfo()");
 
 			//valid characters that may be included.

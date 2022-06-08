@@ -8,6 +8,9 @@ namespace sds::Utilities
 	//concept for having the possibility of being a negative
 	template<class T>
 	concept has_neg_possible = std::floating_point<T> || (!std::unsigned_integral<T>);
+	//concept for having NO possibility of being a negative
+	template<class T>
+	concept has_no_neg_possible = (!std::floating_point<T>) && (std::unsigned_integral<T>);
 
 	template<typename T>
 	[[nodiscard]] constexpr T ToA(const is_number_v auto something) noexcept
@@ -21,14 +24,19 @@ namespace sds::Utilities
 	/// <summary> Absolute value replacement function. This version is constexpr! </summary>
 	/// <param name="val">Number value to perform absolute value on</param>
 	/// <returns>Returns the absolute value of val</returns>
-	[[nodiscard]] constexpr auto ConstAbs(const has_neg_possible auto val) noexcept
+	[[nodiscard]] constexpr auto ConstAbs(const auto val) noexcept
 	{
-		constexpr decltype(val) zeroValue{};
-		if (val < zeroValue)
+		if constexpr (std::unsigned_integral<decltype(val)>)
 		{
-			return (-val);
+			return val;
 		}
-		return val;
+		else
+		{
+			if (!std::is_constant_evaluated())
+				return std::abs(val);
+			constexpr decltype(val) zeroValue{};
+			return (val >= zeroValue) ? val : -val;
+		}
 	}
 	///<summary> Utility function for computing a non-negative inverse of a float percentage plus 1.0 </summary>
 	[[nodiscard]] constexpr auto GetInverseOfPercentage(const auto scale) noexcept

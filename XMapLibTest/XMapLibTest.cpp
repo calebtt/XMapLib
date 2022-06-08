@@ -7,7 +7,6 @@
 #include "TestMouse.h"
 #include "TestMapFunctions.h"
 #include "TestThumbstickToDelay.h"
-#include "../XMapLib/MouseSettings.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -16,11 +15,11 @@ namespace XMapLibTest
 	TEST_CLASS(TestAssert)
 	{
 	public:
-		//KeyboardSettings doesn't have relevant values to assert here.
+		// This is used to assert some settings remain unmodified for the purpose of the rest of the unit testing.
+		// KeyboardSettings doesn't have relevant values to assert here.
 		TEST_METHOD(TestAssertSettings)
 		{
 			using namespace sds;
-			using namespace std;
 			Logger::WriteMessage("Begin TestAssertSettings()");
 			//Assert that certain constants are certain values, to not invalidate the tests.
 			Assert::AreEqual(MouseSettings::MICROSECONDS_MAX, 32'000);

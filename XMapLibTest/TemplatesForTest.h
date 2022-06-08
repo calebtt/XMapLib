@@ -5,28 +5,27 @@
 
 //using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
+// Utility functions used in testing.
 namespace XMapLibTest::TemplatesForTest
 {
+	//concept for being an integral or floating point type
+	template<class T>
+	concept is_number_v = std::is_integral_v<T> || std::is_floating_point_v<T>;
+	//concept for having the possibility of being a negative
+	template<class T>
+	concept has_neg_possible = std::floating_point<T> || (!std::unsigned_integral<T>);
+
 	constexpr bool IsWithin(const auto result, const auto testVal, const auto within)
 	{
 		return ((result > (testVal - within)) && (result < (testVal + within)));
 	}
-	constexpr double ToDub(const auto something)
+	// Replacement for the much longer "static_cast<>"
+	template<typename T>
+	[[nodiscard]] constexpr T ToA(const is_number_v auto something) noexcept
 	{
-		return static_cast<double>(something);
+		return static_cast<T>(something);
 	}
-	constexpr float ToFloat(const auto something)
-	{
-		return static_cast<float>(something);
-	}
-	constexpr int ToInt(const auto something)
-	{
-		return static_cast<int>(something);
-	}
-	constexpr long long ToLL(const auto something)
-	{
-		return static_cast<long long>(something);
-	}
+
 	constexpr bool IsNormalF(const auto val)
 	{
 		return std::isnormal(static_cast<float>(val));
