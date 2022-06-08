@@ -98,9 +98,6 @@
     <ClInclude Include="KeyboardPoller.h">
       <Filter>Header Files\Keyboard</Filter>
     </ClInclude>
-    <ClInclude Include="STPoller.h">
-      <Filter>Header Files\Utilities\Async</Filter>
-    </ClInclude>
     <ClInclude Include="STRunner.h">
       <Filter>Header Files\Utilities\Async</Filter>
     </ClInclude>

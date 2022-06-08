@@ -15,7 +15,7 @@ namespace sds
 		static constexpr auto NUM_QUADRANTS = 4;
 		using FloatingType = float;
 		using IntegralType = int;
-		using LogFnType = std::function<void(const char*)>;
+		using LogFnType = std::function<void(std::string)>;
 		static constexpr FloatingType MY_PI{ std::numbers::pi_v<FloatingType> };
 		static constexpr FloatingType MY_PI2{ std::numbers::pi_v<FloatingType> / 2.0f };
 

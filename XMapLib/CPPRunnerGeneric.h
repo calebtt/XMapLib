@@ -89,7 +89,7 @@ namespace sds
 		using ScopedLockType = std::lock_guard<MutexType>;
 		using StopCondType = LambdaArgs::StopCondType;
 		using StopCondPointerType = LambdaArgs::StopCondPointerType;
-		using LogFnType = std::function<void(const char*)>;
+		using LogFnType = std::function<void(std::string)>;
 
 		explicit CPPRunnerGeneric(LambdaType lambdaToRun, const LogFnType logFn = nullptr)
 			: m_lambda(std::move(lambdaToRun)),

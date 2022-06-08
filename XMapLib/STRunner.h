@@ -30,7 +30,7 @@ namespace sds
 		// Alias for chosen scoped lock type.
 		using ScopedLockType = std::lock_guard<MutexType>;
 		// Alias for logging function pointer type.
-		using LogFnType = std::function<void(const char* st)>;
+		using LogFnType = std::function<void(std::string)>;
 		// Alias for container that maps a unique identifier to a function pointer.
 		using FnListType = std::vector<std::shared_ptr<STDataWrapper>>;
 

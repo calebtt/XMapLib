@@ -16,7 +16,7 @@ namespace sds
 	///	<remarks>A single instance for both thumbstick axes is to be used.</remarks>
 	class ThumbstickToDelay
 	{
-		using LogFnType = std::function<void(const char*)>;
+		using LogFnType = std::function<void(std::string)>;
 		using MultFloat = decltype(MouseSettings::ALT_DEADZONE_MULT_DEFAULT);
 		using SensInt = decltype(MouseSettings::SENSITIVITY_DEFAULT);
 		using DzInt = decltype(MouseSettings::DEADZONE_DEFAULT);

@@ -9,7 +9,7 @@
 namespace sds::Utilities
 {
 	[[msvc::noinline]]
-	inline void LogError(std::string_view s) noexcept
+	inline void LogError(std::string s) noexcept
 	{
 		if (!s.empty())
 		{

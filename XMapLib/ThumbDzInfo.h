@@ -12,6 +12,7 @@ namespace sds
 	{
 		using PolarMagInt = decltype(MouseSettings::DEADZONE_DEFAULT);
 		using AltDzFloat = decltype(MouseSettings::ALT_DEADZONE_MULT_DEFAULT);
+		using LogFnType = std::function<void(std::string)>;
 		bool m_is_deadzone_activated{ false };
 		const PolarMagInt m_polar_magnitude_deadzone;
 		const AltDzFloat m_alt_deadzone_multiplier;
@@ -35,10 +36,10 @@ namespace sds
 			return ms.settings.ALT_DEADZONE_MULT_DEFAULT;
 		}
 	public:
-		explicit ThumbDzInfo(const StickMap sm, const MouseSettingsPack msp = {})
+		explicit ThumbDzInfo(const StickMap sm, const MouseSettingsPack msp = {}, const LogFnType logFn = nullptr)
 		: m_polar_magnitude_deadzone(ValidatePolarDz(sm, msp)),
 		m_alt_deadzone_multiplier(ValidateAltMultiplier(msp)),
-		m_pc(msp.settings.ThumbstickValueMax)
+		m_pc(msp.settings.ThumbstickValueMax, logFn)
 		{ }
 		///<summary>Takes a cartesian value and returns true if equal or over deadzone. </summary>
 		[[nodiscard]] std::pair<bool,bool> IsBeyondDeadzone(const int cartesianX, const int cartesianY) noexcept

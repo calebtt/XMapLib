@@ -45,7 +45,7 @@ namespace sds
 		m_msp(msp),
 		m_mousePoller(fn),
 		m_delayCalc(sensitivity, whichStick, msp, fn),
-		m_dzInfo(whichStick, msp)
+		m_dzInfo(whichStick, msp, fn)
 		{
 			
 		}

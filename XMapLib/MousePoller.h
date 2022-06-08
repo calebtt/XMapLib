@@ -7,7 +7,7 @@ namespace sds
 	/// <summary> Encapsulates the logic for querying the OS to gather information about a controller thumbstick event. </summary>
 	class MousePoller
 	{
-		using LogFnType = std::function<void(const char*)>;
+		using LogFnType = std::function<void(std::string)>;
 		const LogFnType m_logFn;
 		XINPUT_STATE m_tempState{};
 	public:

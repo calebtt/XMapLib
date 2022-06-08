@@ -6,7 +6,7 @@ namespace sds
 	/// <summary> Encapsulates the logic for querying the OS to gather information about a controller keypress event. </summary>
 	class KeyboardPoller
 	{
-		using LogFnType = std::function<void(const char*)>;
+		using LogFnType = std::function<void(std::string)>;
 		const LogFnType m_logFn;
 		XINPUT_KEYSTROKE m_tempState{};
 	public:

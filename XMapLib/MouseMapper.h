@@ -18,7 +18,7 @@ namespace sds
 	class MouseMapper
 	{
 		// Alias for logging function pointer type.
-		using LogFnType = std::function<void(const char* st)>;
+		using LogFnType = std::function<void(std::string)>;
 		// Thread pool class, our work functors get added to here and called in succession on a separate thread
 		// for performance reasons.
 		std::shared_ptr<STRunner> m_statRunner;

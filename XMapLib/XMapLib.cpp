@@ -14,11 +14,12 @@ void AddTestKeyMappings(sds::KeyboardMapper& mapper, std::osyncstream &ss);
 // used to asynchornously await the enter key being pressed, before
 // dumping the contents of the key maps.
 class GetterExit {
+	using KeyboardPtrType = std::shared_ptr<sds::KeyboardMapper>;
 	std::unique_ptr<std::thread> workerThread{};
 	std::atomic<bool> m_exitState{ false };
-	const sds::KeyboardMapper& m_mp;
+	const KeyboardPtrType m_mp;
 public:
-	GetterExit(const sds::KeyboardMapper& m) : m_mp(m) { startThread(); }
+	GetterExit(const KeyboardPtrType m) : m_mp(m) { startThread(); }
 	~GetterExit() { stopThread(); }
 	//Returns a bool indicating if the thread should stop.
 	bool operator()() { return m_exitState; }
@@ -36,11 +37,12 @@ protected:
 		std::cin.clear();
 		std::osyncstream ss(std::cerr);
 		//prints out the maps, for debugging info.
-		auto mapList = m_mp.GetMaps();
+		auto mapList = m_mp->GetMaps();
 		ranges::for_each(mapList, [&ss](const sds::KeyboardKeyMap& theMap)	{
 				ss << theMap << endl << endl;
 			});
 		m_exitState = true;
+		ss.emit();
 	}
 };
 
@@ -48,17 +50,13 @@ auto CreateKeyMapper(const std::shared_ptr<sds::STRunner> &runner)
 {
 	using namespace sds;
 	KeyboardSettingsPack ksp;
-	std::unique_ptr<KeyboardMapper> keyer;
-	keyer = std::make_unique<KeyboardMapper>(runner, ksp, Utilities::LogError);
-	return keyer;
+	return std::make_shared<KeyboardMapper>(runner, ksp, Utilities::LogError);
 }
 auto CreateMouseMapper(const std::shared_ptr<sds::STRunner>& runner)
 {
 	using namespace sds;
 	MouseSettingsPack msp;
-	std::unique_ptr<MouseMapper> mouser;
-	mouser = std::make_unique<MouseMapper>(runner, msp, Utilities::LogError);
-	return mouser;
+	return std::make_shared<MouseMapper>(runner, msp, Utilities::LogError);
 }
 /* Entry Point */
 int main()
@@ -73,7 +71,7 @@ int main()
 
 	std::osyncstream ss(std::cout);
 	AddTestKeyMappings(*keyer, ss);
-	GetterExit getter(*keyer);
+	GetterExit getter(keyer);
 	std::string err = mouser->SetSensitivity(100); //sensitivity
 	Utilities::LogError(err); // won't do anything if the string is empty
 	mouser->SetStick(StickMap::RIGHT_STICK);

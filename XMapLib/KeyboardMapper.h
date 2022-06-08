@@ -15,7 +15,7 @@ namespace sds
 	class KeyboardMapper
 	{
 		// Alias for logging function pointer type.
-		using LogFnType = std::function<void(const char* st)>;
+		using LogFnType = std::function<void(std::string)>;
 		// Static thread runner (single thread of a thread pool).
 		std::shared_ptr<STRunner> m_statRunner;
 		// Keyboard settings pack, needed for iscontrollerconnected func arcs and others.

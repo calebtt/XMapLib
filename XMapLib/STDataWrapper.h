@@ -21,7 +21,7 @@ namespace sds
 		using MutType = std::mutex; // The type of the mutex used for general access coordination.
 		using AtomicBool = std::atomic<bool>; // Alias for stop condition type, not pointer wrapped.
 		using ScopedLockType = std::lock_guard<MutType>; // Alias for chosen scoped lock type.
-		using LogFnType = std::function<void(const char* st)>; // Alias for logging function pointer type.
+		using LogFnType = std::function<void(std::string)>; // Alias for logging function pointer type.
 	protected: /* Section for used data members */
 		const LogFnType LogFn;
 		MutType m_mutex;
