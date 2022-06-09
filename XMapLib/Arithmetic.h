@@ -12,11 +12,17 @@ namespace sds::Utilities
 	template<class T>
 	concept has_no_neg_possible = (!std::floating_point<T>) && (std::unsigned_integral<T>);
 
+	/// <summary> Casts <c>something</c> to a type T but with a shorter syntax than
+	///	static_cast. </summary>
+	/// <typeparam name="T">Type to cast TO</typeparam>
+	/// <param name="something">Variable to be casted.</param>
+	/// <returns>variable as type T</returns>
 	template<typename T>
 	[[nodiscard]] constexpr T ToA(const is_number_v auto something) noexcept
 	{
 		return static_cast<T>(something);
 	}
+	///<summary> Returns true if val is "normal" i.e., neither zero, subnormal, infinite, nor NaN. Explicitly calls the <c>float</c> version of the function. </summary>
 	[[nodiscard]] constexpr bool IsNormalF(const is_number_v auto val) noexcept
 	{
 		return std::isnormal(static_cast<float>(val));
@@ -38,7 +44,7 @@ namespace sds::Utilities
 			return (val >= zeroValue) ? val : -val;
 		}
 	}
-	///<summary> Utility function for computing a non-negative inverse of a float percentage plus 1.0 </summary>
+	///<summary> Utility function for computing a non-negative inverse of a floating type percentage. </summary>
 	[[nodiscard]] constexpr auto GetInverseOfPercentage(const auto scale) noexcept
 	{
 		const auto invP = (1.0 - scale);
@@ -46,7 +52,7 @@ namespace sds::Utilities
 			return 0.0;
 		return invP;
 	}
-	///<summary> Utility function for computing a non-negative inverse of a float percentage plus 1.0 </summary>
+	///<summary> Utility function for computing a non-negative inverse of a floating type percentage plus 1.0 </summary>
 	[[nodiscard]] constexpr auto GetInverseOfPercentagePlusOne(const auto scale) noexcept
 	{
 		return GetInverseOfPercentage(scale) + 1.0;
