@@ -19,14 +19,13 @@ namespace sds
 		using LambdaArg2 = MutexPointerType;
 	};
 	/// <summary>All aboard the SFINAE train. It provides facilities for safely accessing data being operated on by a spawned thread,
-	///	as well as stopping and starting the running thread.
-	///	If you want to use this class, make a function (or lambda function) with parameters
-	///	of the form <code> [void] function_name( const LambdaArgs::LambdaArg1 stopCondition, LambdaArgs::LambdaArg2 theMutex, UserType protectedDataYouWantToAccess ) </code>
+	///	as well as stopping and starting the running thread. If you want to use this class, make a function (or lambda function) with parameters
+	///	of the form <code> void function_name( const LambdaArgs::LambdaArg1 stopConditionPtr, LambdaArgs::LambdaArg2 theMutexPtr, UserType protectedDataYouWantToAccess ) </code>
 	/// </summary>
 	template<typename InternalData> requires std::is_default_constructible_v<InternalData>
 	class CPPRunnerGeneric
 	{
-		///<summary> Factory func for making shared smart pointer type. </summary>
+		///<summary> Factory func for making shared smart pointer type. (makes it easier to change to a new type if desired.) </summary>
 		template<typename T>
 		auto MakeSmart(auto ... args)
 		{
@@ -259,8 +258,7 @@ namespace sds
 			return false;
 		}
 		/// <summary>Returns a copy of the internal InternalData obj with mutex locking thread safety.
-		/// If stop has been requested (or completed), returns data from a previous thread instance, if available.
-		/// Otherwise default constructed InternalData. </summary>
+		/// If stop has been requested (or completed), returns default constructed InternalData. </summary>
 		InternalData GetCurrentState()
 		{
 			if (!ArePointersNull())
@@ -271,10 +269,6 @@ namespace sds
 					return *m_current_data_pack.m_local_data;
 				}
 			}
-			//else if (!m_previous_runs_buffer.empty())
-			//{
-			//	return *m_previous_data_pack.m_local_data;
-			//}
 			return InternalData{};
 		}
 		InternalData GetPreviousState()
