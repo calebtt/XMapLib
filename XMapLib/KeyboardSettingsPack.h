@@ -39,7 +39,7 @@ namespace sds
 		//Input Poller thread delay, in milliseconds.
 		static constexpr int THREAD_DELAY_POLLER{ 10 };
 		//Microseconds Delay Keyrepeat is the time delay a button has in between activations.
-		static constexpr int MICROSECONDS_DELAY_KEYREPEAT{ 100000 };
+		static constexpr int MICROSECONDS_DELAY_KEYREPEAT{ 100'000 };
 		//It is necessary to be able to distinguish these mapping values in KeyboardTranslator.
 		static constexpr std::array<int, 8> THUMBSTICK_L_VK_LIST
 		{
