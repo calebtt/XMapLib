@@ -271,6 +271,10 @@ namespace sds
 			}
 			return InternalData{};
 		}
+		/// <summary> Returns a copy of the InternalData from a previous Start() and Stop() of the object.
+		///	If called while running but before Stop() or RequestStop() has been called,
+		///	returns default constructed InternalData. </summary>
+		/// <typeparam name="InternalData">The InternalData from the previous run, or default constructed InternalData if not available.</typeparam>
 		InternalData GetPreviousState()
 		{
 			if(m_previous_data_pack.m_local_data != nullptr && m_previous_data_pack.m_state_mutex != nullptr)
