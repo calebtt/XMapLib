@@ -178,6 +178,7 @@
     <ClInclude Include="ReadRadiusScaleValues.h" />
     <ClInclude Include="SendKeyInput.h" />
     <ClInclude Include="SendMouseInput.h" />
+    <ClInclude Include="Smarts.h" />
     <ClInclude Include="STDataWrapper.h" />
     <ClInclude Include="STKeyboardMapping.h" />
     <ClInclude Include="stdafx.h" />
