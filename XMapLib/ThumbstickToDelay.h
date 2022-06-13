@@ -16,7 +16,7 @@ namespace sds
 	///	<remarks>A single instance for both thumbstick axes is to be used.</remarks>
 	class ThumbstickToDelay
 	{
-		using LogFnType = std::function<void(std::string)>;
+		using LogFnType = Utilities::XELogPtr;
 		using MultFloat = decltype(MouseSettings::ALT_DEADZONE_MULT_DEFAULT);
 		using SensInt = decltype(MouseSettings::SENSITIVITY_DEFAULT);
 		using DzInt = decltype(MouseSettings::DEADZONE_DEFAULT);
@@ -56,29 +56,28 @@ namespace sds
 		// Utility class for performing polar coordinate calculations.
 		PolarCalc m_pc;
 
-		//TODO convert this to use the logFn
-
 		///<summary> Used to make some assertions about the settings values this class depends upon. </summary>
 		static void AssertSettings(const MouseSettingsPack &ms) noexcept
 		{
 			//Assertions about the settings values used by this class.
-			if constexpr (ms.settings.MICROSECONDS_MIN >= ms.settings.MICROSECONDS_MAX)
-				Utilities::LogError("Exception in ThumbstickToDelay() ctor, MICROSECONDS_MIN >= MICROSECONDS_MAX");
-			if constexpr (ms.settings.SENSITIVITY_MIN >= ms.settings.SENSITIVITY_MAX)
-				Utilities::LogError("Exception in ThumbstickToDelay() ctor, SENSITIVITY_MIN >= SENSITIVITY_MAX");
-			if constexpr (ms.settings.SENSITIVITY_MIN <= 0)
-				Utilities::LogError("Exception in ThumbstickToDelay() ctor, SENSITIVITY_MIN <= 0");
-			if constexpr (ms.settings.SENSITIVITY_MAX > 100)
-				Utilities::LogError("Exception in ThumbstickToDelay() ctor, SENSITIVITY_MAX > 100");
+			static_assert(ms.settings.MICROSECONDS_MIN < ms.settings.MICROSECONDS_MAX, 
+				"Exception in ThumbstickToDelay() ctor, MICROSECONDS_MIN >= MICROSECONDS_MAX");
+			static_assert(ms.settings.SENSITIVITY_MIN < ms.settings.SENSITIVITY_MAX,
+				"Exception in ThumbstickToDelay() ctor, SENSITIVITY_MIN >= SENSITIVITY_MAX");
+			static_assert(ms.settings.SENSITIVITY_MIN > 0,
+				"Exception in ThumbstickToDelay() ctor, SENSITIVITY_MIN <= 0");
+			static_assert(ms.settings.SENSITIVITY_MAX <= 100,
+				"Exception in ThumbstickToDelay() ctor, SENSITIVITY_MAX > 100");
 		}
 		/// <summary> Validates StickMap ctor args, neither stick is not a valid setting
 		///	for this class, it will default to right stick processing when used. </summary>
-		[[nodiscard]] static constexpr auto ValidateStickMap(const StickMap sm)  noexcept
+		[[nodiscard]] static auto ValidateStickMap(const StickMap sm, const LogFnType logFn)  noexcept
 		{
 			//error checking StickMap stick setting
 			if (sm == StickMap::NEITHER_STICK)
 			{
-				Utilities::LogError("Error in ThumbstickToDelay::ValidateStickMap(StickMap): NEITHER_STICK selected stick, choosing RIGHT_STICK.");
+				if(logFn != nullptr)
+					logFn("Error in ThumbstickToDelay::ValidateStickMap(StickMap, LogFnType): NEITHER_STICK selected stick, choosing RIGHT_STICK.");
 				return StickMap::RIGHT_STICK;
 			}
 			return sm;
@@ -90,13 +89,15 @@ namespace sds
 			return std::clamp(si, ms.settings.SENSITIVITY_MIN, ms.settings.SENSITIVITY_MAX);
 		}
 		/// <summary> Validation func for retrieving the polar angle scaling values from config file. </summary>
-		[[nodiscard]] static auto ValidateScaleValues(const MouseSettingsPack &ms) noexcept
+		[[nodiscard]] static auto ValidateScaleValues(const MouseSettingsPack &ms, const LogFnType logFn) noexcept
 		{
 			//read radius scale values config file
 			ReadRadiusScaleValues rrsv(ms.settings);
 			auto tempValues = rrsv.GetScalingValues();
-			if (tempValues.empty())
-				Utilities::LogError("Error in ThumbstickToDelay::ValidateScaleValues(MouseSettingsPack), failed to read radius scaling values from config file!");
+			if (tempValues.empty() && logFn != nullptr)
+			{
+				logFn("Error in ThumbstickToDelay::ValidateScaleValues(MouseSettingsPack, LogFnType), failed to read radius scaling values from config file!");
+			}
 			return tempValues;
 		}
 	public:
@@ -111,10 +112,10 @@ namespace sds
 			const MouseSettingsPack ms = {},
 			const LogFnType logFn = nullptr) noexcept
 		: m_axis_sensitivity(ValidateSensitivity(sensitivity, ms)),
-		m_which_stick(ValidateStickMap(whichStick)),
+		m_which_stick(ValidateStickMap(whichStick, logFn)),
 		m_mouse_settings(ms),
 		m_logFn(logFn),
-		m_radius_scale_values(ValidateScaleValues(ms)),
+		m_radius_scale_values(ValidateScaleValues(ms, logFn)),
 		m_pc(ms.settings.PolarRadiusValueMax, logFn)
 		{
 			AssertSettings(ms);
