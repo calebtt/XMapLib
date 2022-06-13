@@ -38,6 +38,7 @@
 
 
 // Include some commonly used global stuff.
+#include "Utilities.h"
 #include "StickMap.h"
 #include "MouseSettingsPack.h"
 #include "KeyboardSettingsPack.h"

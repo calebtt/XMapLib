@@ -3,11 +3,16 @@
 #include <syncstream>
 /// <summary>
 /// One function called to log errors, to "cerr" at the moment.
-///	Can be disabled easily or redirected here.
+///	Can be disabled easily or redirected here. Also contains using
+///	declarations for pointer to LogError() func.
 /// </summary>
 /// <param name="s"></param>
 namespace sds::Utilities
 {
+	/// <summary> Type alias for pointer to the LogError(std::string) function. </summary>
+	using XELogPtr = std::function<void(std::string)>;
+
+	///<summary> Error logging function, thread safe and non-inlined. </summary>
 	[[msvc::noinline]]
 	inline void LogError(std::string s) noexcept
 	{

@@ -9,7 +9,7 @@
 
 namespace sds
 {
-	/// <summary><c>MouseMapper</c> Handles achieving smooth, expected mouse movements.
+	/// <summary><c>MouseMapper</c> [[Main class for external use]] Handles achieving smooth, expected mouse movements.
 	/// The class has an internal <c>STMouseMapping</c> instance that fetches controller information via
 	/// the OS API call wrapper class <c>MousePoller</c>. It also has public functions for getting and
 	/// setting the sensitivity as well as setting which thumbstick to use. </summary>
@@ -17,25 +17,23 @@ namespace sds
 	///	one will be created for use. </remarks>
 	class MouseMapper
 	{
-		// Alias for logging function pointer type.
-		using LogFnType = std::function<void(std::string)>;
+		// Logging function, optionally passed in by the user.
+		const Utilities::XELogPtr m_logFn;
 		// Thread pool class, our work functors get added to here and called in succession on a separate thread
 		// for performance reasons.
-		std::shared_ptr<STRunner> m_statRunner;
+		SharedPtrType<STRunner> m_statRunner;
 		// Mouse settings pack, needed for iscontrollerconnected func args and others.
 		const MouseSettingsPack m_mouseSettingsPack;
-		// Logging function, optionally passed in by the user.
-		const LogFnType m_logFn;
 		// data wrapper class, added to thread pool STRunner, performs the polling, calculation, and mouse moving.
-		std::shared_ptr<STMouseMapping> m_stmapper;
+		SharedPtrType<STMouseMapping> m_stmapper;
 
 		//StickMap m_stickmap_info{ StickMap::NEITHER_STICK };
 		//int m_mouse_sensitivity{ MouseSettings::SENSITIVITY_DEFAULT };
 	public:
 		/// <summary>Ctor allows setting a custom MousePlayerInfo</summary>
-		MouseMapper(const std::shared_ptr<STRunner> &statRunner = nullptr, 
+		MouseMapper(const SharedPtrType<STRunner> &statRunner = nullptr, 
 			const MouseSettingsPack settings = {}, 
-			LogFnType logFn = nullptr)
+			Utilities::XELogPtr logFn = nullptr)
 		: m_statRunner(statRunner),
 		m_mouseSettingsPack(settings),
 		m_logFn(logFn)
@@ -49,9 +47,9 @@ namespace sds
 			if (m_statRunner == nullptr)
 			{
 				LogIfAvailable("Information: In MouseMapper::MouseMapper(...): STRunner shared_ptr was null, creating a new instance.");
-				m_statRunner = std::make_shared<STRunner>(logFn);
+				m_statRunner = MakeSharedSmart<STRunner>(logFn);
 			}
-			m_stmapper = std::make_shared<STMouseMapping>(settings.settings.SENSITIVITY_DEFAULT, StickMap::RIGHT_STICK, settings, logFn);
+			m_stmapper = MakeSharedSmart<STMouseMapping>(settings.settings.SENSITIVITY_DEFAULT, StickMap::RIGHT_STICK, settings, logFn);
 			if (!m_statRunner->IsRunning())
 			{
 				LogIfAvailable("Information: In MouseMapper::MouseMapper(...): STRunner was not already running, starting thread...");
