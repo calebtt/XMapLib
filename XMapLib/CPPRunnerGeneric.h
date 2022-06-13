@@ -1,10 +1,5 @@
 ﻿#pragma once
-#include <mutex>
-#include <atomic>
-#include <ranges>
-#include <memory>
-#include <functional>
-#include <algorithm>
+#include "stdafx.h"
 
 namespace sds
 {

@@ -26,6 +26,7 @@
 #include <thread>
 #include <memory>
 #include <mutex>
+#include <atomic>
 #include <functional>
 #include <tuple>
 #include <locale>
@@ -35,6 +36,8 @@
 #include <array>
 #include <numbers>
 #include <fstream>
+
+#include <ranges>
 
 
 // Include some commonly used global stuff.
