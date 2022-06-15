@@ -1,4 +1,5 @@
 #pragma once
+#include "stdafx.h"
 #include <ostream>
 #include <chrono>
 
@@ -8,8 +9,9 @@ namespace sds::Utilities
 	///	to elapse. </summary>
 	class DelayManager
 	{
-		using TimeType = std::chrono::time_point<std::chrono::high_resolution_clock>;
-		TimeType m_start_time{ std::chrono::high_resolution_clock::now() };
+		using ClockType = std::chrono::steady_clock;
+		using TimeType = std::chrono::time_point<ClockType>;
+		TimeType m_start_time{ ClockType::now() };
 		size_t m_duration{ 1 };
 		bool m_has_fired{ false };
 	public:
@@ -38,7 +40,7 @@ namespace sds::Utilities
 		/// <summary>Check for elapsed.</summary>
 		bool IsElapsed() noexcept
 		{
-			if (std::chrono::high_resolution_clock::now() > (m_start_time + std::chrono::microseconds(m_duration)))
+			if (ClockType::now() > (m_start_time + std::chrono::microseconds(m_duration)))
 			{
 				m_has_fired = true;
 				return true;
@@ -48,7 +50,7 @@ namespace sds::Utilities
 		/// <summary>Reset delay for elapsing.</summary>
 		void Reset(size_t microsec_delay) noexcept
 		{
-			m_start_time = std::chrono::high_resolution_clock::now();
+			m_start_time = ClockType::now();
 			m_has_fired = false;
 			m_duration = microsec_delay;
 		}
