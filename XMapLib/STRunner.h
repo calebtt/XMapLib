@@ -54,6 +54,8 @@ namespace sds
 		void workThread(const auto stopCondition, const auto mut, auto protectedData)
 		{
 			using namespace std::chrono;
+			//boolean denoting when a function object in the pool is enabled,
+			//used to add a tiny loop delay when all objects in the pool are disabled.
 			bool foundFunction = false;
 			//while static thread stop not requested
 			while (!(*stopCondition))
