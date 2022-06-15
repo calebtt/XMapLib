@@ -55,14 +55,12 @@ namespace sds
 		{
 			using namespace std::chrono;
 			bool foundFunction = false;
-			bool didMeaningfulWork = false;
 			//while static thread stop not requested
 			while (!(*stopCondition))
 			{
 				//local scope for scoped mutex.
 				{
 					foundFunction = false;
-					didMeaningfulWork = false;
 					ScopedLockType tempLock(*mut);
 					//loop through function list and call operator() if enabled
 					for (const std::shared_ptr<sds::STDataWrapper> &elem : *protectedData)
@@ -71,12 +69,10 @@ namespace sds
 						{
 							(*elem)();
 							foundFunction = true;
-							if (elem->DidMeaningfulWork())
-								didMeaningfulWork = true;
 						}
 					}
 				}
-				if (!foundFunction || !didMeaningfulWork)
+				if (!foundFunction)
 					std::this_thread::sleep_for(milliseconds(10));
 			}
 		}

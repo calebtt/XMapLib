@@ -28,10 +28,6 @@ namespace sds
 		//A bool provided for user code use, to disable processing of the
 		//operator()() function.
 		AtomicBool m_is_enabled{ true };
-		//An optional marker that can be toggled in the user class
-		//to indicate if the function performed meaningful work. This
-		//can be helpful for limiting resource utilization.
-		AtomicBool m_did_work{ true };
 	public:
 		//Constructor, LogFnType is an optional logging function that accepts const char* as the only arg.
 		explicit STDataWrapper(const LogFnType fn = nullptr) : LogFn(fn) { }
@@ -39,6 +35,5 @@ namespace sds
 		virtual void operator()() = 0;
 		virtual ~STDataWrapper() = default;
 		virtual bool IsEnabled() const noexcept { return m_is_enabled; }
-		virtual bool DidMeaningfulWork() const noexcept { return m_did_work; }
 	};
 }
