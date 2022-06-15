@@ -14,13 +14,28 @@ namespace sds::Utilities
 	/// </summary>
 	class SendKeyInput
 	{
+		//hash function obj for std::pair, uses XOR and std::hash for the built-in types to combine
+		//them into a single hash for using a std::pair as a key in the unordered_map.
+		struct PairHasher
+		{
+			template <class T1, class T2>
+			std::size_t operator() (const std::pair<T1, T2>& pair) const
+			{
+				return std::hash<T1>()(pair.first)
+				^ std::hash<T2>()(pair.second);
+			}
+		};
+	private:
 		using ScanMapType = std::unordered_map<int, int>;
+		using VkUpDownPair = std::pair<int, bool>;
+		using InputStructMapType = std::unordered_map<VkUpDownPair, INPUT, PairHasher>;
 		using ScanCodeType = unsigned short;
 		using VirtualKeyType = unsigned int;
 		using PrintableType = char;
 		using VkType = unsigned char;
 		bool m_auto_disable_numlock{ true }; // toggle this to make the default behavior not toggle off numlock on your keyboard
 		ScanMapType m_scancode_store{};
+		InputStructMapType m_input_store{};
 	public:
 		/// <summary>Default Constructor</summary>
 		SendKeyInput() = default;
@@ -40,8 +55,20 @@ namespace sds::Utilities
 			{
 				UnsetNumlockAsync();
 			}
+			// Current int bool pair, used as the key for caching built INPUTs,
+			// used in multiple places below.
+			const auto currentPair = std::make_pair(vk, down);
+			// Do test against cached values first, the unordered_map contains() lookup
+			// is constant-time on average, with the worst case being linear.
+			if (m_input_store.contains(currentPair))
+			{
+				m_input_store[currentPair].mi.dwExtraInfo = GetMessageExtraInfo();
+				CallSendInput(&m_input_store[currentPair], 1);
+				return;
+			}
+			// if not found in the cache, build a new one.
 			INPUT tempInput = {};
-			auto MakeItMouse = [this, &tempInput](const DWORD flagsDown, const DWORD flagsUp, const bool isDown)
+			auto MakeItMouse = [&](const DWORD flagsDown, const DWORD flagsUp, const bool isDown)
 			{
 				tempInput.type = INPUT_MOUSE;
 				if (isDown)
@@ -49,6 +76,8 @@ namespace sds::Utilities
 				else
 					tempInput.mi.dwFlags = flagsUp;
 				tempInput.mi.dwExtraInfo = GetMessageExtraInfo();
+				//store the built INPUT
+				m_input_store[currentPair] = tempInput;
 				CallSendInput(&tempInput, 1);
 			};
 			const WORD scanCode = GetScanCode(vk);
@@ -85,6 +114,8 @@ namespace sds::Utilities
 				else
 					tempInput.ki.dwFlags = KEYEVENTF_KEYUP | KEYEVENTF_SCANCODE;
 				tempInput.ki.wScan = scanCode;
+				//store the built INPUT in the cache
+				m_input_store[currentPair] = tempInput;
 				const UINT ret = CallSendInput(&tempInput, 1);
 				if (ret == 0)
 					Utilities::LogError("SendInput returned 0");

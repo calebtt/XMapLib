@@ -12,8 +12,8 @@ namespace sds::Utilities
 	/// <summary> Type alias for pointer to the LogError(std::string) function. </summary>
 	using XELogPtr = std::function<void(std::string)>;
 
-	///<summary> Error logging function, thread safe and non-inlined. </summary>
-	[[msvc::noinline]]
+	///<summary> Error logging function, thread safe. </summary>
+	//[[msvc::noinline]]
 	inline void LogError(std::string s) noexcept
 	{
 		if (!s.empty())
