@@ -14,7 +14,7 @@ namespace sds
 	/// </summary>
 	class KeyboardTranslator
 	{
-		using ClockType = std::chrono::high_resolution_clock;
+		using ClockType = std::chrono::steady_clock;
 		using PointInTime = std::chrono::time_point<ClockType>;
 		using InpType = sds::KeyboardKeyMap::ActionType;
 		const std::string ERR_BAD_VK{ "Either WordData.MappedToVK OR WordData.SendElementVK is <= 0" };
