@@ -34,6 +34,8 @@ namespace sds
 		KeyboardTranslator& operator=(KeyboardTranslator&& other) = delete;
 		~KeyboardTranslator() = default;
 
+		/// <summary> Main function for use, processes <c>KeyboardPoller::KeyStateWrapper</c> into key presses and mouse clicks. </summary>
+		/// <param name="stroke">A KeyStateWrapper containing controller button press information. </param>
 		void ProcessKeystroke(const KeyboardPoller::KeyStateWrapper &stroke)
 		{
 			//Key update loop
@@ -60,7 +62,11 @@ namespace sds
 				}
 			}
 		}
-		std::string AddKeyMap(KeyboardKeyMap w)
+		/// <summary>
+		/// Adds a controller key map for processing. </summary>
+		/// <param name="w">the controller to keystroke mapping detail</param>
+		/// <returns>error message on error, empty string otherwise</returns>
+		std::string AddKeyMap(const KeyboardKeyMap w)
 		{
 			std::string result = CheckForVKError(w);
 			if (!result.empty())
