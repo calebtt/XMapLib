@@ -12,6 +12,7 @@ namespace sds
 	/// Contains the logic for determining if a key press or mouse click should occur, uses sds::Utilities::SendKeyInput m_key_send to send the input.
 	///	Function ProcessKeystroke(KeyboardPoller::KeyStateWrapper &stroke) is used to process a controller input structure. Handles key-repeat behavior as well.
 	/// </summary>
+	///	<remarks>Intended to be used synchronously!</remarks>
 	class KeyboardTranslator
 	{
 		using ClockType = std::chrono::steady_clock;
