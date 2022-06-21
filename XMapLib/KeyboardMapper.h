@@ -5,6 +5,7 @@
 #include "Utilities.h"
 #include "STRunner.h"
 #include "STKeyboardMapping.h"
+#include "Smarts.h"
 
 namespace sds
 {
@@ -24,38 +25,32 @@ namespace sds
 		const LogFnType m_logFn;
 		// Combined object for polling and translation into action,
 		// to be ran on an STRunner object.
-		std::shared_ptr<STKeyboardMapping> m_statMapping;
+		SharedPtrType<STKeyboardMapping> m_statMapping;
 	public:
-		/// <summary>Ctor allows setting custom KeyboardPlayerInfo and KeyboardSettings</summary>
-		KeyboardMapper(const std::shared_ptr<STRunner> &statRunner = nullptr,
+		/// <summary>Ctor allows passing in a STRunner thread, and setting custom KeyboardPlayerInfo and KeyboardSettings
+		/// with optional logging function. </summary>
+		KeyboardMapper( SharedPtrType<STRunner> statRunner,
 			const KeyboardSettingsPack settPack = {},
-			const LogFnType logFn = nullptr
-		)
-		: m_statRunner(statRunner),
-		m_keySettingsPack(settPack),
-		m_logFn(logFn)
+			const LogFnType logFn = nullptr )
+			: m_statRunner(std::move(statRunner)),
+			m_keySettingsPack(settPack),
+			m_logFn(logFn)
 		{
+			// lambda for logging
 			auto LogIfAvailable = [&](const char* msg)
 			{
 				if (m_logFn != nullptr)
 					m_logFn(msg);
 			};
+			// if statRunner is nullptr, log error and return
 			if (m_statRunner == nullptr)
 			{
-				LogIfAvailable("Information: In KeyboardMapper::KeyboardMapper(...): STRunner shared_ptr was null, creating a new instance.");
-				m_statRunner = std::make_shared<STRunner>(logFn);
+				LogIfAvailable("Exception: In KeyboardMapper::KeyboardMapper(...): STRunner shared_ptr was null!");
+				return;
 			}
-			m_statMapping = std::make_shared<STKeyboardMapping>(m_keySettingsPack, m_logFn);
-			if (!m_statRunner->IsRunning())
-			{
-				LogIfAvailable("Information: In KeyboardMapper::KeyboardMapper(...): STRunner was not already running, starting thread...");
-				if (!m_statRunner->StartThread())
-					LogIfAvailable("Exception: In KeyboardMapper::KeyboardMapper(...): STRunner reported it was not able to start the thread!");
-			}
-			if(!m_statRunner->AddDataWrapper(m_statMapping))
-			{
-				LogIfAvailable("Exception: In KeyboardMapper::KeyboardMapper(...): STRunner reported it was not able to add the wrapper!");
-			}
+			// otherwise, add the keyboard mapping obj to the STRunner thread for processing
+			m_statMapping = MakeSharedSmart<STKeyboardMapping>(m_keySettingsPack, m_logFn);
+			m_statRunner->AddDataWrapper(m_statMapping);
 		}
 		// Other constructors/destructors
 		KeyboardMapper(const KeyboardMapper& other) = delete;
@@ -91,7 +86,7 @@ namespace sds
 		{
 			m_statMapping->Start();
 			const auto fnList = m_statRunner->GetWrapperBuffer();
-			const auto tempIt = std::find_if(fnList.cbegin(), fnList.cend(), [&](const auto& elem)
+			const auto tempIt = std::ranges::find_if(fnList.cbegin(), fnList.cend(), [&](const auto& elem)
 				{
 					return elem.get() == m_statMapping.get();
 				});

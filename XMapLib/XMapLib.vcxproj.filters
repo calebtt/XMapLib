@@ -104,9 +104,6 @@
     <ClInclude Include="STDataWrapper.h">
       <Filter>Header Files\Utilities\Async</Filter>
     </ClInclude>
-    <ClInclude Include="CPPRunnerGeneric.h">
-      <Filter>Header Files\Utilities\Async</Filter>
-    </ClInclude>
     <ClInclude Include="DelayManager.h">
       <Filter>Header Files\Utilities\Timing</Filter>
     </ClInclude>
@@ -145,6 +142,12 @@
     </ClInclude>
     <ClInclude Include="Smarts.h">
       <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyboardTranslatorAsync.h">
+      <Filter>Header Files\Keyboard</Filter>
+    </ClInclude>
+    <ClInclude Include="AsyncDataRunner.h">
+      <Filter>Header Files\Utilities\Async</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

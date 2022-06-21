@@ -33,8 +33,12 @@ namespace sds
 		KeyboardTranslator(KeyboardTranslator&& other) = delete;
 		KeyboardTranslator& operator=(const KeyboardTranslator& other) = delete;
 		KeyboardTranslator& operator=(KeyboardTranslator&& other) = delete;
-		~KeyboardTranslator() = default;
 
+		/// <summary> Destructor cleans up in-progress key-presses before destruction. </summary>
+		~KeyboardTranslator()
+		{
+			CleanupInProgressEvents();
+		}
 		/// <summary> Main function for use, processes <c>KeyboardPoller::KeyStateWrapper</c> into key presses and mouse clicks. </summary>
 		/// <param name="stroke">A KeyStateWrapper containing controller button press information. </param>
 		void ProcessKeystroke(const KeyboardPoller::KeyStateWrapper &stroke)
@@ -63,8 +67,7 @@ namespace sds
 				}
 			}
 		}
-		/// <summary>
-		/// Adds a controller key map for processing. </summary>
+		/// <summary> Adds a controller key map for processing. </summary>
 		/// <param name="w">the controller to keystroke mapping detail</param>
 		/// <returns>error message on error, empty string otherwise</returns>
 		std::string AddKeyMap(const KeyboardKeyMap w)
@@ -75,15 +78,21 @@ namespace sds
 			m_map_token_info.push_back(w);
 			return "";
 		}
+		/// <summary> Cleans up the in-progress events and clears the keymaps. </summary>
 		void ClearMaps() noexcept
 		{
+			CleanupInProgressEvents();
 			m_map_token_info.clear();
 		}
-		[[nodiscard]] std::vector<KeyboardKeyMap> GetMaps() const noexcept
+		/// <summary> Returns the key maps </summary>
+		[[nodiscard]]
+		std::vector<KeyboardKeyMap> GetMaps() const noexcept
 		{
 			return m_map_token_info;
 		}
 	private:
+		/// <summary> If enough time has passed, reset the key for use again, provided it uses the key-repeat behavior--
+		///	otherwise reset it immediately. </summary>
 		void KeyUpdateLoop()
 		{
 			//If enough time has passed, reset the key for use again, provided it uses the key-repeat behavior--
@@ -96,6 +105,8 @@ namespace sds
 					e.LastAction = InpType::NONE;
 			}
 		}
+		/// <summary> Checks each <c>KeyboardKeyMap</c> in <c>m_map_token_info</c>'s <c>LastSentTime</c> timer for being
+		///	elapsed, and if so, sends the repeat keypress (if key repeat behavior is enabled for the map). </summary>
 		void KeyRepeatLoop()
 		{
 			for(auto &w: m_map_token_info)
@@ -170,7 +181,10 @@ namespace sds
 		{
 			SendTheKey(detail, false, InpType::KEYUP);
 		}
-		[[nodiscard]] std::string CheckForVKError(const KeyboardKeyMap& detail) const
+		/// <summary> Checks a <c>KeyboardKeyMap</c>'s <c>MappedToVK</c> and <c>SendingElementVK</c> members for out of bounds values. </summary>
+		///	<returns> Error message on error, empty string otherwise. </returns>
+		[[nodiscard]]
+		std::string CheckForVKError(const KeyboardKeyMap& detail) const
 		{
 			if ((detail.MappedToVK <= 0) || (detail.SendingElementVK <= 0))
 			{

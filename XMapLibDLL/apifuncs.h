@@ -8,8 +8,9 @@ extern "C"
 	{
 		using LockType = std::scoped_lock <std::mutex>;
 		inline std::mutex accessBlocker;
-		inline sds::KeyboardMapper kbd;
-		inline sds::MouseMapper mmp;
+		inline std::shared_ptr<sds::STRunner> threadPoolPtr{ std::make_shared<sds::STRunner>() };
+		inline sds::KeyboardMapper kbd{ threadPoolPtr };
+		inline sds::MouseMapper mmp{ threadPoolPtr };
 		inline std::string mapInfoFormatted;
 	}
 	__declspec(dllexport) inline void XMapLibInitBoth()

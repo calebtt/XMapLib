@@ -1,12 +1,14 @@
 #pragma once
 #include "stdafx.h"
-#include "KeyboardTranslator.h"
+#include "KeyboardTranslatorAsync.h"
+#include "KeyboardPoller.h"
 #include "STDataWrapper.h"
 
 namespace sds
 {
-	/// <summary> It's a wrapper around KeyboardTranslator and KeyboardPoller that is added to the STRunner thread pool. Used in main class for use KeyboardMapper.
-	/// Keyboard simulation function object that polls for controller input and processes it as keyboard keystrokes. It is ran on the STRunner thread pool.  </summary>
+	/// <summary> It's a wrapper around <c>KeyboardTranslatorAsync</c> and <c>KeyboardPoller</c> that is added to the <c>STRunner</c> thread pool.
+	/// Used in main class for use <c>KeyboardMapper</c>.
+	/// Keyboard simulation function object that polls for controller input and processes it as keyboard keystrokes. It is ran on the <c>STRunner</c> thread pool. </summary>
 	///	<remarks>Remember that the m_is_enabled member of the base (STDataWrapper) toggles on/off the processing of operator()()</remarks>
 	struct STKeyboardMapping : public STDataWrapper
 	{
@@ -14,7 +16,7 @@ namespace sds
 		// program settings pack for keyboard mapping.
 		const KeyboardSettingsPack m_ksp;
 		// class that contains the keypress handling logic, used synchronously.
-		KeyboardTranslator m_translator;
+		KeyboardTranslatorAsync m_translator;
 		// class that wraps the syscalls for getting a controller update.
 		KeyboardPoller m_poller;
 	public:
@@ -40,14 +42,9 @@ namespace sds
 		}
 		std::string AddMap(KeyboardKeyMap button)
 		{
-			if (IsRunning())
-				Stop();
-			std::string er = m_translator.AddKeyMap(button);
-			if (er.empty())
-				Start();
-			return er;
+			return m_translator.AddKeyMap(button);
 		}
-		[[nodiscard]] std::vector<KeyboardKeyMap> GetMaps() const
+		[[nodiscard]] std::vector<KeyboardKeyMap> GetMaps()
 		{
 			return m_translator.GetMaps();
 		}
@@ -66,7 +63,7 @@ namespace sds
 		}
 		void Stop() noexcept
 		{
-			m_translator.CleanupInProgressEvents();
+			//m_translator.CleanupInProgressEvents();
 			m_is_enabled = false;
 		}
 	};

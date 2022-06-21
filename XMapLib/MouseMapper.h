@@ -44,23 +44,15 @@ namespace sds
 				if (m_logFn != nullptr)
 					m_logFn(msg);
 			};
+			// if statrunner is nullptr, log error and return
 			if (m_statRunner == nullptr)
 			{
-				LogIfAvailable("Information: In MouseMapper::MouseMapper(...): STRunner shared_ptr was null, creating a new instance.");
-				m_statRunner = MakeSharedSmart<STRunner>(logFn);
+				LogIfAvailable("Exception: In MouseMapper::MouseMapper(...): STRunner shared_ptr was null!");
+				return;
 			}
+			// otherwise, add the mouse mapping obj to the STRunner thread for processing 
 			m_stmapper = MakeSharedSmart<STMouseMapping>(settings.settings.SENSITIVITY_DEFAULT, StickMap::RIGHT_STICK, settings, logFn);
-			if (!m_statRunner->IsRunning())
-			{
-				LogIfAvailable("Information: In MouseMapper::MouseMapper(...): STRunner was not already running, starting thread...");
-				if (!m_statRunner->StartThread())
-					LogIfAvailable("Exception: In MouseMapper::MouseMapper(...): STRunner reported it was not able to start the thread!");
-			}
-			if (!m_statRunner->AddDataWrapper(m_stmapper))
-			{
-				LogIfAvailable("Exception: In MouseMapper::MouseMapper(...): STRunner reported it was not able to add the wrapper!");
-			}
-			//StartObjects();
+			m_statRunner->AddDataWrapper(m_stmapper);
 		}
 		MouseMapper(const MouseMapper& other) = delete;
 		MouseMapper(MouseMapper&& other) = delete;

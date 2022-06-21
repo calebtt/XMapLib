@@ -4,7 +4,7 @@
 #include <atomic>
 #include <functional>
 #include <memory>
-#include "CPPRunnerGeneric.h"
+#include "AsyncDataRunner.h"
 #include "STDataWrapper.h"
 
 namespace sds
@@ -36,7 +36,7 @@ namespace sds
 
 		auto GetLambda()
 		{
-			return [this](const auto stopCondition, const auto mut, auto protectedData) { workThread(stopCondition, mut, protectedData); };
+			return [this](auto &stopCondition, auto &mut, auto &protectedData) { workThread(stopCondition, mut, protectedData); };
 		}
 		STRunner(const LogFnType logFn = nullptr) : m_threadRunner(GetLambda(), logFn) { }
 		STRunner(const STRunner& other) = delete;
@@ -49,23 +49,23 @@ namespace sds
 		}
 	protected:
 		// thread runner manager
-		sds::CPPRunnerGeneric<FnListType> m_threadRunner;
+		AsyncDataRunner<FnListType> m_threadRunner;
 	protected:
-		void workThread(const auto stopCondition, const auto mut, auto protectedData)
+		void workThread(auto &stopCondition, auto &mut, auto &protectedData)
 		{
 			using namespace std::chrono;
 			//boolean denoting when a function object in the pool is enabled,
 			//used to add a tiny loop delay when all objects in the pool are disabled.
 			bool foundFunction = false;
 			//while static thread stop not requested
-			while (!(*stopCondition))
+			while (!stopCondition)
 			{
 				//local scope for scoped mutex.
 				{
 					foundFunction = false;
-					ScopedLockType tempLock(*mut);
+					ScopedLockType tempLock(mut);
 					//loop through function list and call operator() if enabled
-					for (const std::shared_ptr<sds::STDataWrapper> &elem : *protectedData)
+					for (const std::shared_ptr<sds::STDataWrapper> &elem : protectedData)
 					{
 						if (elem->IsEnabled())
 						{
@@ -81,18 +81,17 @@ namespace sds
 	public:
 		/// <summary> Adds a smart pointer to the DataWrapper base class, or a derived type, to
 		///	the internal function list for processing on the thread pool. </summary>
-		///	<remarks>NOTE: the thread must be started before adding DataWrappers!</remarks>
 		/// <param name="dw">smart pointer to DataWrapper or derived class. </param>
-		///	<returns> true on successfully added DataWrapper, false otherwise. </returns>
-		bool AddDataWrapper(const std::shared_ptr<STDataWrapper>& dw)
+		void AddDataWrapper(const std::shared_ptr<STDataWrapper>& dw)
 		{
 			return m_threadRunner.AddState(dw);
 		}
 		void ClearAllWrappers()
 		{
-			const auto temp = m_threadRunner.GetAndClearCurrentStates();
+			m_threadRunner.ClearCurrentStates();
 		}
-		[[nodiscard]] FnListType GetWrapperBuffer()
+		[[nodiscard]]
+		FnListType GetWrapperBuffer()
 		{
 			return m_threadRunner.GetCurrentState();
 		}
@@ -103,7 +102,8 @@ namespace sds
 			return m_threadRunner.StartThread();
 		}
 		/// <summary>Returns true if thread is running and stop has not been requested.</summary>
-		[[nodiscard]] bool IsRunning() const noexcept
+		[[nodiscard]]
+		bool IsRunning() const noexcept
 		{
 			return m_threadRunner.IsRunning();
 		}

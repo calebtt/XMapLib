@@ -165,11 +165,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Arithmetic.h" />
+    <ClInclude Include="AsyncDataRunner.h" />
     <ClInclude Include="ControllerStatus.h" />
-    <ClInclude Include="CPPRunnerGeneric.h" />
     <ClInclude Include="DelayManager.h" />
     <ClInclude Include="KeyboardPoller.h" />
     <ClInclude Include="KeyboardSettingsPack.h" />
+    <ClInclude Include="KeyboardTranslatorAsync.h" />
     <ClInclude Include="MouseMoveInfoPacket.h" />
     <ClInclude Include="MouseMover.h" />
     <ClInclude Include="MousePoller.h" />
