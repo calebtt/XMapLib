@@ -8,7 +8,7 @@ extern "C"
 	{
 		using LockType = std::scoped_lock <std::mutex>;
 		inline std::mutex accessBlocker;
-		inline std::shared_ptr<sds::STRunner> threadPoolPtr{ std::make_shared<sds::STRunner>() };
+		inline std::shared_ptr<sds::STRunner> threadPoolPtr{ std::make_shared<sds::STRunner>(true) };
 		inline sds::KeyboardMapper kbd{ threadPoolPtr };
 		inline sds::MouseMapper mmp{ threadPoolPtr };
 		inline std::string mapInfoFormatted;

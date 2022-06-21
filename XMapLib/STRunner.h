@@ -38,7 +38,11 @@ namespace sds
 		{
 			return [this](auto &stopCondition, auto &mut, auto &protectedData) { workThread(stopCondition, mut, protectedData); };
 		}
-		STRunner(const LogFnType logFn = nullptr) : m_threadRunner(GetLambda(), logFn) { }
+		STRunner(const bool startThread = false, const LogFnType logFn = nullptr) : m_threadRunner(GetLambda(), logFn)
+		{
+			if (startThread)
+				StartThread();
+		}
 		STRunner(const STRunner& other) = delete;
 		STRunner(STRunner&& other) = delete;
 		STRunner& operator=(const STRunner& other) = delete;
