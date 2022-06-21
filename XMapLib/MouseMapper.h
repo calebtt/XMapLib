@@ -34,10 +34,10 @@ namespace sds
 		MouseMapper(const SharedPtrType<STRunner> &statRunner = nullptr, 
 			const MouseSettingsPack settings = {}, 
 			Utilities::XELogPtr logFn = nullptr)
-		: m_statRunner(statRunner),
-		m_mouseSettingsPack(settings),
-		m_logFn(logFn)
-		{
+		: m_logFn(logFn),
+		  m_statRunner(statRunner),
+		  m_mouseSettingsPack(settings)
+	{
 			//TODO fix construction of stmapper, add sensitivity and stick args to ctor here
 			auto LogIfAvailable = [&](const char* msg)
 			{
@@ -104,21 +104,10 @@ namespace sds
 			return m_stmapper->IsEnabled() && m_statRunner->IsRunning();
 		}
 		/// <summary><c>Start()</c> enables processing on the function objects added to the <c>STRunner</c> thread pool.
-		/// Does not start the <c>STRunner</c> thread! Will add the necessary function objects to the <c>STRunner</c> processing vector
-		/// when called, if not present. </summary>
+		/// Does not start the <c>STRunner</c> thread! </summary>
 		void Start() noexcept
 		{
 			m_stmapper->Start();
-			const auto fnList = m_statRunner->GetWrapperBuffer();
-			const auto tempIt = std::find_if(fnList.cbegin(), fnList.cend(), [&](const auto& elem)
-				{
-					return elem.get() == m_stmapper.get();
-				});
-			//if shared_ptr to our mapping object was not found in the functor list, add it
-			if (tempIt == fnList.end())
-			{
-				m_statRunner->AddDataWrapper(m_stmapper);
-			}
 		}
 		/// <summary><c>Stop()</c> toggles the Enabled status of the <c>STMouseMapping</c> data wrapper instance to "false". </summary>
 		void Stop() noexcept
