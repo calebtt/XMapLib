@@ -80,21 +80,10 @@ namespace sds
 			m_statMapping->ClearMaps();
 		}
 		/// <summary> Enables processing on the function objects added to the STRunner thread pool.
-		/// Does not start the STRunner thread! Will add the necessary function objects to the STRunner processing vector
-		/// when called, if not present. </summary>
+		/// Does not start the STRunner thread! </summary>
 		void Start() noexcept
 		{
 			m_statMapping->Start();
-			const auto fnList = m_statRunner->GetWrapperBuffer();
-			const auto tempIt = std::ranges::find_if(fnList.cbegin(), fnList.cend(), [&](const auto& elem)
-				{
-					return elem.get() == m_statMapping.get();
-				});
-			//if shared_ptr to our mapping object was not found in the functor list, add it
-			if(tempIt == fnList.end())
-			{
-				m_statRunner->AddDataWrapper(m_statMapping);
-			}
 		}
 		/// <summary> Disables processing on the function objects added to the STRunner thread pool.
 		///	Does not stop the STRunner thread! </summary>
