@@ -15,7 +15,7 @@ namespace sds
 	private:
 		// program settings pack for keyboard mapping.
 		const KeyboardSettingsPack m_ksp;
-		// class that contains the keypress handling logic, used synchronously.
+		// class that contains the keypress handling logic, used async.
 		KeyboardTranslatorAsync m_translator;
 		// class that wraps the syscalls for getting a controller update.
 		KeyboardPoller m_poller;
