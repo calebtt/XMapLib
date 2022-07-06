@@ -4,13 +4,13 @@
 namespace sds
 {
 	/// <summary> Encapsulates the logic for querying the OS to gather information about a controller keypress event. </summary>
-	class KeyboardPoller
+	template<class LogFnType = std::function<void(std::string)>>
+	class KeyboardPollerImpl
 	{
-		using LogFnType = std::function<void(std::string)>;
 		const LogFnType m_logFn;
 		XINPUT_KEYSTROKE m_tempState{};
 	public:
-		KeyboardPoller(LogFnType logFn = nullptr) : m_logFn(logFn)
+		KeyboardPollerImpl(LogFnType logFn = nullptr) : m_logFn(logFn)
 		{ }
 		/// <summary> Wrapper for XINPUT_KEYSTROKE in this case, to make the code processing it more portable. </summary>
 		struct KeyStateWrapper
@@ -38,4 +38,7 @@ namespace sds
 			return {};
 		}
 	};
+
+	// Using declaration for standard config
+	using KeyboardPoller = KeyboardPollerImpl<>;
 }

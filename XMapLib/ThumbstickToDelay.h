@@ -14,9 +14,9 @@ namespace sds
 	///	</para>
 	/// </summary>
 	///	<remarks>A single instance for both thumbstick axes is to be used.</remarks>
+	template<class LogFnType = std::function<void(std::string)>>
 	class ThumbstickToDelay
 	{
-		using LogFnType = Utilities::XELogPtr;
 		using MultFloat = decltype(MouseSettings::ALT_DEADZONE_MULT_DEFAULT);
 		using SensInt = decltype(MouseSettings::SENSITIVITY_DEFAULT);
 		using DzInt = decltype(MouseSettings::DEADZONE_DEFAULT);
@@ -24,7 +24,7 @@ namespace sds
 		using ScaleFloat = ReadRadiusScaleValues::FloatType;
 		using ScaleRange = ReadRadiusScaleValues::RangeType;
 	public:
-		void SetSensitivity(SensInt newSens) noexcept
+		void SetSensitivity(const SensInt newSens) noexcept
 		{
 			m_axis_sensitivity = ValidateSensitivity(newSens, m_mouse_settings);
 		}
@@ -32,7 +32,7 @@ namespace sds
 		{
 			return m_axis_sensitivity;
 		}
-		void SetStick(StickMap newStick) noexcept
+		void SetStick(const StickMap newStick) noexcept
 		{
 			m_which_stick = newStick;
 		}
@@ -106,10 +106,11 @@ namespace sds
 		/// <param name="sensitivity">int sensitivity value</param>
 		/// <param name="whichStick">StickMap enum denoting which thumbstick</param>
 		///	<param name="ms">Mouse Settings struct containing some default values</param>
+		///	<param name="logFn">Logging function, called to report an error with a C string message.</param>
 		ThumbstickToDelay(
 			const int sensitivity, 
 			const StickMap whichStick,
-			const MouseSettingsPack ms = {},
+			const MouseSettingsPack &ms = {},
 			const LogFnType logFn = nullptr) noexcept
 		: m_axis_sensitivity(ValidateSensitivity(sensitivity, ms)),
 		m_which_stick(ValidateStickMap(whichStick, logFn)),
@@ -135,7 +136,9 @@ namespace sds
 		[[nodiscard]] auto GetDelaysFromThumbstickValues(const int cartesianX, const int cartesianY)
 			const noexcept -> std::pair<size_t, size_t>
 		{
-			return BuildDelayInfo(cartesianX, -cartesianY);
+			if(m_which_stick != StickMap::NEITHER_STICK)
+				return BuildDelayInfo(cartesianX, -cartesianY);
+			return { m_mouse_settings.settings.MICROSECONDS_MAX, m_mouse_settings.settings.MICROSECONDS_MAX };
 		}
 		///<summary> Calculates microsecond delay values from cartesian X and Y thumbstick values.
 		///Probably needs optimized.</summary>

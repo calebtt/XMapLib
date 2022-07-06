@@ -18,7 +18,8 @@ namespace sds
 	///	<para>TODO add benchmarking timers to average each separate function object's execution time.
 	///	</para>
 	/// </summary>
-	class STRunner
+	template<class LogFnType = std::function<void(std::string)>>
+	class STRunnerImpl
 	{
 	public:
 		// Alias for thread class type.
@@ -29,8 +30,6 @@ namespace sds
 		using StopCondType = std::atomic<bool>;
 		// Alias for chosen scoped lock type.
 		using ScopedLockType = std::lock_guard<MutexType>;
-		// Alias for logging function pointer type.
-		using LogFnType = std::function<void(std::string)>;
 		// Alias for container that maps a unique identifier to a function pointer.
 		using FnListType = std::vector<std::shared_ptr<STDataWrapper>>;
 
@@ -38,16 +37,16 @@ namespace sds
 		{
 			return [this](auto &stopCondition, auto &mut, auto &protectedData) { workThread(stopCondition, mut, protectedData); };
 		}
-		STRunner(const bool startThread = false, const LogFnType logFn = nullptr) : m_threadRunner(GetLambda(), logFn)
+		STRunnerImpl(const bool startThread = false, const LogFnType logFn = nullptr) : m_threadRunner(GetLambda(), logFn)
 		{
 			if (startThread)
 				StartThread();
 		}
-		STRunner(const STRunner& other) = delete;
-		STRunner(STRunner&& other) = delete;
-		STRunner& operator=(const STRunner& other) = delete;
-		STRunner& operator=(STRunner&& other) = delete;
-		~STRunner()
+		STRunnerImpl(const STRunnerImpl& other) = delete;
+		STRunnerImpl(STRunnerImpl&& other) = delete;
+		STRunnerImpl& operator=(const STRunnerImpl& other) = delete;
+		STRunnerImpl& operator=(STRunnerImpl&& other) = delete;
+		~STRunnerImpl()
 		{
 			StopThread();
 		}
@@ -117,4 +116,7 @@ namespace sds
 			m_threadRunner.StopThread();
 		}
 	};
+
+	// Using declaration for default config
+	using STRunner = STRunnerImpl<>;
 }

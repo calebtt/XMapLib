@@ -10,7 +10,8 @@ namespace sds
 	/// Used in main class for use <c>KeyboardMapper</c>.
 	/// Keyboard simulation function object that polls for controller input and processes it as keyboard keystrokes. It is ran on the <c>STRunner</c> thread pool. </summary>
 	///	<remarks>Remember that the m_is_enabled member of the base (STDataWrapper) toggles on/off the processing of operator()()</remarks>
-	struct STKeyboardMapping : public STDataWrapper
+	template<class LogFnType = std::function<void(std::string)>>
+	struct STKeyboardMappingImpl : public STDataWrapperImpl<LogFnType>
 	{
 	private:
 		// program settings pack for keyboard mapping.
@@ -20,14 +21,14 @@ namespace sds
 		// class that wraps the syscalls for getting a controller update.
 		KeyboardPoller m_poller;
 	public:
-		virtual ~STKeyboardMapping() override
+		virtual ~STKeyboardMappingImpl() override
 		{
 			Stop();
 		}
-		STKeyboardMapping(const KeyboardSettingsPack ksp = {},
+		STKeyboardMappingImpl(const KeyboardSettingsPack ksp = {},
 			const LogFnType fn = nullptr
 		)
-		: STDataWrapper(fn),
+		: STDataWrapperImpl<LogFnType>(fn),
 		m_ksp(ksp),
 		m_translator(ksp),
 		m_poller(fn)
@@ -55,16 +56,19 @@ namespace sds
 
 		[[nodiscard]] bool IsRunning() const
 		{
-			return m_is_enabled;
+			return this->m_is_enabled;
 		}
 		void Start() noexcept
 		{
-			m_is_enabled = true;
+			this->m_is_enabled = true;
 		}
 		void Stop() noexcept
 		{
 			//m_translator.CleanupInProgressEvents();
-			m_is_enabled = false;
+			this->m_is_enabled = false;
 		}
 	};
+
+	// Using declaration for default config
+	using STKeyboardMapping = STKeyboardMappingImpl<>;
 }

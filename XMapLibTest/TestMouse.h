@@ -9,11 +9,15 @@ namespace XMapLibTest
 	TEST_CLASS(TestMouse)
 	{
 
-		sds::MouseMapper mouse;
+		
 	public:
 		// Used for testing mousemapper's ability to set sensitivity values, and report erroneous ones.
 		TEST_METHOD(TestSetSensitivity)
 		{
+			auto LogFn = [](const std::string msg) { Logger::WriteMessage(msg.c_str()); };
+			std::shared_ptr<sds::STRunner> srsp = std::make_shared<sds::STRunner>(false, LogFn);
+			sds::MouseMapper mouse(srsp, {}, LogFn);
+
 			//test some good cases
 			Assert::IsTrue(mouse.SetSensitivity(1).empty());
 			Assert::IsTrue(mouse.SetSensitivity(100).empty());

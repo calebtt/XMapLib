@@ -15,13 +15,13 @@ namespace sds
 	/// on a single extra thread, it is appropriate for polling functions that must be
 	/// ran indefinitely with no loop delay, but do little more than make system calls
 	/// and report the information to somewhere else.</para> </summary>
-	class STDataWrapper
+	template<class LogFnType = std::function<void(std::string)>>
+	class STDataWrapperImpl
 	{
 	public: /* Giant list of using declaration and other aliases. */
 		using MutType = std::mutex; // The type of the mutex used for general access coordination.
 		using AtomicBool = std::atomic<bool>; // Alias for stop condition type, not pointer wrapped.
 		using ScopedLockType = std::lock_guard<MutType>; // Alias for chosen scoped lock type.
-		using LogFnType = std::function<void(std::string)>; // Alias for logging function pointer type.
 	protected: /* Section for used data members */
 		const LogFnType LogFn;
 		MutType m_mutex;
@@ -30,10 +30,12 @@ namespace sds
 		AtomicBool m_is_enabled{ true };
 	public:
 		//Constructor, LogFnType is an optional logging function that accepts const char* as the only arg.
-		explicit STDataWrapper(const LogFnType fn = nullptr) : LogFn(fn) { }
+		explicit STDataWrapperImpl(const LogFnType fn = nullptr) : LogFn(fn) { }
 		// Pure virtual operator() overload, to be overridden in derived classes.
 		virtual void operator()() = 0;
-		virtual ~STDataWrapper() = default;
+		virtual ~STDataWrapperImpl() = default;
 		virtual bool IsEnabled() const noexcept { return m_is_enabled; }
 	};
+	// Using declaration for default config
+	using STDataWrapper = STDataWrapperImpl<>;
 }

@@ -1,4 +1,5 @@
 #pragma once
+#include "KeyboardPoller.h"
 #include "stdafx.h"
 #include "KeyboardTranslator.h"
 

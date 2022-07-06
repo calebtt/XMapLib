@@ -22,6 +22,7 @@ namespace sds::Utilities
 		SendMouseInput& operator=(SendMouseInput&& other) = delete;
 		~SendMouseInput() = default;
 		/// <summary>Sends mouse movement specified by X and Y number of pixels to move.</summary>
+		///	<remarks>Cartesian coordinate plane, starting at 0,0</remarks>
 		/// <param name="x">number of pixels in X</param>
 		/// <param name="y">number of pixels in Y</param>
 		void SendMouseMove(const int x, const int y)
@@ -36,7 +37,7 @@ namespace sds::Utilities
 		/// This is useful for debugging or re-routing the output for logging/testing of a real-time system.</summary>
 		/// <param name="inp">Pointer to first element of INPUT array.</param>
 		/// <param name="numSent">Number of elements in the array to send.</param>
-		UINT CallSendInput(INPUT* inp, size_t numSent) const
+		static UINT CallSendInput(INPUT* inp, size_t numSent) noexcept
 		{
 			return SendInput(static_cast<UINT>(numSent), inp, sizeof(INPUT));
 		}

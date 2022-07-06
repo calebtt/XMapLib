@@ -14,7 +14,8 @@ namespace sds
 	///	as well as stopping and starting the running thread. If you want to use this class, make a function (or lambda function) with parameters
 	///	of the form <code> void function_name( auto &stopConditionBool, auto &theMutex, UserType &protectedDataYouWantToAccess ) </code>
 	/// </summary>
-	template<typename InternalData> requires std::is_default_constructible_v<InternalData>
+	template<typename InternalData, typename LogFnType = std::function<void(std::string)>>
+	requires std::is_default_constructible_v<InternalData>
 	class AsyncDataRunner
 	{
 	public:
@@ -25,8 +26,6 @@ namespace sds
 			using ThreadObjType = std::jthread;
 			using MutexType = std::mutex;
 			using StopCondType = std::atomic<bool>;
-			using MutexPointerType = std::shared_ptr<MutexType>;
-			using StopCondPointerType = std::shared_ptr<StopCondType>;
 			using Ar1StopCond = StopCondType&;
 			using Ar2Mut = MutexType&;
 			using Ar3Data = InternalData&;
@@ -35,7 +34,6 @@ namespace sds
 		// Using declarations section
 		using DataPointerType = std::shared_ptr<InternalData>;
 		using LambdaType = std::function<void(typename LambdaArgs::Ar1StopCond, typename LambdaArgs::Ar2Mut, typename LambdaArgs::Ar3Data)>;
-		using LogFnType = std::function<void(std::string)>;
 		using ScopedLockType = std::scoped_lock<typename LambdaArgs::MutexType>;
 
 		/// <summary> Data pack for a thread run's session information. </summary>
@@ -134,6 +132,7 @@ namespace sds
 			m_current_data_pack.m_local_data = state;
 		}
 		/// <summary> Returns a copy of the internal InternalData obj with mutex locking thread safety. </summary>
+		[[nodiscard]]
 		InternalData GetCurrentState() noexcept
 		{
 			ScopedLockType tempLock(m_current_data_pack.m_state_mutex);
