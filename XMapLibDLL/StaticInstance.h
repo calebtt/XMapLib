@@ -17,34 +17,20 @@ namespace Stins
 		std::shared_ptr<sds::STRunner> threadPoolPtr;
 		sds::KeyboardMapper kbd;
 		sds::MouseMapper mmp;
-		//std::unique_ptr<sds::KeyboardMapper> kbd;
-		//std::unique_ptr<sds::MouseMapper> mmp;
-		std::string mapInfoFormatted;
+		// Buffer large enough to hold any map string possible, with static allocation.
+		std::array<char, 1'048'576> mapInfoFormatted{};
 		// ctor
 		MapStuff()
 		: threadPoolPtr(std::make_shared<sds::STRunner>(true, ErrorCallb)),
-		kbd(threadPoolPtr),
-		mmp(threadPoolPtr)
+		kbd(threadPoolPtr, {}, ErrorCallb),
+		mmp(threadPoolPtr, {}, ErrorCallb)
 		{
 			threadPoolPtr->StartThread();
-			//ErrorCallb("Ctor called.");
 		}
 
 		static void ErrorCallb(const std::string msg) noexcept
 		{
 			MessageBoxA(nullptr, msg.c_str(), "", MB_OK);
 		}
-		//[[nodiscard]] std::unique_ptr<sds::KeyboardMapper> CreateKeyMapper(const std::shared_ptr<sds::STRunner>& runner) const
-		//{
-		//	using namespace sds;
-		//	KeyboardSettingsPack ksp;
-		//	return std::make_unique<KeyboardMapper>(runner, ksp, ErrorCallb);
-		//}
-		//[[nodiscard]] std::unique_ptr<sds::MouseMapper> CreateMouseMapper(const std::shared_ptr<sds::STRunner>& runner) const
-		//{
-		//	using namespace sds;
-		//	MouseSettingsPack msp;
-		//	return std::make_unique<MouseMapper>(runner, msp, ErrorCallb);
-		//}
 	};
 }

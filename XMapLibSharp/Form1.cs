@@ -32,7 +32,16 @@ namespace XMapLibSharp
             UpdateMapStringBox();
             InitDataGridView();
             tabControl1.SelectedIndexChanged += TabControl1_SelectedIndexChanged;
+            this.FormClosing += OnFormClosing;
         }
+
+        private void OnFormClosing(object? sender, FormClosingEventArgs e)
+        {
+            // Explicitly stops the processing for keyboard and mouse, as well as
+            // stops the running static thread before program termination.
+            this._mapper.StopBoth();
+        }
+
         private void btnSensitivityIndicator_Click(object sender, EventArgs e)
         {
 
