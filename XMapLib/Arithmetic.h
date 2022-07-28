@@ -40,6 +40,15 @@ namespace sds::Utilities
 		{
 			if (!std::is_constant_evaluated())
 				return std::abs(val);
+			//For integral types (not floating point) we can test perfect equality to the min value
+			//and assign the absolute value of it as the num limit max to avoid pesky overflows.
+			if constexpr (std::integral<decltype(val)>)
+			{
+				//Check to see the value fits into the type as a positive.
+				constexpr auto MinVal = std::numeric_limits<decltype(val)>::min();
+				if (val == MinVal)
+					return std::numeric_limits<decltype(val)>::max();
+			}
 			constexpr decltype(val) zeroValue{};
 			return (val >= zeroValue) ? val : -val;
 		}

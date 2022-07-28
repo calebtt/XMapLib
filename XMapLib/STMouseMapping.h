@@ -25,7 +25,7 @@ namespace sds
 		// Polling object, to retrieve MousePoller::ThumbstickStateWrapper wrapped thumbstick values.
 		MousePoller m_mousePoller;
 		// Delay calculator, uses ThumbstickStateWrapper wrapped thumbstick values to calculate microsecond delay values.
-		ThumbstickToDelay<> m_delayCalc;
+		ThumbstickToDelay<LogFnType> m_delayCalc;
 		// Mouse mover object, performs the actual mouse move with info from poller and calc.
 		MouseMover m_mover;
 		// Deadzone calculator, provides information such as "is the axis value beyond the deadzone?".
@@ -72,8 +72,8 @@ namespace sds
 				.y_delay = std::get<1>(delayPair),
 				.is_x_positive = (xValue > 0),
 				.is_y_positive = (yValue > 0),
-				.is_beyond_dz_x = std::get<0>(activatedPair),
-				.is_beyond_dz_y = std::get<1>(activatedPair)
+				.is_beyond_dz_x = activatedPair.first,
+				.is_beyond_dz_y = activatedPair.second
 			};
 			// [send it!]
 			m_mover.PerformMove(mmip);
@@ -100,9 +100,8 @@ namespace sds
 		{
 			m_stickmap_info = newStick;
 			m_delayCalc.SetStick(newStick);
-			//enable processing if necessary
-			if (m_stickmap_info != StickMap::NEITHER_STICK)
-				this->m_is_enabled = true;
+			//enable or disable processing
+			this->m_is_enabled = m_stickmap_info != StickMap::NEITHER_STICK;
 		}
 		StickMap GetStick() const noexcept
 		{

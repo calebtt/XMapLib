@@ -3,6 +3,7 @@
 #include "PolarCalc.h"
 #include "Utilities.h"
 #include "ReadRadiusScaleValues.h"
+#include <cassert>
 
 namespace sds
 {
@@ -17,6 +18,7 @@ namespace sds
 	template<class LogFnType = std::function<void(std::string)>>
 	class ThumbstickToDelay
 	{
+		using DelayType = std::size_t;
 		using MultFloat = decltype(MouseSettings::ALT_DEADZONE_MULT_DEFAULT);
 		using SensInt = decltype(MouseSettings::SENSITIVITY_DEFAULT);
 		using DzInt = decltype(MouseSettings::DEADZONE_DEFAULT);
@@ -134,7 +136,7 @@ namespace sds
 		///	</summary>
 		///	<returns>pair X,Y Delay in US</returns>
 		[[nodiscard]] auto GetDelaysFromThumbstickValues(const int cartesianX, const int cartesianY)
-			const noexcept -> std::pair<size_t, size_t>
+			const noexcept -> std::pair<DelayType, DelayType>
 		{
 			if(m_which_stick != StickMap::NEITHER_STICK)
 				return BuildDelayInfo(cartesianX, -cartesianY);
@@ -143,7 +145,7 @@ namespace sds
 		///<summary> Calculates microsecond delay values from cartesian X and Y thumbstick values.
 		///Probably needs optimized.</summary>
 		[[nodiscard]] auto BuildDelayInfo(const auto cartesianX, const auto cartesianY)
-		const noexcept -> std::pair<size_t, size_t>
+		const noexcept -> std::pair<DelayType, DelayType>
 		{
 			using namespace sds::Utilities;
 			// If someone ever modifies this again, it is important to remember to scale the result of
@@ -166,11 +168,11 @@ namespace sds
 		}
 		///<summary> Converts scaled thumbstick values to delay values. Does not apply any scaling, direct linear interpolation of the inverse percentage. </summary>
 		[[nodiscard]] auto ConvertToDelays(const double xScaledValue, const double yScaledValue)
-			const noexcept -> std::pair<size_t, size_t>
+			const noexcept -> std::pair<DelayType, DelayType>
 		{
 			using namespace sds::Utilities;
 			// Alias some settings
-			const PRadInt ThumbstickValueMax = m_mouse_settings.settings.ThumbstickValueMax+2;
+			const PRadInt ThumbstickValueMax{ m_mouse_settings.settings.ThumbstickValueMax + 2 };
 			const auto UsDelayMin = m_mouse_settings.settings.MICROSECONDS_MIN;
 			const auto UsDelayMax = m_mouse_settings.settings.MICROSECONDS_MAX;
 			// Abs val
@@ -183,8 +185,8 @@ namespace sds
 			const auto clampedX = std::clamp(xPercent, 0.0, 1.0);
 			const auto clampedY = std::clamp(yPercent, 0.0, 1.0);
 			// Linear interpolation into range of delay min and delay max
-			const auto xResult = ToA<size_t>(std::lerp(UsDelayMin, UsDelayMax, clampedX));
-			const auto yResult = ToA<size_t>(std::lerp(UsDelayMin, UsDelayMax, clampedY));
+			const auto xResult = ToA<DelayType>(std::lerp(UsDelayMin, UsDelayMax, clampedX));
+			const auto yResult = ToA<DelayType>(std::lerp(UsDelayMin, UsDelayMax, clampedY));
 			return { xResult, yResult };
 		}
 		///<summary> Gets the (config file loaded) scaling value for the given (float representation) polarThetaAngle. </summary>
