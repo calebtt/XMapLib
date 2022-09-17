@@ -1,0 +1,3 @@
+[submodule "impcool_sol"]
+	path = impcool_sol
+	url = https://github.com/calebtt/impcool_sol.git
