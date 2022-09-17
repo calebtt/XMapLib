@@ -3,35 +3,40 @@
 #include "KeyboardTranslator.h"
 #include "ControllerStatus.h"
 #include "Utilities.h"
-#include "STRunner.h"
 #include "STKeyboardMapping.h"
 #include "Smarts.h"
+#include "../impcool_sol/immutable_thread_pool/ThreadPool.h"
+#include "../impcool_sol/immutable_thread_pool/ThreadUnitPlus.h"
 
 namespace sds
 {
 	/// <summary>
 	/// Main class for use, for mapping controller input to keyboard input.
 	/// Uses KeyboardKeyMap for the details.
-	/// </summary>
+	///	<para> Construction requires an instance of a <c>ThreadUnitPlus</c> type, managing
+	///	infinite tasks running on a single thread. </para>
+	///	</summary>
 	template<class LogFnType = std::function<void(std::string)>>
-	class KeyboardMapperImpl
+	class KeyboardMapper
 	{
-		// Static thread runner (single thread of a thread pool).
-		std::shared_ptr<STRunnerImpl<LogFnType>> m_statRunner;
+	public:
+		using ThreadManager = impcool::ThreadUnitPlus;
+	private:
+		// Thread unit, runs tasks.
+		SharedPtrType<ThreadManager> m_statRunner;
 		// Keyboard settings pack, needed for iscontrollerconnected func arcs and others.
 		const KeyboardSettingsPack m_keySettingsPack;
 		// Logging function, optionally passed in by the user.
 		const LogFnType m_logFn;
 		// Combined object for polling and translation into action,
 		// to be ran on an STRunner object.
-		SharedPtrType<STKeyboardMappingImpl<LogFnType>> m_statMapping;
+		SharedPtrType<STKeyboardMapping<LogFnType>> m_statMapping;
+
 	public:
 		/// <summary>Ctor allows passing in a STRunner thread, and setting custom KeyboardPlayerInfo and KeyboardSettings
 		/// with optional logging function. </summary>
-		KeyboardMapperImpl( const SharedPtrType<STRunnerImpl<LogFnType>> &statRunner,
-			const KeyboardSettingsPack &settPack = {},
-			const LogFnType logFn = nullptr )
-			: m_statRunner(std::move(statRunner)),
+		KeyboardMapper( const SharedPtrType<ThreadManager> &statRunner, const KeyboardSettingsPack &settPack = {}, const LogFnType logFn = nullptr )
+			: m_statRunner(statRunner),
 			m_keySettingsPack(settPack),
 			m_logFn(logFn)
 		{
@@ -44,19 +49,23 @@ namespace sds
 			// if statRunner is nullptr, log error and return
 			if (m_statRunner == nullptr)
 			{
-				LogIfAvailable("Exception: In KeyboardMapper::KeyboardMapper(...): STRunner shared_ptr was null!");
+				LogIfAvailable("Exception: In KeyboardMapper::KeyboardMapper(...): statRunner shared_ptr was null!");
 				return;
 			}
 			// otherwise, add the keyboard mapping obj to the STRunner thread for processing
-			m_statMapping = MakeSharedSmart<STKeyboardMappingImpl<LogFnType>>(m_keySettingsPack, m_logFn);
-			m_statRunner->AddDataWrapper(m_statMapping);
+			m_statMapping = MakeSharedSmart<STKeyboardMapping<LogFnType>>(m_keySettingsPack, m_logFn);
+			m_statRunner->PushInfiniteTaskBack([&]() { m_statMapping->operator()(); });
+			//m_statRunner->AddDataWrapper(m_statMapping);
 		}
 		// Other constructors/destructors
-		KeyboardMapperImpl(const KeyboardMapperImpl& other) = delete;
-		KeyboardMapperImpl(KeyboardMapperImpl&& other) = delete;
-		KeyboardMapperImpl& operator=(const KeyboardMapperImpl& other) = delete;
-		KeyboardMapperImpl& operator=(KeyboardMapperImpl&& other) = delete;
-		~KeyboardMapperImpl() = default;
+		KeyboardMapper(const KeyboardMapper& other) = delete;
+		KeyboardMapper(KeyboardMapper&& other) = delete;
+		KeyboardMapper& operator=(const KeyboardMapper& other) = delete;
+		KeyboardMapper& operator=(KeyboardMapper&& other) = delete;
+		~KeyboardMapper()
+		{
+			m_statRunner->DestroyThread();
+		}
 
 		[[nodiscard]] bool IsControllerConnected() const
 		{
@@ -105,7 +114,4 @@ namespace sds
 				m_statMapping->Stop();
 		}
 	};
-
-	// Using declaration for standard config.
-	using KeyboardMapper = KeyboardMapperImpl<>;
 }

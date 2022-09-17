@@ -1,6 +1,5 @@
 #pragma once
 #include "stdafx.h"
-#include "STDataWrapper.h"
 #include "ThumbstickToDelay.h"
 #include "MousePoller.h"
 #include "MouseMover.h"
@@ -13,7 +12,7 @@ namespace sds
 	/// <remarks>Mouse simulation function object that polls for controller input and processes it as mouse movements. It is ran on the STRunner thread pool.
 	///	Remember that the <c>m_is_enabled</c> member of the base (<c>STDataWrapper</c>) toggles on/off the processing of operator()()</remarks>
 	template<class LogFnType = std::function<void(std::string)>>
-	struct STMouseMappingImpl : public STDataWrapperImpl<LogFnType>
+	struct STMouseMappingImpl
 	{
 	private:
 		// mouse sensitivity value
@@ -30,18 +29,18 @@ namespace sds
 		MouseMover m_mover;
 		// Deadzone calculator, provides information such as "is the axis value beyond the deadzone?".
 		ThumbDzInfo m_dzInfo;
+		bool m_is_enabled{ true };
 	public:
-		virtual ~STMouseMappingImpl() override
+		~STMouseMappingImpl()
 		{
 			Stop();
 		}
 		// Giant constructor that needs lots of information.
 		STMouseMappingImpl(const int sensitivity,
 			const StickMap whichStick,
-			const MouseSettingsPack msp = {},
+			const MouseSettingsPack &msp = {},
 			const LogFnType fn = nullptr)
-		: STDataWrapperImpl<LogFnType>(fn),
-		m_mouseSensitivity(sensitivity),
+		: m_mouseSensitivity(sensitivity),
 		m_stickmap_info(whichStick),
 		m_msp(msp),
 		m_mousePoller(fn),
@@ -52,7 +51,7 @@ namespace sds
 		}
 		/// <summary>Worker thread function called in a loop on the STRunner's thread. Updates with delays which are used by the MouseMoveThread.
 		/// The MouseMoveThread is time critical and not included in the thread pool maintained by an STRunner instance. </summary>
-		virtual void operator()() override
+		void operator()()
 		{
 			// Delay update func.
 			using sds::Utilities::ToA;

@@ -180,12 +180,10 @@
     <ClInclude Include="SendKeyInput.h" />
     <ClInclude Include="SendMouseInput.h" />
     <ClInclude Include="Smarts.h" />
-    <ClInclude Include="STDataWrapper.h" />
     <ClInclude Include="STKeyboardMapping.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StickMap.h" />
     <ClInclude Include="STMouseMapping.h" />
-    <ClInclude Include="STRunner.h" />
     <ClInclude Include="ThumbStateWrapper.h" />
     <ClInclude Include="TPrior.h" />
     <ClInclude Include="ThumbDzInfo.h" />
@@ -203,6 +201,11 @@
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\caleb\source\repos\XMapLib_revis\XMapLibSharp\bin\Release\net5.0-windows;C:\Users\caleb\source\repos\XMapLib_revis\XMapLibSharp\bin\Debug\net5.0-windows;%(DestinationFolders)</DestinationFolders>
     </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\impcool_sol\immutable_thread_pool\immutable_thread_pool.vcxproj">
+      <Project>{1991c70b-0764-4765-8d93-da83356c603b}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

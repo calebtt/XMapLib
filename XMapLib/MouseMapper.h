@@ -4,7 +4,6 @@
 #include "ThumbDzInfo.h"
 #include "Utilities.h"
 #include "ControllerStatus.h"
-#include "STRunner.h"
 #include "STMouseMapping.h"
 
 namespace sds
@@ -20,7 +19,7 @@ namespace sds
 	{
 		// Thread pool class, our work functors get added to here and called in succession on a separate thread
 		// for performance reasons.
-		SharedPtrType<STRunnerImpl<LogFnType>> m_statRunner;
+		SharedPtrType<impcool::ThreadUnitPlus> m_statRunner;
 		// Mouse settings pack, needed for iscontrollerconnected func args and others.
 		const MouseSettingsPack m_mouseSettingsPack;
 		// data wrapper class, added to thread pool STRunner, performs the polling, calculation, and mouse moving.
@@ -28,16 +27,28 @@ namespace sds
 	public:
 		/// <summary>Ctor allows setting a custom MousePlayerInfo</summary>
 		MouseMapperImpl(
-			const SharedPtrType<STRunnerImpl<LogFnType>> &statRunner,
+			const SharedPtrType<impcool::ThreadUnitPlus> &statRunner,
 			const MouseSettingsPack &settings = {}, 
-			const LogFnType logFn = nullptr)
+			const LogFnType logFn = nullptr
+		)
 		: m_statRunner(statRunner),
 		  m_mouseSettingsPack(settings)
 	{
-			//TODO fix construction of stmapper, add sensitivity and stick args to ctor here
-			// add the mouse mapping obj to the STRunner thread for processing 
-			m_stmapper = MakeSharedSmart<STMouseMapping>(settings.settings.SENSITIVITY_DEFAULT, StickMap::RIGHT_STICK, settings, logFn);
-			m_statRunner->AddDataWrapper(m_stmapper);
+			m_stmapper = MakeSharedSmart<STMouseMapping>(m_mouseSettingsPack.settings.SENSITIVITY_DEFAULT, StickMap::RIGHT_STICK);
+			// lambda for logging
+			auto LogIfAvailable = [&](const char* msg)
+			{
+				if (logFn != nullptr)
+					logFn(msg);
+			};
+			// if statRunner is nullptr, log error and return
+			if (m_statRunner == nullptr)
+			{
+				LogIfAvailable("Exception: In KeyboardMapper::KeyboardMapper(...): statRunner shared_ptr was null!");
+				return;
+			}
+			m_statRunner->PushInfiniteTaskBack([&]() { m_stmapper->operator()(); });
+			//m_statRunner->AddDataWrapper(m_stmapper);
 		}
 		MouseMapperImpl(const MouseMapperImpl& other) = delete;
 		MouseMapperImpl(MouseMapperImpl&& other) = delete;
@@ -103,7 +114,7 @@ namespace sds
 		{
 			if (m_stmapper == nullptr || m_statRunner == nullptr)
 				return false;
-			return m_stmapper->IsEnabled() && m_statRunner->IsRunning();
+			return m_statRunner->IsRunning();
 		}
 		/// <summary><c>Start()</c> enables processing on the function objects added to the <c>STRunner</c> thread pool.
 		/// Does not start the <c>STRunner</c> thread! </summary>

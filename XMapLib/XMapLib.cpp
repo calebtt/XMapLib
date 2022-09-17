@@ -9,12 +9,12 @@
 using namespace std;
 
 // adds a bunch of key mappings for common binds.
-void AddTestKeyMappings(sds::KeyboardMapper& mapper, std::osyncstream &ss);
+void AddTestKeyMappings(sds::KeyboardMapper<>& mapper, std::osyncstream &ss);
 
 // used to asynchronously await the enter key being pressed, before
 // dumping the contents of the key maps.
 class GetterExit {
-	using KeyboardPtrType = std::shared_ptr<sds::KeyboardMapper>;
+	using KeyboardPtrType = std::shared_ptr<sds::KeyboardMapper<>>;
 	std::unique_ptr<std::thread> workerThread{};
 	std::atomic<bool> m_exitState{ false };
 	const KeyboardPtrType m_mp;
@@ -24,7 +24,8 @@ public:
 	//Returns a bool indicating if the thread should stop.
 	bool operator()() { return m_exitState; }
 protected:
-	void stopThread() {
+	void stopThread()
+	{
 		if (workerThread)
 			if (workerThread->joinable())
 				workerThread->join();
@@ -46,13 +47,13 @@ protected:
 	}
 };
 
-auto CreateKeyMapper(const std::shared_ptr<sds::STRunner> &runner)
+auto CreateKeyMapper(const std::shared_ptr<impcool::ThreadUnitPlus> &runner)
 {
 	using namespace sds;
 	KeyboardSettingsPack ksp;
-	return std::make_shared<KeyboardMapper>(runner, ksp, Utilities::LogError);
+	return std::make_shared<KeyboardMapper<>>(runner, ksp, Utilities::LogError);
 }
-auto CreateMouseMapper(const std::shared_ptr<sds::STRunner>& runner)
+auto CreateMouseMapper(const std::shared_ptr<impcool::ThreadUnitPlus>& runner)
 {
 	using namespace sds;
 	MouseSettingsPack msp;
@@ -64,8 +65,8 @@ int main()
 	using namespace sds;
 	using namespace sds::Utilities;
 	//construct some mapping objects...
-	std::shared_ptr<STRunner> threadPool = std::make_shared<STRunner>();
-	threadPool->StartThread();
+	auto threadPool = std::make_shared<impcool::ThreadUnitPlus>();
+	threadPool->CreateThread();
 	auto mouser = CreateMouseMapper(threadPool);
 	auto keyer = CreateKeyMapper(threadPool);
 
@@ -111,7 +112,7 @@ int main()
 	return 0;
 }
 
-void AddTestKeyMappings(sds::KeyboardMapper& mapper, std::osyncstream &ss)
+void AddTestKeyMappings(sds::KeyboardMapper<>& mapper, std::osyncstream &ss)
 {
 	using namespace sds;
 	const auto buttons =

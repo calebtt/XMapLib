@@ -2,7 +2,6 @@
 #include "stdafx.h"
 #include "KeyboardTranslatorAsync.h"
 #include "KeyboardPoller.h"
-#include "STDataWrapper.h"
 
 namespace sds
 {
@@ -11,7 +10,7 @@ namespace sds
 	/// Keyboard simulation function object that polls for controller input and processes it as keyboard keystrokes. It is ran on the <c>STRunner</c> thread pool. </summary>
 	///	<remarks>Remember that the m_is_enabled member of the base (STDataWrapper) toggles on/off the processing of operator()()</remarks>
 	template<class LogFnType = std::function<void(std::string)>>
-	struct STKeyboardMappingImpl : public STDataWrapperImpl<LogFnType>
+	struct STKeyboardMapping
 	{
 	private:
 		// program settings pack for keyboard mapping.
@@ -20,26 +19,28 @@ namespace sds
 		KeyboardTranslatorAsync m_translator;
 		// class that wraps the syscalls for getting a controller update.
 		KeyboardPoller m_poller;
+		// bool to disable processing
+		std::atomic<bool> m_is_enabled{ true };
 	public:
-		virtual ~STKeyboardMappingImpl() override
+		~STKeyboardMapping()
 		{
 			Stop();
 		}
-		STKeyboardMappingImpl(const KeyboardSettingsPack ksp = {},
-			const LogFnType fn = nullptr
-		)
-		: STDataWrapperImpl<LogFnType>(fn),
-		m_ksp(ksp),
+		STKeyboardMapping(const KeyboardSettingsPack ksp = {}, const LogFnType fn = nullptr)
+		: m_ksp(ksp),
 		m_translator(ksp),
 		m_poller(fn)
 		{
 
 		}
 		/// <summary>Worker thread function called in a loop on the STRunner's thread.</summary>
-		virtual void operator()() override
+		void operator()()
 		{
-			const auto stateUpdate = m_poller.GetUpdatedState(m_ksp.playerInfo.player_id);
-			m_translator.ProcessKeystroke(stateUpdate);
+			if (m_is_enabled)
+			{
+				const auto stateUpdate = m_poller.GetUpdatedState(m_ksp.playerInfo.player_id);
+				m_translator.ProcessKeystroke(stateUpdate);
+			}
 		}
 		std::string AddMap(KeyboardKeyMap button)
 		{
@@ -56,19 +57,16 @@ namespace sds
 
 		[[nodiscard]] bool IsRunning() const
 		{
-			return this->m_is_enabled;
+			return m_is_enabled;
 		}
 		void Start() noexcept
 		{
-			this->m_is_enabled = true;
+			m_is_enabled = true;
 		}
 		void Stop() noexcept
 		{
-			//m_translator.CleanupInProgressEvents();
-			this->m_is_enabled = false;
+			m_translator.CleanupInProgressEvents();
+			m_is_enabled = false;
 		}
 	};
-
-	// Using declaration for default config
-	using STKeyboardMapping = STKeyboardMappingImpl<>;
 }

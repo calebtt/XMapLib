@@ -98,12 +98,6 @@
     <ClInclude Include="KeyboardPoller.h">
       <Filter>Header Files\Keyboard</Filter>
     </ClInclude>
-    <ClInclude Include="STRunner.h">
-      <Filter>Header Files\Utilities\Async</Filter>
-    </ClInclude>
-    <ClInclude Include="STDataWrapper.h">
-      <Filter>Header Files\Utilities\Async</Filter>
-    </ClInclude>
     <ClInclude Include="DelayManager.h">
       <Filter>Header Files\Utilities\Timing</Filter>
     </ClInclude>

@@ -18,6 +18,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XMapLibSharp", "XMapLibShar
 		{772A82CF-95EA-45B9-BF7E-28927F887F72} = {772A82CF-95EA-45B9-BF7E-28927F887F72}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "immutable_thread_pool", "impcool_sol\immutable_thread_pool\immutable_thread_pool.vcxproj", "{1991C70B-0764-4765-8D93-DA83356C603B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -76,6 +78,18 @@ Global
 		{A42592DA-0FEC-4F35-98A6-4E13CAEAC0D0}.Release|x64.Build.0 = Release|Any CPU
 		{A42592DA-0FEC-4F35-98A6-4E13CAEAC0D0}.Release|x86.ActiveCfg = Release|Any CPU
 		{A42592DA-0FEC-4F35-98A6-4E13CAEAC0D0}.Release|x86.Build.0 = Release|Any CPU
+		{1991C70B-0764-4765-8D93-DA83356C603B}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{1991C70B-0764-4765-8D93-DA83356C603B}.Debug|Any CPU.Build.0 = Debug|x64
+		{1991C70B-0764-4765-8D93-DA83356C603B}.Debug|x64.ActiveCfg = Debug|x64
+		{1991C70B-0764-4765-8D93-DA83356C603B}.Debug|x64.Build.0 = Debug|x64
+		{1991C70B-0764-4765-8D93-DA83356C603B}.Debug|x86.ActiveCfg = Debug|Win32
+		{1991C70B-0764-4765-8D93-DA83356C603B}.Debug|x86.Build.0 = Debug|Win32
+		{1991C70B-0764-4765-8D93-DA83356C603B}.Release|Any CPU.ActiveCfg = Release|x64
+		{1991C70B-0764-4765-8D93-DA83356C603B}.Release|Any CPU.Build.0 = Release|x64
+		{1991C70B-0764-4765-8D93-DA83356C603B}.Release|x64.ActiveCfg = Release|x64
+		{1991C70B-0764-4765-8D93-DA83356C603B}.Release|x64.Build.0 = Release|x64
+		{1991C70B-0764-4765-8D93-DA83356C603B}.Release|x86.ActiveCfg = Release|Win32
+		{1991C70B-0764-4765-8D93-DA83356C603B}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -15,7 +15,7 @@ namespace XMapLibTest
 		TEST_METHOD(TestSetSensitivity)
 		{
 			auto LogFn = [](const std::string msg) { Logger::WriteMessage(msg.c_str()); };
-			std::shared_ptr<sds::STRunner> srsp = std::make_shared<sds::STRunner>(false, LogFn);
+			auto srsp = std::make_shared<impcool::ThreadUnitPlus>();
 			sds::MouseMapper mouse(srsp, {}, LogFn);
 
 			//test some good cases
