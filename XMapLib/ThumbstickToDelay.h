@@ -1,9 +1,9 @@
 #pragma once
 #include "stdafx.h"
-#include "PolarCalc.h"
 #include "Utilities.h"
 #include "ReadRadiusScaleValues.h"
-#include <cassert>
+#include "../PolarCode/PolarQuadrantCalc/PolarCalcFaster.h"
+
 
 namespace sds
 {
@@ -18,6 +18,7 @@ namespace sds
 	template<class LogFnType = std::function<void(std::string)>>
 	class ThumbstickToDelay
 	{
+		using PolarCalc_t = PolarCalcFaster;
 		using DelayType = std::size_t;
 		using MultFloat = decltype(MouseSettings::ALT_DEADZONE_MULT_DEFAULT);
 		using SensInt = decltype(MouseSettings::SENSITIVITY_DEFAULT);
@@ -56,7 +57,7 @@ namespace sds
 		// container/range holding radius scaling values.
 		const ScaleRange m_radius_scale_values;
 		// Utility class for performing polar coordinate calculations.
-		PolarCalc m_pc;
+		PolarCalc_t m_pc;
 
 		///<summary> Used to make some assertions about the settings values this class depends upon. </summary>
 		static void AssertSettings(const MouseSettingsPack &ms) noexcept
@@ -156,7 +157,7 @@ namespace sds
 			using Utilities::ToA;
 			using Utilities::ConstAbs;
 			// Get info pack for polar computations
-			const PolarCalc::PolarCompleteInfoPack fullInfo = m_pc.ComputePolarCompleteInfo(cartesianX, cartesianY);
+			const auto fullInfo = m_pc.ComputePolarCompleteInfo(cartesianX, cartesianY);
 			// Get scaling mult and inverse
 			const auto mult = GetScalingMultiplier(fullInfo.polar_info.polar_theta_angle);
 			const auto invMult = GetInverseOfPercentagePlusOne(mult) * AdditionalMultiplier;

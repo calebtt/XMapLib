@@ -2,6 +2,8 @@
 #include "pch.h"
 #include "../XMapLib/MouseMapper.h"
 #include "../XMapLib/KeyboardMapper.h"
+#include "../impcool_sol/immutable_thread_pool/ThreadPool.h"
+#include "../impcool_sol/immutable_thread_pool/ThreadUnitPlus.h"
 #include "helperfuncs.h"
 // Namespace for some static instance stuff.
 namespace Stins
@@ -13,19 +15,21 @@ namespace Stins
 	/// </summary>
 	struct MapStuff
 	{
+	private:
+		static constexpr std::size_t MapInfoBufferSize{ 4'096 };
+		inline static constexpr sds::MouseSettingsPack m_msp{};
+		inline static constexpr sds::KeyboardSettingsPack m_ksp{};
+	public:
 		std::mutex accessBlocker;
-		std::shared_ptr<sds::STRunner> threadPoolPtr;
-		sds::KeyboardMapper kbd;
-		sds::MouseMapper mmp;
+		std::shared_ptr<impcool::ThreadUnitPlus> threadPoolPtr{ std::make_shared<impcool::ThreadUnitPlus>() };
+		sds::KeyboardMapper<> KeyboardMapperInstance{ threadPoolPtr, m_ksp };
+		sds::MouseMapper<> MouseMapperInstance{ threadPoolPtr, m_msp };
 		// Buffer large enough to hold any map string possible, with static allocation.
-		std::array<char, 1'048'576> mapInfoFormatted{};
+		std::array<char, MapInfoBufferSize> mapInfoFormatted{};
 		// ctor
 		MapStuff()
-		: threadPoolPtr(std::make_shared<sds::STRunner>(true, ErrorCallb)),
-		kbd(threadPoolPtr, {}, ErrorCallb),
-		mmp(threadPoolPtr, {}, ErrorCallb)
 		{
-			threadPoolPtr->StartThread();
+			threadPoolPtr->CreateThread();
 		}
 
 		static void ErrorCallb(const std::string msg) noexcept

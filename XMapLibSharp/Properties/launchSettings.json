@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "XMapLibSharp": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

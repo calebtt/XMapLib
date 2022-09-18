@@ -57,7 +57,7 @@ auto CreateMouseMapper(const std::shared_ptr<impcool::ThreadUnitPlus>& runner)
 {
 	using namespace sds;
 	MouseSettingsPack msp;
-	return std::make_shared<MouseMapper>(runner, msp, Utilities::LogError);
+	return std::make_shared<MouseMapper<>>(runner, msp, Utilities::LogError);
 }
 /* Entry Point */
 int main()

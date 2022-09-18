@@ -5,6 +5,8 @@
 #include "Utilities.h"
 #include "ControllerStatus.h"
 #include "STMouseMapping.h"
+#include "../impcool_sol/immutable_thread_pool/ThreadPool.h"
+#include "../impcool_sol/immutable_thread_pool/ThreadUnitPlus.h"
 
 namespace sds
 {
@@ -15,7 +17,7 @@ namespace sds
 	///	<remarks>If a <code>std::shared_ptr{STRunner}</code> is not passed into the constructor,
 	///	one will NOT be created for use. </remarks>
 	template<class LogFnType = std::function<void(std::string)>>
-	class MouseMapperImpl
+	class MouseMapper
 	{
 		// Thread pool class, our work functors get added to here and called in succession on a separate thread
 		// for performance reasons.
@@ -26,7 +28,7 @@ namespace sds
 		SharedPtrType<STMouseMapping> m_stmapper;
 	public:
 		/// <summary>Ctor allows setting a custom MousePlayerInfo</summary>
-		MouseMapperImpl(
+		MouseMapper(
 			const SharedPtrType<impcool::ThreadUnitPlus> &statRunner,
 			const MouseSettingsPack &settings = {}, 
 			const LogFnType logFn = nullptr
@@ -38,23 +40,24 @@ namespace sds
 			// lambda for logging
 			auto LogIfAvailable = [&](const char* msg)
 			{
+				throw std::exception("MouseMapper::MouseMapper(), statRunner shared_ptr was null!");
 				if (logFn != nullptr)
 					logFn(msg);
 			};
 			// if statRunner is nullptr, log error and return
 			if (m_statRunner == nullptr)
 			{
-				LogIfAvailable("Exception: In KeyboardMapper::KeyboardMapper(...): statRunner shared_ptr was null!");
+				LogIfAvailable("Exception: In MouseMapper::MouseMapper(...): statRunner shared_ptr was null!");
 				return;
 			}
 			m_statRunner->PushInfiniteTaskBack([&]() { m_stmapper->operator()(); });
 			//m_statRunner->AddDataWrapper(m_stmapper);
 		}
-		MouseMapperImpl(const MouseMapperImpl& other) = delete;
-		MouseMapperImpl(MouseMapperImpl&& other) = delete;
-		MouseMapperImpl& operator=(const MouseMapperImpl& other) = delete;
-		MouseMapperImpl& operator=(MouseMapperImpl&& other) = delete;
-		~MouseMapperImpl() = default;
+		MouseMapper(const MouseMapper& other) = delete;
+		MouseMapper(MouseMapper&& other) = delete;
+		MouseMapper& operator=(const MouseMapper& other) = delete;
+		MouseMapper& operator=(MouseMapper&& other) = delete;
+		~MouseMapper() = default;
 
 		/// <summary> Returns a copy of the shared_ptr to the STRunner thread instance. May be null. </summary>
 		auto GetSTRunner() const noexcept
@@ -108,13 +111,23 @@ namespace sds
 		{
 			return ControllerStatus::IsControllerConnected(m_mouseSettingsPack.playerInfo.player_id);
 		}
-		/// <summary><c>IsRunning()</c> returns true if both the <c>STMouseMapping</c> is enabled and the <c>STRunner</c> thread pool thread is running. </summary>
-		///	<returns>true if STMapping obj and STRunner obj are both running, or false if called during destruction.</returns>
+		///// <summary><c>IsRunning()</c> returns true if both the <c>STMouseMapping</c> is enabled and the <c>STRunner</c> thread pool thread is running. </summary>
+		/////	<returns>true if STMapping obj and STRunner obj are both running, or false if called during destruction.</returns>
+		//[[nodiscard]] bool IsRunning() const noexcept
+		//{
+		//	if (m_stmapper == nullptr || m_statRunner == nullptr)
+		//		return false;
+		//	return m_statRunner->IsRunning();
+		//}
+		/// <summary><c>IsRunning()</c> returns true if the <c>STMouseMapping</c> is enabled. </summary>
+		///	<returns>true if STMapping obj running, or false if called during destruction.</returns>
 		[[nodiscard]] bool IsRunning() const noexcept
 		{
-			if (m_stmapper == nullptr || m_statRunner == nullptr)
-				return false;
-			return m_statRunner->IsRunning();
+			//TODO bug probably here.
+			return !m_statRunner->CreateThread();
+			//if (m_stmapper == nullptr || m_statRunner == nullptr)
+			//	return false;
+			//return m_statRunner->IsRunning();
 		}
 		/// <summary><c>Start()</c> enables processing on the function objects added to the <c>STRunner</c> thread pool.
 		/// Does not start the <c>STRunner</c> thread! </summary>
@@ -131,7 +144,4 @@ namespace sds
 		}
 	private:
 	};
-
-	// Using declaration for default config
-	using MouseMapper = MouseMapperImpl<>;
 }

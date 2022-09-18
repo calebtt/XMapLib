@@ -80,9 +80,6 @@
     <ClInclude Include="Arithmetic.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="PolarCalc.h">
-      <Filter>Header Files\Mouse</Filter>
-    </ClInclude>
     <ClInclude Include="ThumbDzInfo.h">
       <Filter>Header Files\Mouse</Filter>
     </ClInclude>

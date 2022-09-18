@@ -1,7 +1,7 @@
 #pragma once
 #include "stdafx.h"
 #include "MouseSettingsPack.h"
-#include "PolarCalc.h"
+#include "../PolarCode/PolarQuadrantCalc/PolarCalcFaster.h"
 
 namespace sds
 {
@@ -16,7 +16,7 @@ namespace sds
 		bool m_is_deadzone_activated{ false };
 		const PolarMagInt m_polar_magnitude_deadzone;
 		const AltDzFloat m_alt_deadzone_multiplier;
-		PolarCalc m_pc;
+		PolarCalcFaster m_pc;
 	private:
 		/// <summary> Used to validate polar deadzone arg value. </summary>
 		[[nodiscard]] static constexpr auto ValidatePolarDz(
