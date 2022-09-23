@@ -11,7 +11,7 @@ namespace sds
 		const LogFnType m_logFn;
 		XINPUT_STATE m_tempState{};
 	public:
-		MousePoller(LogFnType logFn = nullptr) : m_logFn(logFn)
+		MousePoller(const LogFnType logFn = nullptr) : m_logFn(logFn)
 		{ }
 		/// <summary>Returns an updated ThumbStateWrapper containing information gathered about a controller keypress. </summary>
 		ThumbStateWrapper GetUpdatedState(const int playerId) noexcept

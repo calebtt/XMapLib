@@ -38,7 +38,7 @@ namespace sds
 		// Giant constructor that needs lots of information.
 		STMouseMappingImpl(const int sensitivity,
 			const StickMap whichStick,
-			const MouseSettingsPack &msp = {},
+			const MouseSettingsPack msp = {},
 			const LogFnType fn = nullptr)
 		: m_mouseSensitivity(sensitivity),
 		m_stickmap_info(whichStick),
@@ -61,11 +61,11 @@ namespace sds
 			const auto xValue = m_stickmap_info == StickMap::RIGHT_STICK ? tempState.RightThumbX : tempState.LeftThumbX;
 			const auto yValue = m_stickmap_info == StickMap::RIGHT_STICK ? tempState.RightThumbY : tempState.LeftThumbY;
 			// calculate delays based on cartesian x,y pair
-			const std::pair<size_t,size_t> delayPair = m_delayCalc.GetDelaysFromThumbstickValues(xValue, yValue);
+			const std::pair<int,int> delayPair = m_delayCalc.GetDelaysFromThumbstickValues(xValue, yValue);
 			// get info for which cartesian values are beyond their respective deadzone
 			const std::pair<bool,bool> activatedPair = m_dzInfo.IsBeyondDeadzone(xValue, yValue);
 			// build mouse move info packet
-			MouseMoveInfoPacket mmip
+			const MouseMoveInfoPacket mmip
 			{
 				.x_delay = std::get<0>(delayPair),
 				.y_delay = std::get<1>(delayPair),

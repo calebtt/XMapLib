@@ -10,7 +10,7 @@ namespace sds
 		const LogFnType m_logFn;
 		XINPUT_KEYSTROKE m_tempState{};
 	public:
-		KeyboardPollerImpl(LogFnType logFn = nullptr) : m_logFn(logFn)
+		KeyboardPollerImpl(const LogFnType logFn = nullptr) : m_logFn(logFn)
 		{ }
 		/// <summary> Wrapper for XINPUT_KEYSTROKE in this case, to make the code processing it more portable. </summary>
 		struct KeyStateWrapper
@@ -32,8 +32,9 @@ namespace sds
 			}
 			if(error == ERROR_BAD_ARGUMENTS)
 			{
+				const char* msg = "Exception in KeyboardPoller::GetUpdatedState(...): Call to XInputGetKeystroke() reported ERROR_BAD_ARGUMENTS";
 				if (m_logFn != nullptr)
-					m_logFn("Exception in KeyboardPoller::GetUpdatedState(...): Call to XInputGetKeystroke() reported ERROR_BAD_ARGUMENTS");
+					m_logFn(msg);
 			}
 			return {};
 		}

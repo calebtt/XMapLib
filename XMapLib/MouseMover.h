@@ -16,7 +16,7 @@ namespace sds
 		Utilities::DelayManager xTime;
 		Utilities::DelayManager yTime;
 	public:
-		explicit MouseMover(const MouseSettingsPack& msp = {})
+		explicit MouseMover(const MouseSettingsPack msp = {})
 		: m_msp(msp),
 		xTime( msp.settings.MICROSECONDS_MAX ),
 		yTime( msp.settings.MICROSECONDS_MAX )

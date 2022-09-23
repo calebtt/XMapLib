@@ -25,24 +25,25 @@ namespace sds
 		// Mouse settings pack, needed for iscontrollerconnected func args and others.
 		const MouseSettingsPack m_mouseSettingsPack;
 		// data wrapper class, added to thread pool STRunner, performs the polling, calculation, and mouse moving.
-		SharedPtrType<STMouseMapping> m_stmapper;
+		SharedPtrType<STMouseMapping> m_stmapper{
+		MakeSharedSmart<STMouseMapping>(m_mouseSettingsPack.settings.SENSITIVITY_DEFAULT, StickMap::RIGHT_STICK) };
 	public:
 		/// <summary>Ctor allows setting a custom MousePlayerInfo</summary>
 		MouseMapper(
 			const SharedPtrType<impcool::ThreadUnitPlus> &statRunner,
-			const MouseSettingsPack &settings = {}, 
+			const MouseSettingsPack settings = {}, 
 			const LogFnType logFn = nullptr
 		)
 		: m_statRunner(statRunner),
 		  m_mouseSettingsPack(settings)
 	{
-			m_stmapper = MakeSharedSmart<STMouseMapping>(m_mouseSettingsPack.settings.SENSITIVITY_DEFAULT, StickMap::RIGHT_STICK);
 			// lambda for logging
 			auto LogIfAvailable = [&](const char* msg)
 			{
-				throw std::exception("MouseMapper::MouseMapper(), statRunner shared_ptr was null!");
 				if (logFn != nullptr)
 					logFn(msg);
+				else
+					throw std::exception(msg);
 			};
 			// if statRunner is nullptr, log error and return
 			if (m_statRunner == nullptr)
@@ -50,8 +51,13 @@ namespace sds
 				LogIfAvailable("Exception: In MouseMapper::MouseMapper(...): statRunner shared_ptr was null!");
 				return;
 			}
-			m_statRunner->PushInfiniteTaskBack([&]() { m_stmapper->operator()(); });
-			//m_statRunner->AddDataWrapper(m_stmapper);
+			SharedPtrType<STMouseMapping> tempMapper = m_stmapper;
+			m_statRunner->PushInfiniteTaskBack(
+				[tempMapper]()
+				{
+					tempMapper->operator()();
+				}
+			);
 		}
 		MouseMapper(const MouseMapper& other) = delete;
 		MouseMapper(MouseMapper&& other) = delete;
@@ -113,22 +119,22 @@ namespace sds
 		}
 		///// <summary><c>IsRunning()</c> returns true if both the <c>STMouseMapping</c> is enabled and the <c>STRunner</c> thread pool thread is running. </summary>
 		/////	<returns>true if STMapping obj and STRunner obj are both running, or false if called during destruction.</returns>
-		//[[nodiscard]] bool IsRunning() const noexcept
-		//{
-		//	if (m_stmapper == nullptr || m_statRunner == nullptr)
-		//		return false;
-		//	return m_statRunner->IsRunning();
-		//}
-		/// <summary><c>IsRunning()</c> returns true if the <c>STMouseMapping</c> is enabled. </summary>
-		///	<returns>true if STMapping obj running, or false if called during destruction.</returns>
 		[[nodiscard]] bool IsRunning() const noexcept
 		{
-			//TODO bug probably here.
-			return !m_statRunner->CreateThread();
-			//if (m_stmapper == nullptr || m_statRunner == nullptr)
-			//	return false;
-			//return m_statRunner->IsRunning();
+			if (m_stmapper == nullptr || m_statRunner == nullptr)
+				return false;
+			return m_statRunner->IsRunning();
 		}
+		/// <summary><c>IsRunning()</c> returns true if the <c>STMouseMapping</c> is enabled. </summary>
+		///	<returns>true if STMapping obj running, or false if called during destruction.</returns>
+		//[[nodiscard]] bool IsRunning() const noexcept
+		//{
+		//	//TODO bug probably here.
+		//	return !m_statRunner->CreateThread();
+		//	//if (m_stmapper == nullptr || m_statRunner == nullptr)
+		//	//	return false;
+		//	//return m_statRunner->IsRunning();
+		//}
 		/// <summary><c>Start()</c> enables processing on the function objects added to the <c>STRunner</c> thread pool.
 		/// Does not start the <c>STRunner</c> thread! </summary>
 		void Start() noexcept

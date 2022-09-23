@@ -35,16 +35,19 @@ namespace sds
 	public:
 		/// <summary>Ctor allows passing in a STRunner thread, and setting custom KeyboardPlayerInfo and KeyboardSettings
 		/// with optional logging function. </summary>
-		KeyboardMapper( const SharedPtrType<ThreadManager> &statRunner, const KeyboardSettingsPack &settPack = {}, const LogFnType logFn = nullptr )
+		KeyboardMapper( const SharedPtrType<ThreadManager> &statRunner, const KeyboardSettingsPack settPack = {}, const LogFnType logFn = nullptr )
 			: m_statRunner(statRunner),
 			m_keySettingsPack(settPack),
 			m_logFn(logFn)
 		{
+			// TODO decide whether the logging fn is worth keeping around or not.
 			// lambda for logging
 			auto LogIfAvailable = [&](const char* msg)
 			{
 				if (m_logFn != nullptr)
 					m_logFn(msg);
+				else
+					throw std::exception(msg);
 			};
 			// if statRunner is nullptr, log error and return
 			if (m_statRunner == nullptr)
@@ -54,8 +57,8 @@ namespace sds
 			}
 			// otherwise, add the keyboard mapping obj to the STRunner thread for processing
 			m_statMapping = MakeSharedSmart<STKeyboardMapping<LogFnType>>(m_keySettingsPack, m_logFn);
-			m_statRunner->PushInfiniteTaskBack([&]() { m_statMapping->operator()(); });
-			//m_statRunner->AddDataWrapper(m_statMapping);
+			auto tempMapping = m_statMapping;
+			m_statRunner->PushInfiniteTaskBack([tempMapping]() { tempMapping->operator()(); });
 		}
 		// Other constructors/destructors
 		KeyboardMapper(const KeyboardMapper& other) = delete;

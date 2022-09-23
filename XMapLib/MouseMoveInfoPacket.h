@@ -9,8 +9,8 @@ namespace sds
 	struct MouseMoveInfoPacket
 	{
 		//delays init to 1, a zero or negative delay in the mouse move thread is bad.
-		size_t x_delay{ 1 };
-		size_t y_delay{ 1 };
+		int x_delay{ 1 };
+		int y_delay{ 1 };
 		bool is_x_positive{true};
 		bool is_y_positive{true};
 		bool is_beyond_dz_x{false};

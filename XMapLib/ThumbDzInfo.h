@@ -21,7 +21,7 @@ namespace sds
 		/// <summary> Used to validate polar deadzone arg value. </summary>
 		[[nodiscard]] static constexpr auto ValidatePolarDz(
 			const StickMap sm,
-			const MouseSettingsPack msp)  noexcept
+			const MouseSettingsPack msp = {})  noexcept
 		{
 			//error checking deadzone arg range, because it might crash the program if the
 			//delay returned is some silly value

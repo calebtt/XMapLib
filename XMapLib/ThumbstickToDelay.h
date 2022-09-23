@@ -19,7 +19,7 @@ namespace sds
 	class ThumbstickToDelay
 	{
 		using PolarCalc_t = PolarCalcFaster;
-		using DelayType = std::size_t;
+		using DelayType = int;
 		using MultFloat = decltype(MouseSettings::ALT_DEADZONE_MULT_DEFAULT);
 		using SensInt = decltype(MouseSettings::SENSITIVITY_DEFAULT);
 		using DzInt = decltype(MouseSettings::DEADZONE_DEFAULT);
@@ -113,7 +113,7 @@ namespace sds
 		ThumbstickToDelay(
 			const int sensitivity, 
 			const StickMap whichStick,
-			const MouseSettingsPack &ms = {},
+			const MouseSettingsPack ms = {},
 			const LogFnType logFn = nullptr) noexcept
 		: m_axis_sensitivity(ValidateSensitivity(sensitivity, ms)),
 		m_which_stick(ValidateStickMap(whichStick, logFn)),
@@ -173,7 +173,7 @@ namespace sds
 		{
 			using namespace sds::Utilities;
 			// Alias some settings
-			const PRadInt ThumbstickValueMax{ m_mouse_settings.settings.ThumbstickValueMax + 2 };
+			const PRadInt ThumbstickValueMax{ m_mouse_settings.settings.ThumbstickValueMax };
 			const auto UsDelayMin = m_mouse_settings.settings.MICROSECONDS_MIN;
 			const auto UsDelayMax = m_mouse_settings.settings.MICROSECONDS_MAX;
 			// Abs val
