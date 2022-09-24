@@ -15,7 +15,7 @@ void AddTestKeyMappings(sds::KeyboardMapper<>& mapper, std::osyncstream &ss);
 // dumping the contents of the key maps.
 class GetterExit {
 	using KeyboardPtrType = std::shared_ptr<sds::KeyboardMapper<>>;
-	std::unique_ptr<std::thread> workerThread{};
+	std::unique_ptr<std::jthread> workerThread{};
 	std::atomic<bool> m_exitState{ false };
 	const KeyboardPtrType m_mp;
 public:
@@ -31,7 +31,7 @@ protected:
 				workerThread->join();
 	}
 	void startThread() {
-		workerThread = std::make_unique<std::thread>([this]() { workThread(); });
+		workerThread = std::make_unique<std::jthread>([this]() { workThread(); });
 	}
 	void workThread() {
 		std::cin.get(); // block and wait for enter key

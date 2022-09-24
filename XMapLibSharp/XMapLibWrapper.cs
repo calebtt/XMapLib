@@ -18,21 +18,10 @@ namespace XMapLibSharp
         {
             XMapLibImports.XMapLibStopBoth();
         }
-        public void InitMouse()
+
+        public void StartBoth()
         {
-            XMapLibImports.XMapLibInitMouse();
-        }
-        public void StopMouse()
-        {
-            XMapLibImports.XMapLibStopMouse();
-        }
-        public void InitKeyboard()
-        {
-            XMapLibImports.XMapLibInitKeyboard();
-        }
-        public void StopKeyboard()
-        {
-            XMapLibImports.XMapLibStopKeyboard();
+            XMapLibImports.XMapLibStartBoth();
         }
         public void StopBoth()
         {
@@ -82,9 +71,11 @@ namespace XMapLibSharp
                             if (tokens[i] == TokStartmap)
                             {
                                 string[] akaStrings = tokens[i + 3].Split();
-                                XMapLibKeymap mp = new();
-                                mp.VkMappedFrom = Int32.Parse(tokens[i + 1].Split()[1]);
-                                mp.VkMappedTo = Int32.Parse(tokens[i + 2].Split()[1]);
+                                XMapLibKeymap mp = new()
+                                {
+                                    VkMappedFrom = Int32.Parse(tokens[i + 1].Split()[1]),
+                                    VkMappedTo = Int32.Parse(tokens[i + 2].Split()[1])
+                                };
                                 string[] repeatStrings = tokens[i+4].Split();
                                 if(repeatStrings.Length >1)
                                     if (repeatStrings[1].Length > 0)

@@ -18,6 +18,10 @@ namespace XMapLibSharp
      right click -> outlining -> collapse to definitions */
     public partial class Form1 : Form
     {
+        private XMapLibWrapper _mapper;
+        private XMapLibStickMap _currentXMapLibStick = XMapLibStickMap.Right;
+        private List<KeymapPreset> _presets = new();
+        private List<XMapLibKeymap> _currentKeymaps = new();
         public Form1()
         {
             InitializeComponent();
@@ -52,12 +56,12 @@ namespace XMapLibSharp
             //toggle processing
             if (_mapper.IsMouseRunning())
             {
-                _mapper.StopMouse();
+                _mapper.StopBoth();
                 btnMouseProcessing.Text = MsgStartMouse;
             }
             else
             {
-                _mapper.InitMouse();
+                _mapper.StartBoth();
                 btnMouseProcessing.Text = MsgStopMouse;
             }
         }

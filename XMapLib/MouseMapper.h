@@ -117,23 +117,13 @@ namespace sds
 		{
 			return ControllerStatus::IsControllerConnected(m_mouseSettingsPack.playerInfo.player_id);
 		}
-		///// <summary><c>IsRunning()</c> returns true if both the <c>STMouseMapping</c> is enabled and the <c>STRunner</c> thread pool thread is running. </summary>
-		/////	<returns>true if STMapping obj and STRunner obj are both running, or false if called during destruction.</returns>
-		//[[nodiscard]] bool IsRunning() const noexcept
-		//{
-		//	if (m_stmapper == nullptr || m_statRunner == nullptr)
-		//		return false;
-		//	return m_statRunner->IsRunning();
-		//}
 		/// <summary><c>IsRunning()</c> returns true if the <c>STMouseMapping</c> is enabled. </summary>
 		///	<returns>true if STMapping obj running, or false if called during destruction.</returns>
 		[[nodiscard]] bool IsRunning() const noexcept
 		{
-			//TODO bug probably here.
-			//return !m_statRunner->CreateThread();
 			if (m_stmapper == nullptr || m_statRunner == nullptr)
 				return false;
-			return true;
+			return m_stmapper->IsRunning();
 		}
 		/// <summary><c>Start()</c> enables processing on the function objects added to the <c>STRunner</c> thread pool.
 		/// Does not start the <c>STRunner</c> thread! </summary>

@@ -7,8 +7,8 @@
 #define XMPLIB_EXPORT __declspec(dllexport) inline
 #endif
 
-namespace Stins
-{
+//namespace Stins
+//{
 	using LockType = std::scoped_lock <std::mutex>;
 	/// <summary>
 	/// Struct with some data members used in the course of managing access to the
@@ -16,22 +16,31 @@ namespace Stins
 	/// </summary>
 	struct StaticMapper
 	{
+		using ThreadUnit_t = impcool::ThreadUnitPlus;
 	private:
-		// Aprox. 4kb buffer for map string.
-		static constexpr std::size_t MapInfoBufferSize{ 1'024ull * 4 };
-		inline static constexpr sds::MouseSettingsPack m_msp{};
-		inline static constexpr sds::KeyboardSettingsPack m_ksp{};
+		// Aprox. 32kb buffer for map string.
+		static constexpr std::size_t MapInfoBufferSize{ 1'024ull * 32 };
+		// Mutex for single instance enforcement
+		inline static std::mutex m_instanceMutex;
+		// Mapper settings objects.
+		sds::MouseSettingsPack m_msp{};
+		sds::KeyboardSettingsPack m_ksp{};
 	public:
+		// Normal use access blocker mutex.
 		std::mutex accessBlocker;
-		std::shared_ptr<impcool::ThreadUnitPlus> threadPoolPtr{ std::make_shared<impcool::ThreadUnitPlus>() };
-		sds::KeyboardMapper<> KeyboardMapperInstance{ threadPoolPtr, m_ksp };
-		sds::MouseMapper<> MouseMapperInstance{ threadPoolPtr, m_msp };
-		// Buffer large enough to hold any map string possible, with static allocation.
-		std::array<char, MapInfoBufferSize> mapInfoFormatted{};
+		std::shared_ptr<ThreadUnit_t> m_ThreadPoolPtr{ std::make_shared<ThreadUnit_t>() };
+		sds::KeyboardMapper<> m_KeyboardMapperInstance{ m_ThreadPoolPtr, m_ksp, &ErrorCallb };
+		sds::MouseMapper<> m_MouseMapperInstance{ m_ThreadPoolPtr, m_msp, &ErrorCallb };
+		// Buffer large enough to hold any map string likely possible.
+		std::array<char, MapInfoBufferSize> m_MapInfoFormatted{};
 		// ctor
 		StaticMapper()
 		{
-			threadPoolPtr->CreateThread();
+			m_instanceMutex.lock();
+		}
+		~StaticMapper()
+		{
+			m_instanceMutex.unlock();
 		}
 
 		static void ErrorCallb(const std::string msg) noexcept
@@ -42,68 +51,40 @@ namespace Stins
 	// Instance of the MapStuff struct that has data members
 	// used in the course of managing access to the static instances
 	// of KeyboardMapper and MouseMapper.
-	inline static StaticMapper currentInstance{};
-}
+	inline std::unique_ptr<StaticMapper> currentInstance;
+//}
 extern "C"
 {
 	/// <summary> Called to init both the keyboard mapper and the mouse mapper, starts
 	/// running the static thread if needed. </summary>
 	XMPLIB_EXPORT void XMapLibInitBoth()
 	{
-		Stins::LockType tempLock(Stins::currentInstance.accessBlocker);
+		currentInstance = std::make_unique<StaticMapper>();
+		LockType tempLock(currentInstance->accessBlocker);
 		//if static thread not running, start it
-		if (!Stins::currentInstance.threadPoolPtr->IsRunning())
-			Stins::currentInstance.threadPoolPtr->CreateThread();
+		//if (!currentInstance->m_ThreadPoolPtr->IsRunning())
+		//	currentInstance->m_ThreadPoolPtr->CreateThread();
 		//start both keyboard and mouse mappers.
-		Stins::currentInstance.KeyboardMapperInstance.Start();
-		Stins::currentInstance.MouseMapperInstance.Start();
-	}
-
-	/// <summary> Called to initialize just the mouse mapper. Starts the static thread if needed. </summary>
-	XMPLIB_EXPORT void XMapLibInitMouse()
-	{
-		Stins::LockType tempLock(Stins::currentInstance.accessBlocker);
-		if (!Stins::currentInstance.threadPoolPtr->IsRunning())
-			Stins::currentInstance.threadPoolPtr->CreateThread();
-		Stins::currentInstance.MouseMapperInstance.Start();
-	}
-
-	/// <summary> Called to stop the running mouse mapper. This disables processing and the static thread
-	/// if not being used by the keyboard mapper. </summary>
-	XMPLIB_EXPORT void XMapLibStopMouse()
-	{
-		Stins::LockType tempLock(Stins::currentInstance.accessBlocker);
-		Stins::currentInstance.MouseMapperInstance.Stop();
-		if(!Stins::currentInstance.KeyboardMapperInstance.IsRunning())
-			Stins::currentInstance.threadPoolPtr->CreateThread();
-	}
-
-	/// <summary> Called to initialize just the keyboard mapper. Starts the static thread if needed. </summary>
-	XMPLIB_EXPORT void XMapLibInitKeyboard()
-	{
-		Stins::LockType tempLock(Stins::currentInstance.accessBlocker);
-		if (!Stins::currentInstance.threadPoolPtr->IsRunning())
-			Stins::currentInstance.threadPoolPtr->CreateThread();
-		Stins::currentInstance.KeyboardMapperInstance.Start();
-	}
-
-	/// <summary> Called to stop the running keyboard mapper. This disables processing and the static thread
-	/// if not being used by the mouse mapper. </summary>
-	XMPLIB_EXPORT void XMapLibStopKeyboard()
-	{
-		Stins::LockType tempLock(Stins::currentInstance.accessBlocker);
-		Stins::currentInstance.KeyboardMapperInstance.Stop();
-		if(!Stins::currentInstance.MouseMapperInstance.IsRunning())
-			Stins::currentInstance.threadPoolPtr->CreateThread();
+		//currentInstance->m_KeyboardMapperInstance.Start();
+		//currentInstance->m_MouseMapperInstance.Start();
 	}
 
 	/// <summary> Called to disable processing for both keyboard and mouse mappers, and the static thread. </summary>
 	XMPLIB_EXPORT void XMapLibStopBoth()
 	{
-		Stins::LockType tempLock(Stins::currentInstance.accessBlocker);
-		Stins::currentInstance.KeyboardMapperInstance.Stop();
-		Stins::currentInstance.MouseMapperInstance.Stop();
-		Stins::currentInstance.threadPoolPtr->CreateThread();
+		LockType tempLock(currentInstance->accessBlocker);
+		currentInstance->m_KeyboardMapperInstance.Stop();
+		currentInstance->m_MouseMapperInstance.Stop();
+		//currentInstance->m_ThreadPoolPtr->CreateThread();
+	}
+
+	/// <summary> Called to enable processing for both keyboard and mouse mappers, and the static thread. </summary>
+	XMPLIB_EXPORT void XMapLibStartBoth()
+	{
+		LockType tempLock(currentInstance->accessBlocker);
+		currentInstance->m_KeyboardMapperInstance.Start();
+		currentInstance->m_MouseMapperInstance.Start();
+		//currentInstance->m_ThreadPoolPtr->CreateThread();
 	}
 
 	/// <summary> Called to add a <c>sds::KeyboardKeyMap</c> map information to the
@@ -114,15 +95,15 @@ extern "C"
 	/// <returns>true on success, false on failure</returns>
 	XMPLIB_EXPORT bool XMapLibAddMap(int vkSender, int vkMapping, bool bUsesRepeat)
 	{
-		Stins::LockType tempLock(Stins::currentInstance.accessBlocker);
-		return Stins::currentInstance.KeyboardMapperInstance.AddMap(sds::KeyboardKeyMap(vkSender, vkMapping, bUsesRepeat)).empty();
+		LockType tempLock(currentInstance->accessBlocker);
+		return currentInstance->m_KeyboardMapperInstance.AddMap(sds::KeyboardKeyMap(vkSender, vkMapping, bUsesRepeat)).empty();
 	}
 
 	/// <summary> Called to clear controller to keyboard key mappings. </summary>
 	XMPLIB_EXPORT void XMapLibClearMaps()
 	{
-		Stins::LockType tempLock(Stins::currentInstance.accessBlocker);
-		Stins::currentInstance.KeyboardMapperInstance.ClearMaps();
+		LockType tempLock(currentInstance->accessBlocker);
+		currentInstance->m_KeyboardMapperInstance.ClearMaps();
 	}
 
 	/// <summary> Returns a pointer to a static internal buffer used to store information about all of the loaded
@@ -132,25 +113,25 @@ extern "C"
 	/// <returns>pointer to beginning of string buffer</returns>
 	XMPLIB_EXPORT const char * XMapLibGetMaps()
 	{
-		Stins::LockType tempLock(Stins::currentInstance.accessBlocker);
-		const std::vector<sds::KeyboardKeyMap> maps = Stins::currentInstance.KeyboardMapperInstance.GetMaps();
+		LockType tempLock(currentInstance->accessBlocker);
+		const std::vector<sds::KeyboardKeyMap> maps = currentInstance->m_KeyboardMapperInstance.GetMaps();
 		std::string localString;
 		for (const auto &lmp : maps)
 			localString << lmp;
 		// Check map string fits into static buffer.
-		if (localString.size() >= Stins::currentInstance.mapInfoFormatted.size())
+		if (localString.size() >= currentInstance->m_MapInfoFormatted.size())
 			return nullptr;
 		// Copy to static buffer, return pointer to begin.
-		std::ranges::copy(localString, Stins::currentInstance.mapInfoFormatted.data());
-		return Stins::currentInstance.mapInfoFormatted.data();
+		std::ranges::copy(localString, currentInstance->m_MapInfoFormatted.data());
+		return currentInstance->m_MapInfoFormatted.data();
 	}
 
 	/// <summary> Returns true if controller is connected. </summary>
 	XMPLIB_EXPORT bool XMapLibIsControllerConnected()
 	{
-		Stins::LockType tempLock(Stins::currentInstance.accessBlocker);
-		const bool kbdYes = Stins::currentInstance.KeyboardMapperInstance.IsControllerConnected();
-		const bool mouseYes = Stins::currentInstance.MouseMapperInstance.IsControllerConnected();
+		LockType tempLock(currentInstance->accessBlocker);
+		const bool kbdYes = currentInstance->m_KeyboardMapperInstance.IsControllerConnected();
+		const bool mouseYes = currentInstance->m_MouseMapperInstance.IsControllerConnected();
 		return kbdYes || mouseYes;
 	}
 
@@ -158,16 +139,16 @@ extern "C"
 	/// <returns> Returns true if STRunner is running AND the MouseMapper is enabled. </returns>
 	XMPLIB_EXPORT bool XMapLibIsMouseRunning()
 	{
-		Stins::LockType tempLock(Stins::currentInstance.accessBlocker);
-		return Stins::currentInstance.MouseMapperInstance.IsRunning();
+		LockType tempLock(currentInstance->accessBlocker);
+		return currentInstance->m_MouseMapperInstance.IsRunning();
 	}
 
 	/// <summary> Called to query the status of the keyboard mapper AND the thread pool running. </summary>
 	///	<returns> Returns true if STRunner is running AND the KeyboardMapper is enabled. </returns>
 	XMPLIB_EXPORT bool XMapLibIsKeyboardRunning()
 	{
-		Stins::LockType tempLock(Stins::currentInstance.accessBlocker);
-		return Stins::currentInstance.KeyboardMapperInstance.IsRunning();
+		LockType tempLock(currentInstance->accessBlocker);
+		return currentInstance->m_KeyboardMapperInstance.IsRunning();
 	}
 
 	/// <summary> Called to enable MouseMapper processing on the controller stick, options include left/right/neither.
@@ -179,23 +160,23 @@ extern "C"
 	///	<remarks>if the integral value argument is not a valid <c>StickMap</c> enum value, the behavior is undefined.</remarks>
 	XMPLIB_EXPORT void XMapLibSetMouseStick(int whichStick)
 	{
-		Stins::LockType tempLock(Stins::currentInstance.accessBlocker);
+		LockType tempLock(currentInstance->accessBlocker);
 		//ensure same underlying integral type, and that sds::StickMap is still an enum
 		using StickType = std::underlying_type_t<sds::StickMap>;
 		static_assert(std::is_enum_v<sds::StickMap>, "ensure sds::StickMap is still an enum");
 		static_assert(std::is_same_v<StickType, decltype(whichStick)>, "ensure interface type and sds::StickMap enum underlying type are the same");
 		//pass along the (possibly arbitrary) value to the MouseMapper.
-		Stins::currentInstance.MouseMapperInstance.SetStick(static_cast<sds::StickMap>(whichStick));
+		currentInstance->m_MouseMapperInstance.SetStick(static_cast<sds::StickMap>(whichStick));
 	}
 	XMPLIB_EXPORT bool XMapLibSetMouseSensitivity(int sens)
 	{
-		Stins::LockType tempLock(Stins::currentInstance.accessBlocker);
-		return Stins::currentInstance.MouseMapperInstance.SetSensitivity(sens).empty();
+		LockType tempLock(currentInstance->accessBlocker);
+		return currentInstance->m_MouseMapperInstance.SetSensitivity(sens).empty();
 	}
 	XMPLIB_EXPORT int XMapLibGetMouseSensitivity()
 	{
-		Stins::LockType tempLock(Stins::currentInstance.accessBlocker);
-		return Stins::currentInstance.MouseMapperInstance.GetSensitivity();
+		LockType tempLock(currentInstance->accessBlocker);
+		return currentInstance->m_MouseMapperInstance.GetSensitivity();
 	}
 
 }

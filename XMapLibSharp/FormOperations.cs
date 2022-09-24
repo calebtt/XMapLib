@@ -26,10 +26,10 @@ namespace XMapLibSharp
         private const string MsgSensbegin = "Sensitivity: ";
         private readonly Color _clrInfo = Color.BurlyWood;
         private readonly Color _clrNormal = Color.DarkSeaGreen;
-        private readonly XMapLibWrapper _mapper;
-        private XMapLibStickMap _currentXMapLibStick = XMapLibStickMap.Right;
-        private List<KeymapPreset> _presets = new();
-        private List<XMapLibKeymap> _currentKeymaps = new();
+        //private XMapLibWrapper _mapper;
+        //private XMapLibStickMap _currentXMapLibStick = XMapLibStickMap.Right;
+        //private List<KeymapPreset> _presets = new();
+        //private List<XMapLibKeymap> _currentKeymaps = new();
         private readonly string[] _keyNames = Enum.GetNames(typeof(Keys));
         private readonly string[] _buttonNames = Enum.GetNames(typeof(ControllerButtons));
 

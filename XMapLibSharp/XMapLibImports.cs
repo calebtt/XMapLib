@@ -11,19 +11,10 @@ namespace XMapLibSharp
         public static extern void XMapLibInitBoth();
 
         [DllImport(DllName)]
-        public static extern void XMapLibInitMouse();
-
-        [DllImport(DllName)]
-        public static extern void XMapLibStopMouse();
-
-        [DllImport(DllName)]
-        public static extern void XMapLibInitKeyboard();
-
-        [DllImport(DllName)]
-        public static extern void XMapLibStopKeyboard();
-
-        [DllImport(DllName)]
         public static extern void XMapLibStopBoth();
+
+        [DllImport(DllName)]
+        public static extern void XMapLibStartBoth();
 
         [DllImport(DllName)]
         public static extern bool XMapLibAddMap(int vkSender, int vkMapping, bool bUsesRepeat);
