@@ -96,10 +96,10 @@ namespace sds
 		std::string SetSensitivity(const int new_sens) const noexcept
 		{
 			if (m_stmapper == nullptr)
-				return "Error in sds::XinMouseMapper::SetSensitivity(), m_stmapper is null.";
+				return "Error in sds::MouseMapper::SetSensitivity(...), m_stmapper is null.";
 			if (!m_mouseSettingsPack.settings.IsValidSensitivityValue(new_sens))
 			{
-				return "Error in sds::XinMouseMapper::SetSensitivity(), int new_sens out of range.";
+				return "Error in sds::MouseMapper::SetSensitivity(...), int new_sens out of range.";
 			}
 			m_stmapper->SetSensitivity(new_sens);
 			return "";
