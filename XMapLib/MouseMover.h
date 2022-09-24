@@ -1,5 +1,6 @@
 #pragma once
 #include "stdafx.h"
+#include <cassert>
 #include "Utilities.h"
 #include "MouseMoveInfoPacket.h"
 #include "MouseSettingsPack.h"
@@ -34,7 +35,8 @@ namespace sds
 			const bool isYPos = mmip.is_y_positive;
 			const size_t xDelay = mmip.x_delay;
 			const size_t yDelay = mmip.y_delay;
-
+			// Assertion for delay values.
+			assert(xDelay > 0 && yDelay > 0);
 			const bool m_isXM = mmip.is_beyond_dz_x;
 			const bool m_isYM = mmip.is_beyond_dz_y;
 
