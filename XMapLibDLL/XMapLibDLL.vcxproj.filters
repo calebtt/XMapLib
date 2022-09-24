@@ -27,9 +27,6 @@
     <ClInclude Include="helperfuncs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="StaticInstance.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">

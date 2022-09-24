@@ -76,7 +76,7 @@ namespace sds
 		///	This will start processing if the stick is something other than "NEITHER" </summary>
 		///	<remarks>**Arbitrary values outside of the enum constants will not be processed successfully.**</remarks>
 		/// <param name="info"> a StickMap enum</param>
-		void SetStick(const StickMap info) noexcept
+		void SetStick(const StickMap info) const noexcept
 		{
 			if(m_stmapper != nullptr)
 				m_stmapper->SetStick(info);
@@ -84,7 +84,7 @@ namespace sds
 		/// <summary><c>GetStick()</c> A getter for the current <code>StickMap</code> enum data member.</summary>
 		/// <returns><c>StickMap</c> enum class denoting which controller thumbstick is set for processing,
 		/// or default constructed StickMap on error. </returns>
-		StickMap GetStick() const
+		StickMap GetStick() const noexcept
 		{
 			if (m_stmapper == nullptr)
 				return {};

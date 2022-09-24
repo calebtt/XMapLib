@@ -29,7 +29,7 @@ namespace sds
 		MouseMover m_mover;
 		// Deadzone calculator, provides information such as "is the axis value beyond the deadzone?".
 		ThumbDzInfo m_dzInfo;
-		bool m_is_enabled{ true };
+		std::atomic<bool> m_is_enabled{ true };
 	public:
 		~STMouseMapping()
 		{
@@ -55,27 +55,30 @@ namespace sds
 		{
 			// Delay update func.
 			using sds::Utilities::ToA;
-			// get state from poller.
-			const ThumbStateWrapper tempState = m_mousePoller.GetUpdatedState(m_msp.playerInfo.player_id);
-			// choose correct x,y pair
-			const auto xValue = m_stickmap_info == StickMap::RIGHT_STICK ? tempState.RightThumbX : tempState.LeftThumbX;
-			const auto yValue = m_stickmap_info == StickMap::RIGHT_STICK ? tempState.RightThumbY : tempState.LeftThumbY;
-			// calculate delays based on cartesian x,y pair
-			const std::pair<int,int> delayPair = m_delayCalc.GetDelaysFromThumbstickValues(xValue, yValue);
-			// get info for which cartesian values are beyond their respective deadzone
-			const std::pair<bool,bool> activatedPair = m_dzInfo.IsBeyondDeadzone(xValue, yValue);
-			// build mouse move info packet
-			const MouseMoveInfoPacket mmip
+			if (m_is_enabled)
 			{
-				.x_delay = std::get<0>(delayPair),
-				.y_delay = std::get<1>(delayPair),
-				.is_x_positive = (xValue > 0),
-				.is_y_positive = (yValue > 0),
-				.is_beyond_dz_x = activatedPair.first,
-				.is_beyond_dz_y = activatedPair.second
-			};
-			// [send it!]
-			m_mover.PerformMove(mmip);
+				// get state from poller.
+				const ThumbStateWrapper tempState = m_mousePoller.GetUpdatedState(m_msp.playerInfo.player_id);
+				// choose correct x,y pair
+				const auto xValue = m_stickmap_info == StickMap::RIGHT_STICK ? tempState.RightThumbX : tempState.LeftThumbX;
+				const auto yValue = m_stickmap_info == StickMap::RIGHT_STICK ? tempState.RightThumbY : tempState.LeftThumbY;
+				// calculate delays based on cartesian x,y pair
+				const std::pair<int, int> delayPair = m_delayCalc.GetDelaysFromThumbstickValues(xValue, yValue);
+				// get info for which cartesian values are beyond their respective deadzone
+				const std::pair<bool, bool> activatedPair = m_dzInfo.IsBeyondDeadzone(xValue, yValue);
+				// build mouse move info packet
+				const MouseMoveInfoPacket mmip
+				{
+					.x_delay = std::get<0>(delayPair),
+					.y_delay = std::get<1>(delayPair),
+					.is_x_positive = (xValue > 0),
+					.is_y_positive = (yValue > 0),
+					.is_beyond_dz_x = activatedPair.first,
+					.is_beyond_dz_y = activatedPair.second
+				};
+				// [send it!]
+				m_mover.PerformMove(mmip);
+			}
 		}
 		[[nodiscard]] bool IsRunning() const
 		{
@@ -104,7 +107,7 @@ namespace sds
 			m_stickmap_info = newStick;
 			m_delayCalc.SetStick(newStick);
 			//enable or disable processing
-			this->m_is_enabled = m_stickmap_info != StickMap::NEITHER_STICK;
+			m_is_enabled = m_stickmap_info != StickMap::NEITHER_STICK;
 		}
 		StickMap GetStick() const noexcept
 		{

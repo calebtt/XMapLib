@@ -2,7 +2,6 @@
 #include "../XMapLib/MouseMapper.h"
 #include "../XMapLib/KeyboardMapper.h"
 #include "helperfuncs.h"
-#include "StaticInstance.h"
 
 #ifndef XMPLIB_EXPORT
 #define XMPLIB_EXPORT __declspec(dllexport) inline
@@ -10,10 +9,40 @@
 
 namespace Stins
 {
+	using LockType = std::scoped_lock <std::mutex>;
+	/// <summary>
+	/// Struct with some data members used in the course of managing access to the
+	///	static instances of <c>MouseMapper</c> and <c>KeyboardMapper</c>.
+	/// </summary>
+	struct StaticMapper
+	{
+	private:
+		// Aprox. 4kb buffer for map string.
+		static constexpr std::size_t MapInfoBufferSize{ 1'024ull * 4 };
+		inline static constexpr sds::MouseSettingsPack m_msp{};
+		inline static constexpr sds::KeyboardSettingsPack m_ksp{};
+	public:
+		std::mutex accessBlocker;
+		std::shared_ptr<impcool::ThreadUnitPlus> threadPoolPtr{ std::make_shared<impcool::ThreadUnitPlus>() };
+		sds::KeyboardMapper<> KeyboardMapperInstance{ threadPoolPtr, m_ksp };
+		sds::MouseMapper<> MouseMapperInstance{ threadPoolPtr, m_msp };
+		// Buffer large enough to hold any map string possible, with static allocation.
+		std::array<char, MapInfoBufferSize> mapInfoFormatted{};
+		// ctor
+		StaticMapper()
+		{
+			threadPoolPtr->CreateThread();
+		}
+
+		static void ErrorCallb(const std::string msg) noexcept
+		{
+			MessageBoxA(nullptr, msg.c_str(), "", MB_OK);
+		}
+	};
 	// Instance of the MapStuff struct that has data members
 	// used in the course of managing access to the static instances
 	// of KeyboardMapper and MouseMapper.
-	inline static MapStuff currentInstance{};
+	inline static StaticMapper currentInstance{};
 }
 extern "C"
 {

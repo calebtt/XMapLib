@@ -176,7 +176,6 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="helperfuncs.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="StaticInstance.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />

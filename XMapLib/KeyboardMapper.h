@@ -31,7 +31,6 @@ namespace sds
 		// Combined object for polling and translation into action,
 		// to be ran on an STRunner object.
 		SharedPtrType<STKeyboardMapping<LogFnType>> m_statMapping;
-
 	public:
 		/// <summary>Ctor allows passing in a STRunner thread, and setting custom KeyboardPlayerInfo and KeyboardSettings
 		/// with optional logging function. </summary>
