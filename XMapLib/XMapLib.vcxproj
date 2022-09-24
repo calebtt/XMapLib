@@ -169,7 +169,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Arithmetic.h" />
-    <ClInclude Include="AsyncDataRunner.h" />
     <ClInclude Include="ControllerStatus.h" />
     <ClInclude Include="DelayManager.h" />
     <ClInclude Include="KeyboardPoller.h" />

@@ -12,7 +12,7 @@ namespace sds
 	/// <remarks>Mouse simulation function object that polls for controller input and processes it as mouse movements. It is ran on the STRunner thread pool.
 	///	Remember that the <c>m_is_enabled</c> member of the base (<c>STDataWrapper</c>) toggles on/off the processing of operator()()</remarks>
 	template<class LogFnType = std::function<void(std::string)>>
-	struct STMouseMappingImpl
+	struct STMouseMapping
 	{
 	private:
 		// mouse sensitivity value
@@ -31,12 +31,12 @@ namespace sds
 		ThumbDzInfo m_dzInfo;
 		bool m_is_enabled{ true };
 	public:
-		~STMouseMappingImpl()
+		~STMouseMapping()
 		{
 			Stop();
 		}
 		// Giant constructor that needs lots of information.
-		STMouseMappingImpl(const int sensitivity,
+		STMouseMapping(const int sensitivity,
 			const StickMap whichStick,
 			const MouseSettingsPack msp = {},
 			const LogFnType fn = nullptr)
@@ -77,6 +77,10 @@ namespace sds
 			// [send it!]
 			m_mover.PerformMove(mmip);
 		}
+		[[nodiscard]] bool IsRunning() const
+		{
+			return m_is_enabled;
+		}
 		void Start() noexcept
 		{
 			this->m_is_enabled = true;
@@ -109,6 +113,4 @@ namespace sds
 	private:
 
 	};
-	// Using declaration for default config.
-	using STMouseMapping = STMouseMappingImpl<>;
 }

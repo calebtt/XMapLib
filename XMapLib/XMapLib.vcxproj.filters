@@ -137,9 +137,6 @@
     <ClInclude Include="KeyboardTranslatorAsync.h">
       <Filter>Header Files\Keyboard</Filter>
     </ClInclude>
-    <ClInclude Include="AsyncDataRunner.h">
-      <Filter>Header Files\Utilities\Async</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="adjustment_values.txt">

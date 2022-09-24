@@ -80,7 +80,7 @@ namespace sds
 		{
 			if (m_statRunner == nullptr || m_statMapping == nullptr)
 				return false;
-			return m_statMapping->IsRunning() && m_statRunner->IsRunning();
+			return m_statMapping->IsRunning();
 		}
 		/// <summary><c>AddMap(KeyboardKeyMap)</c> Adds a key map.</summary>
 		///	<returns> returns a <c>std::string</c> containing an error message
