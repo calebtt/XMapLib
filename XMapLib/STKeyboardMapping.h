@@ -65,8 +65,10 @@ namespace sds
 		}
 		void Stop() noexcept
 		{
-			m_translator.CleanupInProgressEvents();
 			m_is_enabled = false;
+			// The async wrapper class around the translator will make
+			// sure this works right.
+			m_translator.CleanupInProgressEvents();
 		}
 	};
 }
