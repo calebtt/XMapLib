@@ -144,7 +144,7 @@ namespace sds
 			return { m_mouse_settings.settings.MICROSECONDS_MAX, m_mouse_settings.settings.MICROSECONDS_MAX };
 		}
 		///<summary> Calculates microsecond delay values from cartesian X and Y thumbstick values.
-		///Probably needs optimized.</summary>
+		/// Probably needs optimized. </summary>
 		[[nodiscard]] auto BuildDelayInfo(const auto cartesianX, const auto cartesianY)
 		const noexcept -> std::pair<DelayType, DelayType>
 		{
@@ -191,7 +191,7 @@ namespace sds
 			return { xResult, yResult };
 		}
 		///<summary> Gets the (config file loaded) scaling value for the given (float representation) polarThetaAngle. </summary>
-		[[nodiscard]] ScaleFloat GetScalingMultiplier(const std::floating_point auto polarThetaAngle) const noexcept
+		[[nodiscard]] auto GetScalingMultiplier(const std::floating_point auto polarThetaAngle) const noexcept -> ScaleFloat
 		{
 			using Utilities::ToA;
 			using Utilities::ConstAbs;
