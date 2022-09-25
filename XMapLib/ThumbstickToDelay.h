@@ -198,7 +198,7 @@ namespace sds
 			// Theta angle of vertical edge of quadrant 1
 			static constexpr auto MaxTheta = ToA<unsigned>((std::numbers::pi / 2.0) * 100u);
 			// Polar theta angle * 100 converted to an integer value, index into the scaling value array
-			auto thetaIndex = ToA<unsigned>(ConstAbs(polarThetaAngle) * 100.0f);
+			auto thetaIndex = ToA<unsigned>(ConstAbs(polarThetaAngle) * 100.0);
 			// Convert from quadrant 2 or 3 to 1 or 4
 			if (thetaIndex >= MaxTheta)
 				thetaIndex -= MaxTheta;
