@@ -73,7 +73,7 @@ int main()
 	std::osyncstream ss(std::cout);
 	AddTestKeyMappings(*keyer, ss);
 	GetterExit getter(keyer);
-	std::string err = mouser->SetSensitivity(100); //sensitivity
+	const std::string err = mouser->SetSensitivity(1); //sensitivity
 	Utilities::LogError(err); // won't do anything if the string is empty
 	mouser->SetStick(StickMap::RIGHT_STICK);
 

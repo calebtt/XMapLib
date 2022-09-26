@@ -1,5 +1,7 @@
 #pragma once
 #include "stdafx.h"
+#include "ScalingDefaults.h"
+
 namespace sds
 {
 	/// <summary>Reads polar radius scaling values (for cartesian X,Y) from config file.
@@ -24,9 +26,16 @@ namespace sds
 		// Local shared cache of previous successful read of config file.
 		inline static RangeType m_staticScalingValuesCopy;
 		// Program settings struct for mouse infrastructure.
-		const MouseSettings m_mouseSettings;
+		const std::string m_fileName;
 	public:
-		ReadRadiusScaleValues(const MouseSettings &ms = {}) : m_mouseSettings(ms) { }
+		ReadRadiusScaleValues(const std::string &fName) : m_fileName(fName)
+		{
+			if (fName.empty())
+			{
+				LockType tempLock(m_fileMutex);
+				m_staticScalingValuesCopy.assign(ScalingDefaults::DefaultScalingValues.cbegin(), ScalingDefaults::DefaultScalingValues.cend());
+			}
+		}
 		/// <summary> Reads floating point values from a config file. It is used to scale the thumbstick values to a proper
 		///	circular polar radius. This is done because the values from the hardware are just plain bad.
 		/// The index into the vector is the integral part of (polar theta * 100) for the first quadrant.
@@ -40,7 +49,7 @@ namespace sds
 			if (!m_staticScalingValuesCopy.empty())
 				return m_staticScalingValuesCopy;
 			RangeType scalingValues;
-			std::ifstream inFile(m_mouseSettings.SCALING_VALUES_FNAME.data());
+			std::ifstream inFile(m_fileName);
 			std::string currentLine;
 			std::stringstream lineStream;
 			while(std::getline(inFile, currentLine))

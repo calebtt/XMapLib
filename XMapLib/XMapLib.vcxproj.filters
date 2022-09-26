@@ -137,6 +137,12 @@
     <ClInclude Include="KeyboardTranslatorAsync.h">
       <Filter>Header Files\Keyboard</Filter>
     </ClInclude>
+    <ClInclude Include="ScalingDefaults.h">
+      <Filter>Header Files\Mouse\SettingsAndConfig</Filter>
+    </ClInclude>
+    <ClInclude Include="ScalingConcepts.h">
+      <Filter>Header Files\Mouse\SettingsAndConfig</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="adjustment_values.txt">

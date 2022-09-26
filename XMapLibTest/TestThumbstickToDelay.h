@@ -14,7 +14,7 @@ namespace XMapLibTest
 			using namespace sds;
 			using namespace std;
 			Logger::WriteMessage("Begin TestConvertToDelays()");
-			ThumbstickToDelay ttd(100, StickMap::RIGHT_STICK);
+			ThumbstickToDelay ttd(100);
 			static constexpr int PolarRadiusMax{ 39'000 };
 			auto DoCompareTest = [&](const auto firstVal, const auto secondVal, const auto firstShouldBe, const auto secondShouldBe)
 			{
@@ -41,7 +41,7 @@ namespace XMapLibTest
 			using namespace sds;
 			using namespace std;
 			Logger::WriteMessage("Begin TestGetScalingMultiplier()");
-			ThumbstickToDelay ttd(100, StickMap::RIGHT_STICK);
+			ThumbstickToDelay ttd(100);
 			static constexpr size_t PolarRadiusMax{ 39'000 };
 			//test theta 0
 			const auto zeroResult = ttd.GetScalingMultiplier(0.0);

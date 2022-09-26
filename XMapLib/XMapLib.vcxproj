@@ -179,6 +179,8 @@
     <ClInclude Include="MousePoller.h" />
     <ClInclude Include="MouseSettingsPack.h" />
     <ClInclude Include="ReadRadiusScaleValues.h" />
+    <ClInclude Include="ScalingConcepts.h" />
+    <ClInclude Include="ScalingDefaults.h" />
     <ClInclude Include="SendKeyInput.h" />
     <ClInclude Include="SendMouseInput.h" />
     <ClInclude Include="Smarts.h" />
