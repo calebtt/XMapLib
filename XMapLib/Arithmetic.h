@@ -25,7 +25,7 @@ namespace sds::Utilities
 	{
 		return static_cast<T>(something);
 	}
-	///<summary> Returns true if val is "normal" i.e., neither zero, subnormal, infinite, nor NaN. Explicitly calls the <c>float</c> version of the function. </summary>
+	/// <summary> Returns true if val is "normal" i.e., neither zero, subnormal, infinite, nor NaN. Explicitly calls the <c>float</c> version of the function. </summary>
 	[[nodiscard]] constexpr bool IsNormalF(const is_number_v auto val) noexcept
 	{
 		return std::isnormal(static_cast<float>(val));
