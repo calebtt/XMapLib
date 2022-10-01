@@ -112,7 +112,7 @@ namespace sds
 				return -1;
 			return m_stmapper->GetSensitivity();
 		}
-		///<summary><c>IsControllerConnected()</c> returns true if the current <c>player_id</c> reports a controller connected.</summary>
+		/// <summary><c>IsControllerConnected()</c> returns true if the current <c>player_id</c> reports a controller connected.</summary>
 		[[nodiscard]] bool IsControllerConnected() const noexcept
 		{
 			return ControllerStatus::IsControllerConnected(m_mouseSettingsPack.playerInfo.player_id);

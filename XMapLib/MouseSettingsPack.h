@@ -91,7 +91,7 @@ namespace sds
 		~MousePlayerInfo() = default;
 	};
 
-	///<summary>For no other reason but to make the common task of passing these down the architecture less verbose. </summary>
+	/// <summary>For no other reason but to make the common task of passing these down the architecture less verbose. </summary>
 	struct MouseSettingsPack
 	{
 		MousePlayerInfo playerInfo;

@@ -64,7 +64,7 @@ namespace sds
 			VK_PAD_RTHUMB_DOWNLEFT
 		};
 	};
-	///<summary>For no other reason but to make the common task of injecting these down the architecture less verbose. </summary>
+	/// <summary>For no other reason but to make the common task of injecting these down the architecture less verbose. </summary>
 	struct KeyboardSettingsPack
 	{
 		KeyboardPlayerInfo playerInfo;

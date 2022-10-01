@@ -41,7 +41,7 @@ namespace sds
 		m_alt_deadzone_multiplier(ValidateAltMultiplier(msp)),
 		m_pc(msp.settings.ThumbstickValueMax, logFn)
 		{ }
-		///<summary>Takes a cartesian value and returns true if equal or over deadzone. </summary>
+		/// <summary>Takes a cartesian value and returns true if equal or over deadzone. </summary>
 		[[nodiscard]] std::pair<bool,bool> IsBeyondDeadzone(const int cartesianX, const int cartesianY) noexcept
 		{
 			using Utilities::ToA;
@@ -60,7 +60,7 @@ namespace sds
 				m_is_deadzone_activated = true;
 			return { isBeyondX, isBeyondY };
 		}
-		///<summary> Returns the polar rad dz, or the alternate if the dz is already activated.</summary>
+		/// <summary> Returns the polar rad dz, or the alternate if the dz is already activated.</summary>
 		[[nodiscard]] constexpr int GetDeadzoneCurrentValue() const noexcept
 		{
 			using sds::Utilities::ToA;

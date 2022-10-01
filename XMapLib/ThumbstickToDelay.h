@@ -61,7 +61,7 @@ namespace sds
 		// Utility class for performing polar coordinate calculations.
 		PolarCalc_t m_pc;
 
-		///<summary> Used to make some assertions about the settings values this class depends upon. </summary>
+		/// <summary> Used to make some assertions about the settings values this class depends upon. </summary>
 		static void AssertSettings(const MouseSettingsPack& ms) noexcept
 		{
 			//Assertions about the settings values used by this class.
@@ -118,7 +118,7 @@ namespace sds
 				return BuildDelayInfo(cartesianX, -cartesianY);
 			return { m_mouse_settings.settings.MICROSECONDS_MAX, m_mouse_settings.settings.MICROSECONDS_MAX };
 		}
-		///<summary> Calculates microsecond delay values from cartesian X and Y thumbstick values.
+		/// <summary> Calculates microsecond delay values from cartesian X and Y thumbstick values.
 		/// Probably needs optimized. </summary>
 		[[nodiscard]] auto BuildDelayInfo(const auto cartesianX, const auto cartesianY)
 			const noexcept -> std::pair<DelayType, DelayType>
@@ -140,7 +140,7 @@ namespace sds
 			// Convert values to delays
 			return ConvertToDelays(scaledX, scaledY);
 		}
-		///<summary> Converts scaled thumbstick values to delay values. Does not apply any scaling, direct linear interpolation of the inverse percentage. </summary>
+		/// <summary> Converts scaled thumbstick values to delay values. Does not apply any scaling, direct linear interpolation of the inverse percentage. </summary>
 		[[nodiscard]] auto ConvertToDelays(const double xScaledValue, const double yScaledValue)
 			const noexcept -> std::pair<DelayType, DelayType>
 		{
@@ -173,7 +173,7 @@ namespace sds
 			const auto yResult = static_cast<DelayType>(std::lerp(UsDelayMin, UsDelayMax, clampedY));
 			return { xResult, yResult };
 		}
-		///<summary> Gets the (config file loaded) scaling value for the given (float representation) polarThetaAngle. </summary>
+		/// <summary> Gets the (config file loaded) scaling value for the given (float representation) polarThetaAngle. </summary>
 		[[nodiscard]] auto GetScalingMultiplier(const std::floating_point auto polarThetaAngle) const noexcept -> ScaleFloat
 		{
 			// Theta angle of vertical edge of quadrant 1

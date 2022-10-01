@@ -17,14 +17,14 @@ namespace sds
 	template<typename T>
 	using UniquePtrType = std::unique_ptr<T>;
 
-	///<summary> Factory func for making <b>shared</b> smart pointer type. (makes it easier to change to a new type if desired.) </summary>
+	/// <summary> Factory func for making <b>shared</b> smart pointer type. (makes it easier to change to a new type if desired.) </summary>
 	template<typename T>
 	SharedPtrType<T> MakeSharedSmart(auto ... args)
 	{
 		return std::make_shared<T>(args...);
 	}
 
-	///<summary> Factory func for making <b>unique</b> smart pointer type. (makes it easier to change to a new type if desired.) </summary>
+	/// <summary> Factory func for making <b>unique</b> smart pointer type. (makes it easier to change to a new type if desired.) </summary>
 	template<typename T>
 	UniquePtrType<T> MakeUniqueSmart(auto ... args)
 	{

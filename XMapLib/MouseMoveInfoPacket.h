@@ -2,7 +2,7 @@
 #include "stdafx.h"
 namespace sds
 {
-	///<summary> This is an information packet with delay values and other info constructed in
+	/// <summary> This is an information packet with delay values and other info constructed in
 	/// STMouseMapping and sent for use in MouseMoveThread. </summary>
 	///	<remarks>Delay values should never be negative or 0! <para>Axis positive-ness will already have
 	///	any necessary negation done to them <strong>BEFORE</strong> they are added in this struct (for instance, xbox controller Y axis needs inverted).</para></remarks>
