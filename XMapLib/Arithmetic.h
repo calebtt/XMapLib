@@ -1,5 +1,8 @@
 #pragma once
 #include <cmath>
+#include <type_traits>
+#include <utility>
+
 namespace sds::Utilities
 {
 	//concept for being an integral or floating point type
@@ -53,20 +56,24 @@ namespace sds::Utilities
 			return (val >= zeroValue) ? val : -val;
 		}
 	}
-	///<summary> Utility function for computing a non-negative inverse of a floating type percentage. </summary>
-	[[nodiscard]] constexpr auto GetInverseOfPercentage(const auto scale) noexcept
+	/// <summary> Utility function for computing a non-negative inverse of a floating type percentage. </summary>
+	[[nodiscard]] constexpr auto GetInverseOfPercentage(const auto scale) noexcept -> double
 	{
 		const auto invP = (1.0 - scale);
 		if (invP < 0.0)
 			return 0.0;
 		return invP;
 	}
-	///<summary> Utility function for computing a non-negative inverse of a floating type percentage plus 1.0 </summary>
-	[[nodiscard]] constexpr auto GetInverseOfPercentagePlusOne(const auto scale) noexcept
+
+	/// <summary> Utility function for computing a non-negative inverse of a floating type percentage plus 1.0 </summary>
+	/// <remarks> NOTE: that compiling this is probably irreparably broken in VS2019 (or platform toolset 142 instead of 143),
+	///try changing them to normal templates. </remarks>
+	[[nodiscard]] constexpr auto GetInverseOfPercentagePlusOne(const auto scale) noexcept -> decltype(GetInverseOfPercentage(scale))
 	{
 		return GetInverseOfPercentage(scale) + 1.0;
 	}
-	///<summary> Utility function for computing a non-negative float percentage. </summary>
+
+	/// <summary> Utility function for computing a non-negative float percentage. </summary>
 	[[nodiscard]] constexpr auto GetPercentage(const double numerator, const double denominator) noexcept
 	{
 		const auto P = numerator / denominator;
