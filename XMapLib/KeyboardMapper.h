@@ -25,7 +25,7 @@ namespace sds
 		/// </summary>
 		///	<remarks> <b>NOTE</b>: An instance of this is stored in a shared_ptr that is copied
 		///	into the lambda! Not captured by reference, this is intentional to allow the std::function
-		///	type-erasure aspect of the object to extend the lifetime of the object as it requires! </remarks>
+		///	type-erasure aspect of the object to extend the lifetime of the shared_ptr data member of the lambda as it requires! </remarks>
 		struct PollingAndTranslation
 		{
 			// class that contains the keypress handling logic, used async.
