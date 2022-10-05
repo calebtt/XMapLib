@@ -25,9 +25,9 @@ namespace sds
 		// Thread unit, runs tasks.
 		SharedPtrType<ThreadManager> m_statRunner;
 		// Keyboard settings pack, needed for iscontrollerconnected func arcs and others.
-		const KeyboardSettingsPack m_keySettingsPack;
+		KeyboardSettingsPack m_keySettingsPack;
 		// Logging function, optionally passed in by the user.
-		const LogFnType m_logFn;
+		LogFnType m_logFn;
 		// Combined object for polling and translation into action,
 		// to be ran on an STRunner object.
 		SharedPtrType<STKeyboardMapping<LogFnType>> m_statMapping;
