@@ -70,18 +70,18 @@ namespace sds
 		//copy constructor
 		MousePlayerInfo(const MousePlayerInfo& sp)
 		{
-			left_polar_dz.exchange(sp.left_polar_dz);
-			right_polar_dz.exchange(sp.right_polar_dz);
-			player_id.exchange(sp.player_id);
+			left_polar_dz.store(sp.left_polar_dz);
+			right_polar_dz.store(sp.right_polar_dz);
+			player_id.store(sp.player_id);
 		}
 		//assignment
 		MousePlayerInfo& operator=(const MousePlayerInfo& sp)
 		{
 			if (this == &sp)
 				return *this;
-			left_polar_dz.exchange(sp.left_polar_dz);
-			right_polar_dz.exchange(sp.right_polar_dz);
-			player_id.exchange(sp.player_id);
+			left_polar_dz.store(sp.left_polar_dz);
+			right_polar_dz.store(sp.right_polar_dz);
+			player_id.store(sp.player_id);
 			return *this;
 		}
 		//move constructor
