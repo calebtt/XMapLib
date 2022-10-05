@@ -10,19 +10,19 @@ namespace sds::Utilities
 	class TPrior
 	{
 	public:
-		bool SetPriorityHigh()
+		static bool SetPriorityHigh()
 		{
-			HANDLE currentThreadHandle = GetCurrentThread();
+			const HANDLE currentThreadHandle = GetCurrentThread();
 			return SetThreadPriority(currentThreadHandle, THREAD_PRIORITY_HIGHEST) != 0;
 		}
-		bool SetPriorityLow()
+		static bool SetPriorityLow()
 		{
-			HANDLE currentThreadHandle = GetCurrentThread();
+			const HANDLE currentThreadHandle = GetCurrentThread();
 			return SetThreadPriority(currentThreadHandle, THREAD_PRIORITY_LOWEST) != 0;
 		}
-		bool SetPriorityNormal()
+		static bool SetPriorityNormal()
 		{
-			HANDLE currentThreadHandle = GetCurrentThread();
+			const HANDLE currentThreadHandle = GetCurrentThread();
 			return SetThreadPriority(currentThreadHandle, THREAD_PRIORITY_NORMAL) != 0;
 		}
 	};
