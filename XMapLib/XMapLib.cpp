@@ -9,12 +9,12 @@
 using namespace std;
 
 // adds a bunch of key mappings for common binds.
-void AddTestKeyMappings(sds::KeyboardMapper<>& mapper, std::osyncstream &ss);
+void AddTestKeyMappings(sds::KeyboardMapper& mapper, std::osyncstream &ss);
 
 // used to asynchronously await the enter key being pressed, before
 // dumping the contents of the key maps.
 class GetterExit {
-	using KeyboardPtrType = std::shared_ptr<sds::KeyboardMapper<>>;
+	using KeyboardPtrType = std::shared_ptr<sds::KeyboardMapper>;
 	std::unique_ptr<std::jthread> workerThread{};
 	std::atomic<bool> m_exitState{ false };
 	const KeyboardPtrType m_mp;
@@ -51,7 +51,7 @@ auto CreateKeyMapper(const std::shared_ptr<impcool::ThreadUnitPlus> &runner)
 {
 	using namespace sds;
 	KeyboardSettingsPack ksp{};
-	return std::make_shared<KeyboardMapper<>>(runner, ksp, Utilities::LogError);
+	return std::make_shared<KeyboardMapper>(runner, ksp);
 }
 auto CreateMouseMapper(const std::shared_ptr<impcool::ThreadUnitPlus>& runner)
 {
@@ -112,7 +112,7 @@ int main()
 	return 0;
 }
 
-void AddTestKeyMappings(sds::KeyboardMapper<>& mapper, std::osyncstream &ss)
+void AddTestKeyMappings(sds::KeyboardMapper& mapper, std::osyncstream &ss)
 {
 	using namespace sds;
 	const auto buttons =

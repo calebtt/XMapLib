@@ -185,7 +185,6 @@
     <ClInclude Include="SendKeyInput.h" />
     <ClInclude Include="SendMouseInput.h" />
     <ClInclude Include="Smarts.h" />
-    <ClInclude Include="STKeyboardMapping.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StickMap.h" />
     <ClInclude Include="STMouseMapping.h" />

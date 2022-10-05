@@ -104,7 +104,7 @@
   <Class Name="sds::KeyboardMapper&lt;LogFnType&gt;" Collapsed="true">
     <Position X="7.5" Y="1.25" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>gQAAAAAAAKAAAIAAQAAAQAAQICAAAAAAIAAgAAAIgAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>KeyboardMapper.h</FileName>
     </TypeIdentifier>
   </Class>
@@ -162,13 +162,6 @@
     <TypeIdentifier>
       <HashCode>AAAMQAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>ThumbStateWrapper.h</FileName>
-    </TypeIdentifier>
-  </Struct>
-  <Struct Name="sds::STKeyboardMapping&lt;LogFnType&gt;" Collapsed="true">
-    <Position X="5.75" Y="7.5" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>AAAIAAAAAKAAAIAAEAAAQEAAACAEBAAAIAAAAAAIAAg=</HashCode>
-      <FileName>STKeyboardMapping.h</FileName>
     </TypeIdentifier>
   </Struct>
   <Struct Name="sds::KeyboardKeyMap" Collapsed="true">

@@ -39,6 +39,8 @@
 
 #include <ranges>
 
+#include <cassert>
+
 
 // Include some commonly used global stuff.
 #include "Utilities.h"

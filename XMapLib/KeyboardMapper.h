@@ -2,8 +2,8 @@
 #include "stdafx.h"
 #include "KeyboardTranslator.h"
 #include "ControllerStatus.h"
+#include "KeyboardTranslatorAsync.h"
 #include "Utilities.h"
-#include "STKeyboardMapping.h"
 #include "Smarts.h"
 #include "../impcool_sol/immutable_thread_pool/ThreadPool.h"
 #include "../impcool_sol/immutable_thread_pool/ThreadUnitPlus.h"
@@ -16,48 +16,58 @@ namespace sds
 	///	<para> Construction requires an instance of a <c>ThreadUnitPlus</c> type, managing
 	///	infinite tasks running on a single thread. </para>
 	///	</summary>
-	template<class LogFnType = std::function<void(std::string)>>
 	class KeyboardMapper
 	{
+		/// <summary>
+		/// Struct holding an input polling obj and a keypress simulation translator obj,
+		/// with an atomic to disable processing. Also contains the work thread added to the
+		///	thread pool.
+		/// </summary>
+		///	<remarks> <b>NOTE</b>: An instance of this is stored in a shared_ptr that is copied
+		///	into the lambda! Not captured by reference, this is intentional to allow the std::function
+		///	type-erasure aspect of the object to extend the lifetime of the object as it requires! </remarks>
+		struct PollingAndTranslation
+		{
+			// class that contains the keypress handling logic, used async.
+			KeyboardTranslatorAsync m_translator;
+			// class that wraps the syscalls for getting a controller update.
+			KeyboardPoller m_poller;
+			// bool to disable processing
+			std::atomic<bool> m_is_enabled{ true };
+			// Main loop fn (Runs on another thread)
+			void DoWork(const int playerId) noexcept
+			{
+				if (m_is_enabled)
+				{
+					const auto stateUpdate = m_poller.GetUpdatedState(playerId);
+					m_translator.ProcessKeystroke(stateUpdate);
+				}
+			}
+		};
 	public:
 		using ThreadManager = impcool::ThreadUnitPlus;
 	private:
 		// Thread unit, runs tasks.
 		SharedPtrType<ThreadManager> m_statRunner;
-		// Keyboard settings pack, needed for iscontrollerconnected func arcs and others.
+		// Keyboard settings pack, needed for iscontrollerconnected func args and others.
 		KeyboardSettingsPack m_keySettingsPack;
-		// Logging function, optionally passed in by the user.
-		LogFnType m_logFn;
 		// Combined object for polling and translation into action,
-		// to be ran on an STRunner object.
-		SharedPtrType<STKeyboardMapping<LogFnType>> m_statMapping;
+		// to be ran on a thread pool type object.
+		SharedPtrType<PollingAndTranslation> m_statMapping;
 	public:
 		/// <summary>Ctor allows passing in a STRunner thread, and setting custom KeyboardPlayerInfo and KeyboardSettings
 		/// with optional logging function. </summary>
-		KeyboardMapper( const SharedPtrType<ThreadManager> &statRunner, const KeyboardSettingsPack settPack = {}, const LogFnType logFn = nullptr )
+		KeyboardMapper( const SharedPtrType<ThreadManager> &statRunner, const KeyboardSettingsPack settPack = {})
 			: m_statRunner(statRunner),
-			m_keySettingsPack(settPack),
-			m_logFn(logFn)
+			m_keySettingsPack(settPack)
 		{
-			// TODO decide whether the logging fn is worth keeping around or not.
-			// lambda for logging
-			auto LogIfAvailable = [&](const char* msg)
-			{
-				if (m_logFn != nullptr)
-					m_logFn(msg);
-				else
-					throw std::exception(msg);
-			};
-			// if statRunner is nullptr, log error and return
-			if (m_statRunner == nullptr)
-			{
-				LogIfAvailable("Exception: In KeyboardMapper::KeyboardMapper(...): statRunner shared_ptr was null!");
-				return;
-			}
-			// otherwise, add the keyboard mapping obj to the STRunner thread for processing
-			m_statMapping = MakeSharedSmart<STKeyboardMapping<LogFnType>>(m_keySettingsPack, m_logFn);
-			auto tempMapping = m_statMapping;
-			m_statRunner->PushInfiniteTaskBack([tempMapping]() { tempMapping->operator()(); });
+			// if statRunner is nullptr, report error
+			assert(m_statRunner != nullptr);
+			// Add the keyboard polling and translation function to the thread for processing
+			m_statMapping = MakeSharedSmart<PollingAndTranslation>();
+			// lambda to push into the task list
+			const auto taskLam = [=]() { m_statMapping->DoWork(m_keySettingsPack.playerInfo.player_id); };
+			m_statRunner->PushInfiniteTaskBack(taskLam);
 		}
 		// Other constructors/destructors
 		KeyboardMapper(const KeyboardMapper& other) = delete;
@@ -79,7 +89,7 @@ namespace sds
 		{
 			if (m_statRunner == nullptr || m_statMapping == nullptr)
 				return false;
-			return m_statMapping->IsRunning();
+			return m_statMapping->m_is_enabled;
 		}
 		/// <summary><c>AddMap(KeyboardKeyMap)</c> Adds a key map.</summary>
 		///	<returns> returns a <c>std::string</c> containing an error message
@@ -88,32 +98,32 @@ namespace sds
 		{
 			if (m_statMapping == nullptr)
 				return "Exception in KeyboardMapper::AddMap(...): m_statMapping is null.";
-			return m_statMapping->AddMap(button);
+			return m_statMapping->m_translator.AddKeyMap(button);
 		}
 		[[nodiscard]] std::vector<KeyboardKeyMap> GetMaps() const
 		{
 			if (m_statMapping == nullptr)
 				return {};
-			return m_statMapping->GetMaps();
+			return m_statMapping->m_translator.GetMaps();
 		}
-		void ClearMaps() const
+		void ClearMaps() const noexcept
 		{
-			if(m_statMapping != nullptr)
-				m_statMapping->ClearMaps();
+			if (m_statMapping != nullptr)
+				m_statMapping->m_translator.ClearMaps();
 		}
-		/// <summary> Enables processing on the function objects added to the STRunner thread pool.
-		/// Does not start the STRunner thread! </summary>
-		void Start() noexcept
+		/// <summary> Enables processing on the function(s) added to the thread pool.
+		/// Does not start the pool thread! </summary>
+		void Start() const noexcept
 		{
-			if(m_statMapping != nullptr)
-				m_statMapping->Start();
+			if (m_statMapping != nullptr)
+				m_statMapping->m_is_enabled = true;
 		}
-		/// <summary> Disables processing on the function objects added to the STRunner thread pool.
-		///	Does not stop the STRunner thread! </summary>
+		/// <summary> Disables processing on the function(s) added to the thread pool.
+		///	Does not stop the pool thread! </summary>
 		void Stop() const noexcept
 		{
-			if(m_statMapping != nullptr)
-				m_statMapping->Stop();
+			if (m_statMapping != nullptr)
+				m_statMapping->m_is_enabled = false;
 		}
 	};
 }

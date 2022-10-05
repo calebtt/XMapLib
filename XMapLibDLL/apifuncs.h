@@ -29,7 +29,7 @@
 		// Normal use access blocker mutex.
 		std::mutex accessBlocker;
 		std::shared_ptr<ThreadUnit_t> m_ThreadPoolPtr{ std::make_shared<ThreadUnit_t>() };
-		sds::KeyboardMapper<> m_KeyboardMapperInstance{ m_ThreadPoolPtr, m_ksp, &ErrorCallb };
+		sds::KeyboardMapper m_KeyboardMapperInstance{ m_ThreadPoolPtr, m_ksp };
 		sds::MouseMapper<> m_MouseMapperInstance{ m_ThreadPoolPtr, m_msp, &ErrorCallb };
 		// Buffer large enough to hold any map string likely possible.
 		std::array<char, MapInfoBufferSize> m_MapInfoFormatted{};
