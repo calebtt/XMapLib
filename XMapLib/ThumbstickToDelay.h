@@ -153,9 +153,9 @@ namespace sds
 				return sensMult * pIn;
 			};
 			// Alias some settings
-			const PRadInt ThumbstickValueMax{ m_mouse_settings.settings.ThumbstickValueMax };
-			const auto UsDelayMin = m_mouse_settings.settings.MICROSECONDS_MIN;
-			const auto UsDelayMax = m_mouse_settings.settings.MICROSECONDS_MAX;
+			constexpr PRadInt ThumbstickValueMax{ m_mouse_settings.settings.ThumbstickValueMax };
+			constexpr auto UsDelayMin = m_mouse_settings.settings.MICROSECONDS_MIN;
+			constexpr auto UsDelayMax = m_mouse_settings.settings.MICROSECONDS_MAX;
 			// Abs val
 			const auto absCartesianScaledX = std::abs(xScaledValue);
 			const auto absCartesianScaledY = std::abs(yScaledValue);
