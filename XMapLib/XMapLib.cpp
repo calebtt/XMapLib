@@ -50,13 +50,13 @@ protected:
 auto CreateKeyMapper(const std::shared_ptr<impcool::ThreadUnitPlus> &runner)
 {
 	using namespace sds;
-	KeyboardSettingsPack ksp;
+	KeyboardSettingsPack ksp{};
 	return std::make_shared<KeyboardMapper<>>(runner, ksp, Utilities::LogError);
 }
 auto CreateMouseMapper(const std::shared_ptr<impcool::ThreadUnitPlus>& runner)
 {
 	using namespace sds;
-	MouseSettingsPack msp;
+	MouseSettingsPack msp{};
 	return std::make_shared<MouseMapper<>>(runner, msp, Utilities::LogError);
 }
 /* Entry Point */

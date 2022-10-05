@@ -1,0 +1,210 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="GetterExit" Collapsed="true">
+    <Position X="5.75" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAYAABAAAEAAAAAAAAABAEAAEAAAAAQACAAA=</HashCode>
+      <FileName>XMapLib.cpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="sds::Utilities::TPrior" Collapsed="true">
+    <Position X="7.5" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAAAAAAAAAAAAAAAAAAAAABAABAAAAAAAA=</HashCode>
+      <FileName>TPrior.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="sds::Utilities::DelayManager" Collapsed="true">
+    <Position X="4" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAQAAABBABAAAAAAAAAAAAAYAAAAAAgAIAAAAA=</HashCode>
+      <FileName>DelayManager.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="sds::Utilities::SendKeyInput" Collapsed="true">
+    <Position X="7.5" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIAAAAAAAAAAAICACAAACAAAEAQAIAEhAAAAAAA=</HashCode>
+      <FileName>SendKeyInput.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="sds::Utilities::SendMouseInput" Collapsed="true">
+    <Position X="11.75" Y="7.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAACAAAAEIAEAAgEAAAAAA=</HashCode>
+      <FileName>SendMouseInput.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="sds::Utilities::VirtualMap" Collapsed="true">
+    <Position X="5.75" Y="4.25" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>VirtualMap.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="sds::MouseMover" Collapsed="true">
+    <Position X="11.75" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAoIAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAA=</HashCode>
+      <FileName>MouseMover.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="sds::MousePoller" Collapsed="true">
+    <Position X="15.5" Y="7.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAEAAAAARAAAAEAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>MousePoller.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="sds::ThumbDzInfo" Collapsed="true">
+    <Position X="1.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAYAAAAAAAAAAEEAAAAAAAAAAIAAIAgAABAAAAAABAA=</HashCode>
+      <FileName>ThumbDzInfo.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="sds::ThumbstickToDelay&lt;LogFnType, ScaleReader_t&gt;" Collapsed="true">
+    <Position X="13.5" Y="7.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAUAEQAAAAAAEAgAIAAAAQAAAAAAAAEAIB4AYAgAAA=</HashCode>
+      <FileName>ThumbstickToDelay.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="sds::MouseMapper&lt;LogFnType&gt;">
+    <Position X="12.5" Y="1.25" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AACEAEBAAKABAAAAAAAAQAAAKIAAAAEAIAAgAAAAgAA=</HashCode>
+      <FileName>MouseMapper.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="sds::ReadRadiusScaleValues" Collapsed="true">
+    <Position X="5.75" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAEBAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACA=</HashCode>
+      <FileName>ReadRadiusScaleValues.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="sds::KeyboardPollerImpl&lt;LogFnType&gt;" Collapsed="true">
+    <Position X="7.5" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAEAAAAARAAAAAAAAAAAAAAAAAAAAABAAAA=</HashCode>
+      <FileName>KeyboardPoller.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="sds::KeyboardTranslatorAsync" Collapsed="true">
+    <Position X="5.75" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAACAAAAMAAAAAAEAAAAAAAACAAAAABAAAAAAAIAAA=</HashCode>
+      <FileName>KeyboardTranslatorAsync.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="sds::KeyboardMapper&lt;LogFnType&gt;" Collapsed="true">
+    <Position X="7.5" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gQAAAAAAAKAAAIAAQAAAQAAQICAAAAAAIAAgAAAIgAA=</HashCode>
+      <FileName>KeyboardMapper.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="sds::KeyboardTranslator" Collapsed="true">
+    <Position X="4" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAACAABAIAAACAgECQAABgCACAIAoBBAAAgAAAAAAA=</HashCode>
+      <FileName>KeyboardTranslator.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="sds::ControllerStatus" Collapsed="true">
+    <Position X="4" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ControllerStatus.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="sds::MouseMoveInfoPacket" Collapsed="true">
+    <Position X="5.75" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AECAAAAAQAAAgAAAQAAAAAAAAAAAAAAAAAAAAAAAAIA=</HashCode>
+      <FileName>MouseMoveInfoPacket.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="sds::STMouseMapping&lt;LogFnType&gt;" Collapsed="true">
+    <Position X="13.5" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAMAEAAACAAAAAAMAAQQQAACIAEAIAAIQAAAAAAIAQ=</HashCode>
+      <FileName>STMouseMapping.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="sds::MouseSettings" Collapsed="true">
+    <Position X="1.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAAAAQQAAEAAAAEARAAAQAAACAgA1AAgAAAUAAgAAA=</HashCode>
+      <FileName>MouseSettingsPack.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="sds::MousePlayerInfo">
+    <Position X="16" Y="0.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAIBBAAAAAAAAAAAAgAAAAAAAgAAAAQAA=</HashCode>
+      <FileName>MouseSettingsPack.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="sds::MouseSettingsPack" Collapsed="true">
+    <Position X="4" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAACAABAAAAAAAAAAAAA=</HashCode>
+      <FileName>MouseSettingsPack.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="sds::ThumbStateWrapper" Collapsed="true">
+    <Position X="1.5" Y="7" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAMQAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ThumbStateWrapper.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="sds::STKeyboardMapping&lt;LogFnType&gt;" Collapsed="true">
+    <Position X="5.75" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAIAAAAAKAAAIAAEAAAQEAAACAEBAAAIAAAAAAIAAg=</HashCode>
+      <FileName>STKeyboardMapping.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="sds::KeyboardKeyMap" Collapsed="true">
+    <Position X="5.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gAAAAAAgAEABAAAAAAAQAAAAADAAAAAAAAAgAAAAAAA=</HashCode>
+      <FileName>KeyboardKeyMap.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="sds::KeyboardPlayerInfo" Collapsed="true">
+    <Position X="7.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAhIAAAAAAAAAAAAAAAAAAAAgAAAAAAA=</HashCode>
+      <FileName>KeyboardSettingsPack.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="sds::KeyboardSettings" Collapsed="true">
+    <Position X="1.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAACAAEAAAAAAAAAAAAiAAAA=</HashCode>
+      <FileName>KeyboardSettingsPack.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="sds::KeyboardSettingsPack" Collapsed="true">
+    <Position X="4" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAACAABAAAAAAAAAAAAA=</HashCode>
+      <FileName>KeyboardSettingsPack.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Enum Name="sds::StickMap" Collapsed="true">
+    <Position X="1.5" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEEAAAAAAA=</HashCode>
+      <FileName>StickMap.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
