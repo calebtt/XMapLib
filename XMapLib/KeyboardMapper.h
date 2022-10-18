@@ -65,8 +65,10 @@ namespace sds
 			assert(m_statRunner != nullptr);
 			// Add the keyboard polling and translation function to the thread for processing
 			m_statMapping = MakeSharedSmart<PollingAndTranslation>();
+			std::shared_ptr<PollingAndTranslation> tempMapping = m_statMapping;
 			// lambda to push into the task list
-			const auto taskLam = [=]() { m_statMapping->DoWork(m_keySettingsPack.playerInfo.player_id); };
+			const int pid = m_keySettingsPack.playerInfo.player_id;
+			const auto taskLam = [tempMapping, pid]() { tempMapping->DoWork(pid); };
 			m_statRunner->PushInfiniteTaskBack(taskLam);
 		}
 		// Other constructors/destructors

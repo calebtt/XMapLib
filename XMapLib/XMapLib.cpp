@@ -66,9 +66,10 @@ int main()
 	using namespace sds::Utilities;
 	//construct some mapping objects...
 	auto threadPool = std::make_shared<impcool::ThreadUnitPlus>();
+	auto keyboardThreadPool = std::make_shared<impcool::ThreadUnitPlus>();
 	threadPool->CreateThread();
 	auto mouser = CreateMouseMapper(threadPool);
-	auto keyer = CreateKeyMapper(threadPool);
+	auto keyer = CreateKeyMapper(keyboardThreadPool);
 
 	std::osyncstream ss(std::cout);
 	AddTestKeyMappings(*keyer, ss);
