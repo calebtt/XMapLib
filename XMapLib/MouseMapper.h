@@ -1,12 +1,14 @@
 #pragma once
 #include "stdafx.h"
+#include <cassert>
 #include "ThumbstickToDelay.h"
 #include "ThumbDzInfo.h"
 #include "Utilities.h"
 #include "ControllerStatus.h"
 #include "STMouseMapping.h"
-#include "../impcool_sol/immutable_thread_pool/ThreadPool.h"
-#include "../impcool_sol/immutable_thread_pool/ThreadUnitPlus.h"
+#include "../impcool_sol/immutable_thread_pool/ThreadPooler.h"
+#include "../impcool_sol/immutable_thread_pool/ThreadUnitPlusPlus.h"
+#include "../impcool_sol/immutable_thread_pool/ThreadTaskSource.h"
 
 namespace sds
 {
@@ -16,48 +18,39 @@ namespace sds
 	/// setting the sensitivity as well as setting which thumbstick to use. </summary>
 	///	<remarks>If a <code>std::shared_ptr{STRunner}</code> is not passed into the constructor,
 	///	one will NOT be created for use. </remarks>
-	template<class LogFnType = std::function<void(std::string)>>
+	template<typename ThreadPool_t = imp::ThreadUnitPlusPlus>
 	class MouseMapper
 	{
 		// Thread pool class, our work functors get added to here and called in succession on a separate thread
 		// for performance reasons.
-		SharedPtrType<impcool::ThreadUnitPlus> m_statRunner;
+		SharedPtrType<ThreadPool_t> m_statRunner;
 		// Mouse settings pack, needed for iscontrollerconnected func args and others.
-		const MouseSettingsPack m_mouseSettingsPack;
-		// data wrapper class, added to thread pool STRunner, performs the polling, calculation, and mouse moving.
-		SharedPtrType<STMouseMapping<>> m_stmapper{
-		MakeSharedSmart<STMouseMapping<>>(m_mouseSettingsPack.settings.SENSITIVITY_DEFAULT, StickMap::RIGHT_STICK) };
+		MouseSettingsPack m_mouseSettingsPack;
+		// Combined object used for most of the mouse input processing, added to thread pool, performs the polling, calculation, and mouse moving.
+		SharedPtrType<STMouseMapping<>> m_stmapper;
 	public:
 		/// <summary>Ctor allows setting a custom MousePlayerInfo</summary>
 		MouseMapper(
-			const SharedPtrType<impcool::ThreadUnitPlus> &statRunner,
-			const MouseSettingsPack settings = {}, 
-			const LogFnType logFn = nullptr
+			const SharedPtrType<ThreadPool_t> &statRunner,
+			const MouseSettingsPack &settings = {}
 		)
 		: m_statRunner(statRunner),
 		  m_mouseSettingsPack(settings)
 	{
-			// lambda for logging
-			auto LogIfAvailable = [&](const char* msg)
-			{
-				if (logFn != nullptr)
-					logFn(msg);
-				else
-					throw std::exception(msg);
-			};
-			// if statRunner is nullptr, log error and return
-			if (m_statRunner == nullptr)
-			{
-				LogIfAvailable("Exception: In MouseMapper::MouseMapper(...): statRunner shared_ptr was null!");
-				return;
-			}
-			SharedPtrType<STMouseMapping<>> tempMapper = m_stmapper;
-			m_statRunner->PushInfiniteTaskBack(
-				[tempMapper]()
+			assert(m_statRunner != nullptr);
+			// Construct an STMouseMapping object.
+			auto tempMapper = MakeSharedSmart<STMouseMapping<>>(m_mouseSettingsPack.settings.SensitivityValue, m_mouseSettingsPack.settings.SelectedStick);
+			// Copy into class data member for lifetime control and access to it's functions.
+			m_stmapper = tempMapper;
+			// Get the task source, push a new task.
+			auto tempSource = m_statRunner->GetTaskSource();
+			// Note, we are capturing by value the shared_ptr!
+			tempSource.PushInfiniteTaskBack([tempMapper]()
 				{
 					tempMapper->operator()();
-				}
-			);
+				});
+			// Finally, set the task source with our additional task added to the end.
+			m_statRunner->SetTaskSource(tempSource);
 		}
 		MouseMapper(const MouseMapper& other) = delete;
 		MouseMapper(MouseMapper&& other) = delete;

@@ -25,7 +25,7 @@ namespace sds
 		}
 		/// <summary> Main function for use, processes <c>KeyboardPoller::KeyStateWrapper</c> into key presses and mouse clicks. </summary>
 		///	<param name="stroke">A KeyStateWrapper containing controller button press information. </param>
-		void ProcessKeystroke(const KeyboardPoller::KeyStateWrapper& stroke)
+		void ProcessKeystroke(const KeyStateWrapper& stroke)
 		{
 			LockType tempLock(m_translatorMutex);
 			m_translator.ProcessKeystroke(stroke);
@@ -40,7 +40,7 @@ namespace sds
 		/// Adds a controller key map for processing. </summary>
 		/// <param name="w">the controller to keystroke mapping detail</param>
 		/// <returns>error message on error, empty string otherwise</returns>
-		std::string AddKeyMap(const KeyboardKeyMap w)
+		std::string AddKeyMap(const ControllerButtonToActionMap w)
 		{
 			LockType tempLock(m_translatorMutex);
 			return m_translator.AddKeyMap(w);
@@ -54,7 +54,7 @@ namespace sds
 		}
 		/// <summary>Returns a copy of the internal controller button to key mappings. </summary>
 		[[nodiscard]]
-		std::vector<KeyboardKeyMap> GetMaps() noexcept
+		std::vector<ControllerButtonToActionMap> GetMaps() noexcept
 		{
 			LockType tempLock(m_translatorMutex);
 			return m_translator.GetMaps();

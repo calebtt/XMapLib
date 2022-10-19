@@ -40,6 +40,9 @@
     <Filter Include="Header Files\Mouse\ThumbInfoWrappers">
       <UniqueIdentifier>{b8c463e2-24b4-4ab2-b95f-fdfabd2da928}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Keyboard\KeyInfoWrappers">
+      <UniqueIdentifier>{b10fb71e-8161-4c60-94e7-db754fb603eb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="XMapLib.cpp">
@@ -53,16 +56,10 @@
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="StickMap.h">
-      <Filter>Header Files\Mouse</Filter>
-    </ClInclude>
     <ClInclude Include="ThumbstickToDelay.h">
       <Filter>Header Files\Mouse</Filter>
     </ClInclude>
     <ClInclude Include="KeyboardTranslator.h">
-      <Filter>Header Files\Keyboard</Filter>
-    </ClInclude>
-    <ClInclude Include="KeyboardKeyMap.h">
       <Filter>Header Files\Keyboard</Filter>
     </ClInclude>
     <ClInclude Include="XELog.h">
@@ -139,6 +136,21 @@
     </ClInclude>
     <ClInclude Include="ScalingConcepts.h">
       <Filter>Header Files\Mouse\SettingsAndConfig</Filter>
+    </ClInclude>
+    <ClInclude Include="StickMap.h">
+      <Filter>Header Files\Mouse\SettingsAndConfig</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyStateWrapper.h">
+      <Filter>Header Files\Keyboard\KeyInfoWrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyMapSource.h">
+      <Filter>Header Files\Keyboard\KeyInfoWrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="ControllerButtonToActionMap.h">
+      <Filter>Header Files\Keyboard\KeyInfoWrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="CallbackRange.h">
+      <Filter>Header Files\Utilities\Async</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -87,7 +87,7 @@ extern "C"
 		//currentInstance->m_ThreadPoolPtr->CreateThread();
 	}
 
-	/// <summary> Called to add a <c>sds::KeyboardKeyMap</c> map information to the
+	/// <summary> Called to add a <c>sds::ControllerButtonToActionMap</c> map information to the
 	///	running <c>KeyboardMapper</c>. </summary>
 	/// <param name="vkSender">controller button virtual keycode</param>
 	/// <param name="vkMapping">keyboard or mouse button virtual keycode</param>
@@ -96,7 +96,7 @@ extern "C"
 	XMPLIB_EXPORT bool XMapLibAddMap(int vkSender, int vkMapping, bool bUsesRepeat)
 	{
 		LockType tempLock(currentInstance->accessBlocker);
-		return currentInstance->m_KeyboardMapperInstance.AddMap(sds::KeyboardKeyMap(vkSender, vkMapping, bUsesRepeat)).empty();
+		return currentInstance->m_KeyboardMapperInstance.AddMap(sds::ControllerButtonToActionMap(vkSender, vkMapping, bUsesRepeat)).empty();
 	}
 
 	/// <summary> Called to clear controller to keyboard key mappings. </summary>
@@ -114,7 +114,7 @@ extern "C"
 	XMPLIB_EXPORT const char * XMapLibGetMaps()
 	{
 		LockType tempLock(currentInstance->accessBlocker);
-		const std::vector<sds::KeyboardKeyMap> maps = currentInstance->m_KeyboardMapperInstance.GetMaps();
+		const std::vector<sds::ControllerButtonToActionMap> maps = currentInstance->m_KeyboardMapperInstance.GetMaps();
 		std::string localString;
 		for (const auto &lmp : maps)
 			localString << lmp;

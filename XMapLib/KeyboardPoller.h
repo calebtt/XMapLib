@@ -1,24 +1,14 @@
 #pragma once
 #include "stdafx.h"
+#include "KeyStateWrapper.h"
 
 namespace sds
 {
 	/// <summary> Encapsulates the logic for querying the OS to gather information about a controller keypress event. </summary>
-	template<class LogFnType = std::function<void(std::string)>>
-	class KeyboardPollerImpl
+	class KeyboardPoller
 	{
-		const LogFnType m_logFn;
 		XINPUT_KEYSTROKE m_tempState{};
 	public:
-		KeyboardPollerImpl(const LogFnType logFn = nullptr) : m_logFn(logFn)
-		{ }
-		/// <summary> Wrapper for XINPUT_KEYSTROKE in this case, to make the code processing it more portable. </summary>
-		struct KeyStateWrapper
-		{
-			//virtual keycode for controller button activity.
-			unsigned short VirtualKey{};
-			unsigned short Flags{};
-		};
 		/// <summary>Returns an updated KeyStateWrapper containing information gathered about a controller keypress. </summary>
 		KeyStateWrapper GetUpdatedState(const int playerId) noexcept
 		{
@@ -30,16 +20,8 @@ namespace sds
 			{
 				return KeyStateWrapper{ .VirtualKey = m_tempState.VirtualKey, .Flags = m_tempState.Flags };
 			}
-			if(error == ERROR_BAD_ARGUMENTS)
-			{
-				const char* msg = "Exception in KeyboardPoller::GetUpdatedState(...): Call to XInputGetKeystroke() reported ERROR_BAD_ARGUMENTS";
-				if (m_logFn != nullptr)
-					m_logFn(msg);
-			}
+			assert(error != ERROR_BAD_ARGUMENTS);
 			return {};
 		}
 	};
-
-	// Using declaration for standard config
-	using KeyboardPoller = KeyboardPollerImpl<>;
 }

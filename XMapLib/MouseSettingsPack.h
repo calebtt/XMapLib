@@ -1,11 +1,18 @@
 #pragma once
 #include "stdafx.h"
+#include "StickMap.h"
+
 namespace sds
 {
 	/// <summary> Some mouse movement mapping program specific constants that might someday be configurable,
 	/// and the functions that help validate associated values. </summary>
 	struct MouseSettings
 	{
+		// Current mouse sensitivity value.
+		int SensitivityValue{SENSITIVITY_DEFAULT};
+		// Current selected thumbstick.
+		StickMap SelectedStick{ StickMap::RIGHT_STICK };
+
 		//Pixels Magnitude is the number of pixels each iteration of the loop sends in MouseMoveThread.
 		static constexpr int PIXELS_MAGNITUDE{ 1 };
 		//Pixels Nomove is the number of pixels each iteration of the loop sends in MouseMoveThread to indicate no movement.

@@ -170,11 +170,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Arithmetic.h" />
+    <ClInclude Include="CallbackRange.h" />
     <ClInclude Include="ControllerStatus.h" />
     <ClInclude Include="DelayManager.h" />
     <ClInclude Include="KeyboardPoller.h" />
     <ClInclude Include="KeyboardSettingsPack.h" />
     <ClInclude Include="KeyboardTranslatorAsync.h" />
+    <ClInclude Include="KeyMapSource.h" />
+    <ClInclude Include="KeyStateWrapper.h" />
     <ClInclude Include="MouseMoveInfoPacket.h" />
     <ClInclude Include="MouseMover.h" />
     <ClInclude Include="MousePoller.h" />
@@ -196,7 +199,7 @@
     <ClInclude Include="VirtualMap.h" />
     <ClInclude Include="XELog.h" />
     <ClInclude Include="KeyboardMapper.h" />
-    <ClInclude Include="KeyboardKeyMap.h" />
+    <ClInclude Include="ControllerButtonToActionMap.h" />
     <ClInclude Include="MouseMapper.h" />
     <ClInclude Include="KeyboardTranslator.h" />
   </ItemGroup>

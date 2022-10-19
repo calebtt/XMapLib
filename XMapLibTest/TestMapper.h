@@ -13,7 +13,7 @@ namespace XMapLibTest
 		// Used for testing KeyboardMapper's ability to add maps and report erroneous ones.
 		TEST_METHOD(TestSetMapInfo)
 		{
-			//Testing KeyboardKeyMap
+			//Testing ControllerButtonToActionMap
 			using namespace sds;
 			Logger::WriteMessage("Begin TestSetMapInfo()");
 
@@ -26,7 +26,7 @@ namespace XMapLibTest
 				std::string ert = "Testmap [input]: ";
 				ert += s;
 				ert += " [expect result no error message]: ";
-				const KeyboardKeyMap key(VK_PAD_DPAD_DOWN, s, true);
+				const ControllerButtonToActionMap key(VK_PAD_DPAD_DOWN, s, true);
 				const std::string ertt = mp.AddMap(key);
 				std::string composite = ert + ertt;
 				std::wstring errMsg;
