@@ -17,8 +17,9 @@ namespace sds
 	//TODO updating the state machine as these tasks are performed needs a clever solution.
 
 	/// <summary> Manages creation of and operating on a collection of controller button to keyboard key maps.
+	///	It will be sure to add the callbacks that update the state machine (KeyboardTranslator) to keep track of the events.
 	/// App specific logic. </summary>
-	struct KeyMapSource
+	struct KeyboardMapSource
 	{
 	public:
 		// PUBLIC data member, accessible directly.
@@ -27,7 +28,7 @@ namespace sds
 		KeyboardSettingsPack m_ksp;
 		KeyboardTranslator* m_pTranslator;
 	public:
-		KeyMapSource(KeyboardTranslator &kt) : m_pTranslator(&kt)
+		KeyboardMapSource(KeyboardTranslator &kt) : m_pTranslator(&kt)
 		{
 			//TODO store a non-owning pointer to this. It provides the state machine logic.
 			// Might also extract the logic in a form that is easier to use. Updating the state machine
@@ -42,12 +43,12 @@ namespace sds
 		}
 		auto AddMap(const char mappedFromChar, const int controllerVk)
 		{
-			ControllerButtonToActionMap cbtam;
 			// Get Virtual Keycode from char.
-			const auto printable = Utilities::VirtualMap::GetVKFromChar(mappedFromChar);
+			const auto vkOfPrintable = static_cast<int>(Utilities::VirtualMap::GetVKFromChar(mappedFromChar));
+			ControllerButtonToActionMap cbtam{ controllerVk, vkOfPrintable, true };
 			auto sendingFn = [=, this]()
 			{
-				SendTheKey(printable, true, ControllerButtonToActionMap::ActionType::KEYDOWN);
+				SendTheKey(cbtam, true, ControllerButtonToActionMap::ActionType::KEYDOWN);
 			};
 			//cbtam.ActivationTasks.PushInfiniteTaskBack();
 
@@ -65,7 +66,7 @@ namespace sds
 		Utilities::SendKeyInput m_key_send;
 	private:
 		/// <summary>Does the key send call, updates LastAction and updates LastSentTime</summary>
-		void SendTheKey(ControllerButtonToActionMap& mp, const bool keyDown, ControllerButtonToActionMap::ActionType action) noexcept
+		void SendTheKey(ControllerButtonToActionMap &mp, const bool keyDown, ControllerButtonToActionMap::ActionType action) noexcept
 		{
 			mp.LastAction = action;
 			m_key_send.SendScanCode(mp.MappedToVK, keyDown);

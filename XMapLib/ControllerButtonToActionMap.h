@@ -7,9 +7,7 @@
 
 namespace sds
 {
-	/// <summary>
-	/// Somewhat generic utility class for holding controller button to keyboard button maps.
-	/// </summary>
+	/// <summary> Somewhat generic utility class for holding controller button to [action] maps. </summary>
 	struct ControllerButtonToActionMap
 	{
 		using ClockType = std::chrono::high_resolution_clock;
@@ -28,7 +26,7 @@ namespace sds
 		bool UsesRepeat{ true }; // Uses the key-repeat behavior when held down
 		ActionType LastAction{ ActionType::NONE };
 		Utilities::DelayManager LastSentTime{ KeyboardSettings::MICROSECONDS_DELAY_KEYREPEAT };
-		// Functions/tasks to be called on activation.
+		// Functions/tasks to be called on activation, the map is SendingElementVK to callback list.
 		CallbackRange ActivationTasks;
 		CallbackRange DeactivationTasks;
 		CallbackRange RepeatTasks;

@@ -176,7 +176,7 @@
     <ClInclude Include="KeyboardPoller.h" />
     <ClInclude Include="KeyboardSettingsPack.h" />
     <ClInclude Include="KeyboardTranslatorAsync.h" />
-    <ClInclude Include="KeyMapSource.h" />
+    <ClInclude Include="KeyboardMapSource.h" />
     <ClInclude Include="KeyStateWrapper.h" />
     <ClInclude Include="MouseMoveInfoPacket.h" />
     <ClInclude Include="MouseMover.h" />
