@@ -33,6 +33,7 @@ namespace sds::Utilities
 	/// <summary> Absolute value replacement function. This version is constexpr! </summary>
 	/// <param name="val">Number value to perform absolute value on</param>
 	/// <returns>Returns the absolute value of val</returns>
+	///	<remarks> Unrepresentable negative values will be returned as the type's maximum value! </remarks>
 	[[nodiscard]] constexpr auto ConstAbs(const auto val) noexcept
 	{
 		if constexpr (std::unsigned_integral<decltype(val)>)
@@ -41,6 +42,7 @@ namespace sds::Utilities
 		}
 		else
 		{
+			// This is a runtime check of a boolean provided at compile time.
 			if (!std::is_constant_evaluated())
 				return std::abs(val);
 			//For integral types (not floating point) we can test perfect equality to the min value

@@ -10,6 +10,7 @@ namespace sds
 		XINPUT_KEYSTROKE m_tempState{};
 	public:
 		/// <summary>Returns an updated KeyStateWrapper containing information gathered about a controller keypress. </summary>
+		[[nodiscard]]
 		KeyStateWrapper GetUpdatedState(const int playerId) noexcept
 		{
 			// zero controller state struct

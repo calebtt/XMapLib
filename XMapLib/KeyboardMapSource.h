@@ -21,56 +21,67 @@ namespace sds
 	/// App specific logic. </summary>
 	struct KeyboardMapSource
 	{
-	public:
-		// PUBLIC data member, accessible directly.
-		std::vector<ControllerButtonToActionMap> KeyMaps;
-		// PUBLIC data member, keyboard settings.
+		using InpType = sds::ControllerButtonToActionMap::ActionType;
+	private:
+		// non-owning pointer to a KeyboardTranslator object.
+		KeyboardTranslator* m_pTranslator{};
+		// List of controller btn to kbd key maps (this class is used explicitly to create
+		// the keyboard key maps, not just controller btn to action).
+		std::vector<ControllerButtonToActionMap> m_keyMaps;
+		// keyboard settings pack
 		KeyboardSettingsPack m_ksp;
-		KeyboardTranslator* m_pTranslator;
+		Utilities::SendKeyInput m_key_send;
 	public:
-		KeyboardMapSource(KeyboardTranslator &kt) : m_pTranslator(&kt)
+		explicit KeyboardMapSource(KeyboardTranslator &kt) : m_pTranslator(&kt)
 		{
-			//TODO store a non-owning pointer to this. It provides the state machine logic.
 			// Might also extract the logic in a form that is easier to use. Updating the state machine
 			// would entail adding to the end of the task list for each functionality in ControllerButtonToActionMap.
 			// TODO this class exists to properly construct the mapping objects explicitly for the case of controller btn to keyboard btn mappings, using the state machine.
+		}
+		~KeyboardMapSource()
+		{
+			//Cleanup in-progress key-presses.
+			CleanupInProgressEvents();
 		}
 	public:
 		/// <summary><c>AddMap(ControllerButtonToActionMap)</c> Adds a key map.</summary>
 		void AddMap(const ControllerButtonToActionMap button)
 		{
-			KeyMaps.emplace_back(button);
+			m_keyMaps.emplace_back(button);
 		}
-		auto AddMap(const char mappedFromChar, const int controllerVk)
+		auto AddMap(const char mappedFromChar, const int controllerVk, const bool useRepeat)
 		{
 			// Get Virtual Keycode from char.
 			const auto vkOfPrintable = static_cast<int>(Utilities::VirtualMap::GetVKFromChar(mappedFromChar));
 			ControllerButtonToActionMap cbtam{ controllerVk, vkOfPrintable, true };
-			auto sendingFn = [=, this]()
-			{
-				SendTheKey(cbtam, true, ControllerButtonToActionMap::ActionType::KEYDOWN);
-			};
-			//cbtam.ActivationTasks.PushInfiniteTaskBack();
-
+			cbtam.ActivationTasks.PushInfiniteTaskBack([&]() { m_pTranslator->OnKeyDown(cbtam); });
+			cbtam.DeactivationTasks.PushInfiniteTaskBack([&]() { m_pTranslator->OnKeyUp(cbtam); });
+			if(useRepeat)
+				cbtam.RepeatTasks.PushInfiniteTaskBack([&]() { m_pTranslator->OnKeyRepeat(cbtam); });
+			// Add the map to the internal list.
+			m_keyMaps.emplace_back(cbtam);
 		}
 		[[nodiscard]]
 		auto GetMaps() const noexcept -> std::vector<ControllerButtonToActionMap>
 		{
-			return KeyMaps;
+			return m_keyMaps;
 		}
 		void ClearMaps() noexcept
 		{
-			KeyMaps.clear();
+			CleanupInProgressEvents();
+			m_keyMaps.clear();
 		}
 	private:
-		Utilities::SendKeyInput m_key_send;
-	private:
-		/// <summary>Does the key send call, updates LastAction and updates LastSentTime</summary>
-		void SendTheKey(ControllerButtonToActionMap &mp, const bool keyDown, ControllerButtonToActionMap::ActionType action) noexcept
+		/// <summary>Call this function to send key-ups for any in-progress key presses.</summary>
+		void CleanupInProgressEvents() const
 		{
-			mp.LastAction = action;
-			m_key_send.SendScanCode(mp.MappedToVK, keyDown);
-			mp.LastSentTime.Reset(m_ksp.settings.MICROSECONDS_DELAY_KEYREPEAT); // update last sent time
+			for (auto& m : m_keyMaps)
+			{
+				if (m.LastAction == InpType::KEYDOWN || m.LastAction == InpType::KEYREPEAT)
+				{
+					m.CleanupTasks();
+				}
+			}
 		}
 	};
 }

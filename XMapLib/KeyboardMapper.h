@@ -53,7 +53,8 @@ namespace sds
 			}
 		};
 	public:
-		using ThreadManager = imp::ThreadUnitPlusPlus;
+		using ThreadManager = ThreadPool_t;
+		using KeyMapRange_t = std::deque<ControllerButtonToActionMap>;
 	private:
 		// Thread unit, runs tasks.
 		SharedPtrType<ThreadManager> m_statRunner;
@@ -62,6 +63,8 @@ namespace sds
 		// Combined object for polling and translation into action,
 		// to be ran on a thread pool type object.
 		SharedPtrType<PollingAndTranslation> m_statMapping;
+		// Range holding our key maps.
+		KeyMapRange_t m_keyMaps;
 	public:
 		/// <summary>Ctor allows passing in a STRunner thread, and setting custom KeyboardPlayerInfo and KeyboardSettings
 		/// with optional logging function. </summary>
@@ -107,7 +110,6 @@ namespace sds
 				return false;
 			return m_statMapping->m_is_enabled;
 		}
-
 		/// <summary> Enables processing on the function(s) added to the thread pool.
 		/// Does not start the pool thread! </summary>
 		void Start() const noexcept
@@ -121,6 +123,21 @@ namespace sds
 		{
 			if (m_statMapping != nullptr)
 				m_statMapping->m_is_enabled = false;
+		}
+	public:
+		[[nodiscard]]
+		auto GetMaps() const noexcept -> KeyMapRange_t
+		{
+			return m_keyMaps;
+		}
+		// Call with no arg to clear the key maps.
+		void SetMaps(const KeyMapRange_t &keys = {})
+		{
+			m_keyMaps = {};
+			for (const auto& elem : keys)
+			{
+				m_keyMaps.emplace_back(elem);
+			}
 		}
 	};
 }

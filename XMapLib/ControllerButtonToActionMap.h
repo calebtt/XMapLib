@@ -7,7 +7,62 @@
 
 namespace sds
 {
-	/// <summary> Somewhat generic utility class for holding controller button to [action] maps. </summary>
+	/// <summary>
+	/// The specific data used to describe the controller button in the mapping.
+	/// </summary>
+	struct ControllerButtonData
+	{
+		// VK of controller button
+		int VK{ 0 };
+		//int SendingElementVK{ 0 };
+	};
+
+	/// <summary>
+	/// The specific data used to describe the mapped-to (kbd/mouse) key in the mapping.
+	/// </summary>
+	struct MappedKeyData
+	{
+		// VK of mapped-to input (key or mouse button)
+		int VK{ 0 };
+		//int MappedToVK{ 0 };
+	};
+
+	/// <summary>
+	/// The extra information regarding the controller button to keyboard key mapping.
+	/// </summary>
+	struct ControllerToKeyMapData
+	{
+		// Uses the key-repeat behavior when held down
+		bool UsesRepeat{ true };
+	};
+
+	/// <summary>
+	/// Specific info regarding the state machine which is used to track the events being fired,
+	///	based on what the controller button reports.
+	/// </summary>
+	struct ControllerButtonStateData
+	{
+		enum class ActionType : int
+		{
+			NONE = 0,
+			KEYDOWN = XINPUT_KEYSTROKE_KEYDOWN,
+			KEYREPEAT = XINPUT_KEYSTROKE_REPEAT,
+			KEYUP = XINPUT_KEYSTROKE_KEYUP
+		};
+		// state machine info for controller btn
+		ActionType LastAction{ ActionType::NONE };
+		// last sent time, normally used for key repeat
+		Utilities::DelayManager LastSentTime{ KeyboardSettings::MICROSECONDS_DELAY_KEYREPEAT };
+	};
+
+
+	/// <summary> For operating on controller button to [action] callback fn maps,
+	///	it contains and manages the state machine logic used to activate/de-activate the callbacks.
+	/// The mapping is SendingElementVK to callback list. </summary>
+	template<typename Activation_t = CallbackRange,
+	typename Deactivation_t = CallbackRange,
+	typename Repeat_t = CallbackRange,
+	typename Cleanup_t = CallbackRange>
 	struct ControllerButtonToActionMap
 	{
 		using ClockType = std::chrono::high_resolution_clock;
@@ -20,20 +75,36 @@ namespace sds
 			KEYUP = XINPUT_KEYSTROKE_KEYUP
 		};
 	public:
-		//Struct members
-		int SendingElementVK{ 0 }; // VK of controller button
-		int MappedToVK{ 0 }; // VK of mapped-to input (key or mouse button)
-		bool UsesRepeat{ true }; // Uses the key-repeat behavior when held down
+		// VK of controller button
+		int SendingElementVK{ 0 };
+		// VK of mapped-to input (key or mouse button)
+		int MappedToVK{ 0 };
+		// Uses the key-repeat behavior when held down
+		bool UsesRepeat{ true }; 
 		ActionType LastAction{ ActionType::NONE };
 		Utilities::DelayManager LastSentTime{ KeyboardSettings::MICROSECONDS_DELAY_KEYREPEAT };
-		// Functions/tasks to be called on activation, the map is SendingElementVK to callback list.
-		CallbackRange ActivationTasks;
-		CallbackRange DeactivationTasks;
-		CallbackRange RepeatTasks;
+
+		// Tasks called on key-down of the controller button (key-down event)
+		Activation_t ActivationTasks;
+		// Tasks called on key-up of the controller button (key-up event)
+		Deactivation_t DeactivationTasks;
+		// Tasks called on key-repeat of the controller button (key-repeat event)
+		Repeat_t RepeatTasks;
+		/// <summary> These are the tasks called on destruction (or otherwise, cleanup), but not by this instance. </summary>
+		///	<remarks> Not called on destruction of this instance, because that would imply mutating non-local state.
+		///	They *may* be called by a state machine or container managing a collection. It would be a surprise for a user
+		///	to copy an instance of this class and upon destruction notice that it sent a key-up event or similar. </remarks>
+		Cleanup_t CleanupTasks;
 	public:
 		//Ctor
-		ControllerButtonToActionMap(const int controllerElementVK, const int keyboardMouseElementVK, const bool useRepeat)
-			: SendingElementVK(controllerElementVK), MappedToVK(keyboardMouseElementVK), UsesRepeat(useRepeat)
+		ControllerButtonToActionMap(
+			const int controllerElementVK, 
+			const int keyboardMouseElementVK, 
+			const bool useRepeat)
+			:
+		SendingElementVK(controllerElementVK),
+		MappedToVK(keyboardMouseElementVK),
+		UsesRepeat(useRepeat)
 		{
 		}
 		ControllerButtonToActionMap() = default;
@@ -51,7 +122,7 @@ namespace sds
 		friend std::ostream& operator<<(std::ostream& os, const ActionType& obj)
 		{
 			std::osyncstream ss(os);
-			ss << static_cast<int>(obj);
+			ss << static_cast<std::underlying_type<ActionType>>(obj);
 			return os;
 		}
 		/// <summary>

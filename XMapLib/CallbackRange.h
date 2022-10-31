@@ -32,6 +32,19 @@ namespace sds
         {
             TaskList = taskList;
         }
+        CallbackRange(const TaskInfo&& ti)
+        {
+            PushInfiniteTaskBack(ti);
+        }
+    public:
+        /// <summary> Calls operator() on the collection of tasks. </summary>
+        void operator()() const
+        {
+            for (auto& elem : TaskList)
+                if(elem != nullptr)
+                    elem();
+        }
+    public:
         /// <summary> Push a function with zero or more arguments, but no return value, into the task list. </summary>
         /// <typeparam name="F"> The type of the function. </typeparam>
         /// <typeparam name="A"> The types of the arguments. </typeparam>
@@ -42,14 +55,13 @@ namespace sds
         {
             if constexpr (sizeof...(args) == 0)
             {
-                TaskList.emplace_back(std::function<void()>{taskFn});
+                TaskList.emplace_back(TaskInfo{taskFn});
             }
             else
             {
-                TaskList.emplace_back(std::function<void()>([taskFn, args...] { taskFn(args...); }));
+                TaskList.emplace_back(TaskInfo([taskFn, args...] { taskFn(args...); }));
             }
         }
-
         /// <summary> Push a function with zero or more arguments, but no return value, into the task list. </summary>
         /// <typeparam name="F"> The type of the function. </typeparam>
         /// <typeparam name="A"> The types of the arguments. </typeparam>
@@ -60,14 +72,15 @@ namespace sds
         {
             if constexpr (sizeof...(args) == 0)
             {
-                TaskList.emplace_front(std::function<void()>{task});
+                TaskList.emplace_front(TaskInfo{task});
             }
             else
             {
-                TaskList.emplace_front(std::function<void()>([task, args...] { task(args...); }));
+                TaskList.emplace_front(TaskInfo([task, args...] { task(args...); }));
             }
         }
-
+        /// <summary> Sets the underlying task list to the new range. </summary>
+        /// <param name="taskContainer"> range meeting IsFnRange concept </param>
         void ResetTaskList(const IsFnRange auto& taskContainer)
         {
             TaskList = {};
