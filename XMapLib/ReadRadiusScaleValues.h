@@ -25,8 +25,8 @@ namespace sds
 		inline static MutexType m_fileMutex;
 		// Local shared cache of previous successful read of config file.
 		inline static RangeType m_staticScalingValuesCopy;
-		// Program settings struct for mouse infrastructure.
-		const std::string m_fileName;
+		// Scaling values file name.
+		std::string m_fileName;
 	public:
 		ReadRadiusScaleValues(const std::string &fName) : m_fileName(fName)
 		{
