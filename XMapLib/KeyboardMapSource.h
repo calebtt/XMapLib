@@ -21,7 +21,7 @@ namespace sds
 	/// App specific logic. </summary>
 	struct KeyboardMapSource
 	{
-		using InpType = sds::ControllerButtonToActionMap::ActionType;
+		using InpType = sds::ControllerButtonStateData::ActionType;
 	private:
 		// non-owning pointer to a KeyboardTranslator object.
 		KeyboardTranslator* m_pTranslator{};

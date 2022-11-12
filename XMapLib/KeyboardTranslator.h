@@ -8,16 +8,16 @@
 
 namespace sds
 {
-
+	//XINPUT keystroke in this case.
 	struct KeyboardApplyKeystroke
 	{
 		static auto ProcessKeystroke(
 			const KeyStateWrapper& stroke,
 			const ControllerButtonToActionMap& keyMap) noexcept
 		{
-			if (keyMap.SendingElementVK == stroke.VirtualKey)
+			if(stroke.VirtualKey == keyMap.ControllerButton.VK)
 			{
-				//this->Normal(w, stroke);
+				
 			}
 		}
 		/// <summary> If enough time has passed, reset the key for use again, provided it uses the key-repeat behavior--
@@ -67,7 +67,7 @@ namespace sds
 			}
 		}
 		/// <summary>Does the key send call, updates LastAction and updates LastSentTime</summary>
-		void SendTheKey(ControllerButtonToActionMap& mp, const bool keyDown, ControllerButtonToActionMap::ActionType action) noexcept
+		void SendTheKey(ControllerButtonToActionMap& mp, const bool keyDown, ControllerButtonStateData::ActionType action) noexcept
 		{
 			mp.LastAction = action;
 			m_key_send.SendScanCode(mp.MappedToVK, keyDown);
@@ -136,7 +136,7 @@ namespace sds
 		// Don't always need just a keyboard press or mouse click.
 		using ClockType = std::chrono::steady_clock;
 		using PointInTime = std::chrono::time_point<ClockType>;
-		using InpType = sds::ControllerButtonToActionMap::ActionType;
+		using InpType = sds::ControllerButtonStateData::ActionType;
 		const std::string ERR_BAD_VK{ "Either WordData.MappedToVK OR WordData.SendElementVK is <= 0" };
 		const std::string ERR_DUP_KEYUP{ "Sent a duplicate keyup event to handle thumbstick direction changing behavior." };
 	private:

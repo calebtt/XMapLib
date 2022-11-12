@@ -13,3 +13,5 @@
 #include "DelayManager.h"
 // thread priority helper
 #include "TPrior.h"
+// std async thread pool helper
+#include "StoppableAsync.h"

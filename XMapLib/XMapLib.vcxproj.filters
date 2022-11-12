@@ -152,6 +152,12 @@
     <ClInclude Include="CallbackRange.h">
       <Filter>Header Files\Utilities\Async</Filter>
     </ClInclude>
+    <ClInclude Include="StoppableAsync.h">
+      <Filter>Header Files\Utilities\Async</Filter>
+    </ClInclude>
+    <ClInclude Include="ControllerSideDetails.h">
+      <Filter>Header Files\Keyboard\KeyInfoWrappers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />

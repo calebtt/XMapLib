@@ -171,6 +171,7 @@
   <ItemGroup>
     <ClInclude Include="Arithmetic.h" />
     <ClInclude Include="CallbackRange.h" />
+    <ClInclude Include="ControllerSideDetails.h" />
     <ClInclude Include="ControllerStatus.h" />
     <ClInclude Include="DelayManager.h" />
     <ClInclude Include="KeyboardPoller.h" />
@@ -191,6 +192,7 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StickMap.h" />
     <ClInclude Include="STMouseMapping.h" />
+    <ClInclude Include="StoppableAsync.h" />
     <ClInclude Include="ThumbStateWrapper.h" />
     <ClInclude Include="TPrior.h" />
     <ClInclude Include="ThumbDzInfo.h" />
