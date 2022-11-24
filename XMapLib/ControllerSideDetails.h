@@ -1,8 +1,9 @@
 #pragma once
 #include "stdafx.h"
 #include <any>
+#include <ostream>
 
-
+// Most of these structs are used by ControllerButtonToActionMap
 namespace sds
 {
 	/// <summary>
@@ -56,5 +57,17 @@ namespace sds
 		ActionType LastAction{ ActionType::NONE };
 		// last sent time, normally used for key repeat
 		Utilities::DelayManager LastSentTime{ KeyboardSettings::MICROSECONDS_DELAY_KEYREPEAT };
+
+		friend std::ostream& operator<<(std::ostream& os, const ControllerButtonStateData& obj)
+		{
+			constexpr bool isInt = std::is_same_v<std::underlying_type<ActionType>, int>;
+			if constexpr(isInt)
+			{
+				return os
+					<< "LastAction: " << static_cast<int>(obj.LastAction)
+					<< " LastSentTime: " << obj.LastSentTime;
+			}
+			return os << "ERROR";
+		}
 	};
 }

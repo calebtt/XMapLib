@@ -8,17 +8,19 @@
 
 namespace sds
 {
-	//XINPUT keystroke in this case.
+	/// <summary>
+	/// This class has the app-specific logic for the mappings to keyboard buttons.
+	///	This is somewhat of the "state machine" for keyboard buttons (and mouse clicks).
+	/// </summary>
 	struct KeyboardApplyKeystroke
 	{
-		static auto ProcessKeystroke(
-			const KeyStateWrapper& stroke,
-			const ControllerButtonToActionMap& keyMap) noexcept
+		using InpType = ControllerButtonStateData::ActionType;
+	public:
+		KeyboardSettingsPack m_ksp;
+	public:
+		explicit KeyboardApplyKeystroke(const KeyboardSettingsPack& ksp = {})
+			: m_ksp(ksp)
 		{
-			if(stroke.VirtualKey == keyMap.ControllerButton.VK)
-			{
-				
-			}
 		}
 		/// <summary> If enough time has passed, reset the key for use again, provided it uses the key-repeat behavior--
 		///	otherwise reset it immediately. </summary>
@@ -49,15 +51,27 @@ namespace sds
 			}
 		}
 		/// <summary>Normal keypress simulation logic.</summary>
-		void Normal(ControllerButtonToActionMap& detail, const KeyStateWrapper& stroke)
+		void Normal(ControllerButtonToActionMap& detail, const KeyStateWrapper& stroke) noexcept
 		{
-			const bool DoDown = (detail.LastAction == InpType::NONE) && (stroke.Flags & static_cast<WORD>(InpType::KEYDOWN));
-			const bool DoUp = ((detail.LastAction == InpType::KEYDOWN) || (detail.LastAction == InpType::KEYREPEAT)) && (stroke.Flags & static_cast<WORD>(InpType::KEYUP));
+			const auto controllerVk = detail.ControllerButton.VK;
+			const auto lastAction = detail.ControllerButtonState.LastAction;
+			const auto keymaps = detail.thisBuffer;
+
+			constexpr auto noneType = InpType::NONE;
+			constexpr auto downType = InpType::KEYDOWN;
+			constexpr auto repeatType = InpType::KEYREPEAT;
+			//const auto upType = InpType::KEYUP;
+
+			const bool DoDown = (lastAction == noneType) && (stroke.KeyDown);
+			const bool DoUp = ((detail.ControllerButtonState.LastAction == downType) 
+				|| (detail.ControllerButtonState.LastAction == repeatType))
+				&& (stroke.KeyUp);
+
 			if (DoDown)
 			{
-				ControllerButtonToActionMap overtaken;
-				if (IsOvertaking(detail, overtaken))
-					DoOvertaking(overtaken);
+				const auto overtakenElem = IsOvertaking(detail, detail.thisBuffer);
+				if (overtakenElem.has_value())
+					DoOvertaking(*overtakenElem.value());
 				else
 					SendTheKey(detail, true, InpType::KEYDOWN);
 			}
@@ -67,47 +81,66 @@ namespace sds
 			}
 		}
 		/// <summary>Does the key send call, updates LastAction and updates LastSentTime</summary>
-		void SendTheKey(ControllerButtonToActionMap& mp, const bool keyDown, ControllerButtonStateData::ActionType action) noexcept
+		void SendTheKey(ControllerButtonToActionMap& mp, const bool keyDown, ControllerButtonStateData::ActionType action) const noexcept
 		{
-			mp.LastAction = action;
-			m_key_send.SendScanCode(mp.MappedToVK, keyDown);
-			mp.LastSentTime.Reset(m_ksp.settings.MICROSECONDS_DELAY_KEYREPEAT); // update last sent time
+			for(auto &elem: mp.MappedActionsArray)
+			{
+				if (elem.first == action)
+				{
+					elem.second();
+					mp.ControllerButtonState.LastAction = action;
+					mp.ControllerButtonState.LastSentTime.Reset(m_ksp.settings.MICROSECONDS_DELAY_KEYREPEAT);
+				}
+			}
 		}
 		/// <summary>Check to see if a different axis of the same thumbstick has been pressed already</summary>
 		/// <param name="detail">Newest element being set to keydown state</param>
-		///	<param name="outOvertaken">out key set to the one being overtaken</param>
-		/// <returns>true if is overtaking a thumbstick direction already depressed</returns>
+		/// <returns> a <c>ControllerButtonToActionMap</c> pointer to the overtaken mapping, if is overtaking a thumbstick direction already depressed </returns>
 		[[nodiscard]]
-		auto IsOvertaking(const ControllerButtonToActionMap& detail, ControllerButtonToActionMap& outOvertaken) -> bool
+		auto IsOvertaking(const ControllerButtonToActionMap& detail, std::vector<ControllerButtonToActionMap*> mapBuffer) const noexcept
+		-> std::optional<ControllerButtonToActionMap*>
 		{
+			const auto controllerVk = detail.ControllerButton.VK;
+			const auto lastAction = detail.ControllerButtonState.LastAction;
+			const auto thumbstickLeftArray = KeyboardSettings::THUMBSTICK_L_VK_LIST;
+			const auto thumbstickRightArray = KeyboardSettings::THUMBSTICK_R_VK_LIST;
+
 			//Is detail a thumbstick direction map, and if so, which thumbstick.
-			const auto leftAxisIterator = std::ranges::find(m_ksp.settings.THUMBSTICK_L_VK_LIST, detail.SendingElementVK);
-			const auto rightAxisIterator = std::ranges::find(m_ksp.settings.THUMBSTICK_R_VK_LIST, detail.SendingElementVK);
-			const bool leftStick = leftAxisIterator != m_ksp.settings.THUMBSTICK_L_VK_LIST.end();
-			const bool rightStick = rightAxisIterator != m_ksp.settings.THUMBSTICK_R_VK_LIST.end();
+			const auto leftAxisIterator = std::ranges::find(thumbstickLeftArray, controllerVk);
+			const auto rightAxisIterator = std::ranges::find(thumbstickRightArray, controllerVk);
+			const bool isLeftStick = leftAxisIterator != thumbstickLeftArray.end();
+			const bool isRightStick = rightAxisIterator != thumbstickRightArray.end();
+
 			//find a key-down'd or repeat'd direction of the same thumbstick
-			if (leftStick || rightStick)
+			if (isLeftStick || isRightStick)
 			{
 				//build list of key-down state maps that match the thumbstick of the current "detail" map.
-				const auto stickSettingList = leftStick ? m_ksp.settings.THUMBSTICK_L_VK_LIST : m_ksp.settings.THUMBSTICK_R_VK_LIST;
-				auto TestFunc = [&stickSettingList, &detail](const ControllerButtonToActionMap& elem)
+				const auto stickSettingList = isLeftStick ? thumbstickLeftArray : thumbstickRightArray;
+
+				auto TestFunc = [&](const ControllerButtonToActionMap* elem)
 				{
-					if ((elem.LastAction == InpType::KEYDOWN || elem.LastAction == InpType::KEYREPEAT) && elem.SendingElementVK != detail.SendingElementVK)
-						return std::ranges::find(stickSettingList, elem.SendingElementVK) != stickSettingList.end();
+					constexpr auto noneType = InpType::NONE;
+					constexpr auto downType = InpType::KEYDOWN;
+					constexpr auto repeatType = InpType::KEYREPEAT;
+					//const auto upType = InpType::KEYUP;
+
+					if ((lastAction == downType || lastAction == repeatType) 
+						&& elem->ControllerButton.VK != detail.ControllerButton.VK)
+						return std::ranges::find(stickSettingList, elem->ControllerButton.VK) != stickSettingList.end();
 					return false;
 				};
-				const auto mpit = std::ranges::find_if(m_map_token_info, TestFunc);
-				if (mpit == m_map_token_info.end())
-					return false;
-				outOvertaken = *mpit;
-				return true;
+
+				const auto mpit = std::ranges::find_if(mapBuffer, TestFunc);
+				if (mpit == mapBuffer.end())
+					return {};
+				return *mpit;
 			}
-			return false;
+			return {};
 		}
 		/// <summary> Specific type of key send to send the input to handle the key-up that occurs
 		///	when a thumbstick is rotated to the right angle to denote a new key. </summary>
 		/// <param name="detail">Which key is being overtaken.</param>
-		void DoOvertaking(ControllerButtonToActionMap& detail) noexcept
+		void DoOvertaking(ControllerButtonToActionMap& detail) const noexcept
 		{
 			SendTheKey(detail, false, InpType::KEYUP);
 		}

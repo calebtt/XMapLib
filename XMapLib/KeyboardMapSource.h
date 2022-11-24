@@ -9,16 +9,11 @@
 
 namespace sds
 {
-	//TODO might overtake some of the responsibility of the stuff in ControllerButtonToActionMap
-	// Use that one design pattern where an instance is also a collection of the instance type.
-	// because I want it to be mutated outside of the class as a collection, but aggregate operations
-	// for the most part won't make sense. Still have that ability if required.
-
-	//TODO updating the state machine as these tasks are performed needs a clever solution.
-
-	/// <summary> Manages creation of and operating on a collection of controller button to keyboard key maps.
-	///	It will be sure to add the callbacks that update the state machine (KeyboardTranslator) to keep track of the events.
-	/// App specific logic. </summary>
+	/// <summary>
+	/// Manages creation of and operating on a collection of controller button to <b>keyboard key</b> maps.
+	///	It will be sure to add the callbacks that update the state machine (<c>KeyboardTranslator</c>) to keep track of the events.
+	/// App specific logic used for the program here, specific to keyboard key mappings.
+	/// </summary>
 	struct KeyboardMapSource
 	{
 		using InpType = sds::ControllerButtonStateData::ActionType;

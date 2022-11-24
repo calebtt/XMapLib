@@ -9,6 +9,9 @@ namespace sds
 	{
 		//virtual keycode for controller button activity.
 		unsigned short VirtualKey{};
-		unsigned short Flags{};
+		//unsigned short Flags{};
+		bool KeyDown{ false };
+		bool KeyUp{ false };
+		bool KeyRepeat{ false };
 	};
 }

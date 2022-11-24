@@ -19,7 +19,10 @@ namespace sds
 			const DWORD error = XInputGetKeystroke(playerId, 0, &m_tempState);
 			if (error == ERROR_SUCCESS || error == ERROR_EMPTY)
 			{
-				return KeyStateWrapper{ .VirtualKey = m_tempState.VirtualKey, .Flags = m_tempState.Flags };
+				const bool isDown = m_tempState.Flags & XINPUT_KEYSTROKE_KEYDOWN;
+				const bool isUp = m_tempState.Flags & XINPUT_KEYSTROKE_KEYUP;
+				const bool isRepeat = m_tempState.Flags & XINPUT_KEYSTROKE_REPEAT;
+				return KeyStateWrapper{ .VirtualKey = m_tempState.VirtualKey, .KeyDown = isDown, .KeyRepeat = isRepeat, .KeyUp = isUp };
 			}
 			assert(error != ERROR_BAD_ARGUMENTS);
 			return {};

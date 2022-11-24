@@ -10,7 +10,8 @@
 
 namespace sds
 {
-	/// <summary> For operating on controller button to [action] callback fn maps,
+	/// <summary> The <b>map type</b> which means the structure holding some controller to action mapping.
+	/// For operating on controller button to [action] callback fn maps,
 	///	it contains and manages the state machine logic used to activate/de-activate the callbacks.
 	/// The mapping is SendingElementVK to callback list. </summary>
 	///	<remarks> The hope is that this mapping style will make the "engine" processing it more
@@ -20,56 +21,92 @@ namespace sds
 	{
 		using ClockType = std::chrono::high_resolution_clock;
 		using PointInTime = std::chrono::time_point<ClockType>;
-		struct ActionRanges
-		{
-			// Tasks called on key-down of the controller button (key-down event)
-			CallbackRange ActivationTasks;
-			// Tasks called on key-up of the controller button (key-up event)
-			CallbackRange DeactivationTasks;
-			// Tasks called on key-repeat of the controller button (key-repeat event)
-			CallbackRange RepeatTasks;
-			/// <summary> These are the tasks called on destruction (or otherwise, cleanup), but not by this instance. </summary>
-			///	<remarks> Not called on destruction of this instance, because that would imply mutating non-local state.
-			///	They *may* be called by a state machine or container managing a collection. It would be a surprise for a user
-			///	to copy an instance of this class and upon destruction notice that it sent a key-up event or similar. </remarks>
-			CallbackRange CleanupTasks;
-		};
+		using StateAndCallbackPair = std::pair<ControllerButtonStateData::ActionType, CallbackRange>;
+		//using StateCallbackMap = std::array<std::pair<ControllerButtonStateData::ActionType, CallbackRange>>;
+
+		//struct ActionRanges
+		//{
+		//	// Tasks called on key-down of the controller button (key-down event)
+		//	CallbackRange ActivationTasks;
+		//	// Tasks called on key-up of the controller button (key-up event)
+		//	CallbackRange DeactivationTasks;
+		//	// Tasks called on key-repeat of the controller button (key-repeat event)
+		//	CallbackRange RepeatTasks;
+		//	/// <summary> These are the tasks called on destruction (or otherwise, cleanup), but not by this instance. </summary>
+		//	///	<remarks> Not called on destruction of this instance, because that would imply mutating non-local state.
+		//	///	They *may* be called by a state machine or container managing a collection. It would be a surprise for a user
+		//	///	to copy an instance of this class and upon destruction notice that it sent a key-up event or similar. </remarks>
+		//	CallbackRange CleanupTasks;
+		//};
 	public:
 		ControllerButtonData ControllerButton;
 		ControllerButtonStateData ControllerButtonState;
+		//TODO probably remove this, the data will be stored in the type-erasure of the std::function holding the lambda fn being called.
 		KeyboardButtonData KeyboardButton;
-		ActionRanges MappedActions;
+		//ActionRanges MappedActions;
 		ControllerToKeyMapData KeymapData;
+
+		std::array<StateAndCallbackPair, 3> MappedActionsArray
+		{ {
+			{ControllerButtonStateData::ActionType::KEYDOWN, CallbackRange{} },
+			{ControllerButtonStateData::ActionType::KEYREPEAT, CallbackRange{} },
+			{ControllerButtonStateData::ActionType::KEYUP, CallbackRange{} }
+		} };
+
+		// Below, a thread local reference to in-use action maps, necessary for certain behaviors (mostly thumbstick related).
+		// Non-owning pointers!
+		inline static thread_local std::vector<ControllerButtonToActionMap*> thisBuffer;
 	public:
-		//Ctor
-		ControllerButtonToActionMap(
-			const int controllerElementVK, 
-			const bool useRepeat)
-				:
-		ControllerButton{controllerElementVK},
-		//KeyboardButton{keyboardMouseElementVK},
-		KeymapData{useRepeat}
+
+		///// <summary>
+		///// Constructor, adds 'this' to the thread-local thisBuffer.
+		///// </summary>
+		///// <param name="controllerElementVK"></param>
+		///// <param name="useRepeat"></param>
+		//ControllerButtonToActionMap(const int controllerElementVK, const bool useRepeat)
+		//: ControllerButton{controllerElementVK},
+		//KeymapData{useRepeat}
+		//{
+		//	using std::begin, std::end;
+		//	// Adding "this" to the thread local this buffer
+		//	const auto foundResult = std::find_if(begin(thisBuffer), end(thisBuffer), [this](auto pElem)
+		//		{
+		//			return pElem == this;
+		//		});
+		//	if (foundResult != end(thisBuffer))
+		//		thisBuffer.emplace_back(this);
+		//}
+
+		/// <summary>
+		/// Destructor, removes 'this' from the thread-local static thisBuffer.
+		/// </summary>
+		~ControllerButtonToActionMap()
 		{
-			
+			using std::begin, std::end;
+			const auto foundResult = std::find_if(begin(thisBuffer), end(thisBuffer), [this](auto pElem)
+				{
+					return pElem == this;
+				});
+			if (foundResult != end(thisBuffer))
+				thisBuffer.erase(foundResult);
 		}
-		ControllerButtonToActionMap() = default;
+
+		ControllerButtonToActionMap()
+		{
+			using std::begin, std::end;
+			// Adding "this" to the thread local this buffer
+			const auto foundResult = std::find_if(begin(thisBuffer), end(thisBuffer), [this](auto pElem)
+				{
+					return pElem == this;
+				});
+			if (foundResult != end(thisBuffer))
+				thisBuffer.emplace_back(this);
+		}
 		ControllerButtonToActionMap(const ControllerButtonToActionMap& other) = default;
 		ControllerButtonToActionMap(ControllerButtonToActionMap&& other) = default;
 		ControllerButtonToActionMap& operator=(const ControllerButtonToActionMap& other) = default;
 		ControllerButtonToActionMap& operator=(ControllerButtonToActionMap&& other) = default;
-		~ControllerButtonToActionMap() = default;
-		/// <summary>
-		/// Operator<< overload for std::ostream specialization,
-		///	writes enum class:int value as decimal int value.
-		///	Thread-safe, provided all writes to the ostream object
-		///	are wrapped with std::osyncstream!
-		/// </summary>
-		friend std::ostream& operator<<(std::ostream& os, const ControllerButtonStateData::ActionType& obj)
-		{
-			std::osyncstream ss(os);
-			ss << static_cast<std::underlying_type_t<ControllerButtonStateData::ActionType>>(obj);
-			return os;
-		}
+		
 		/// <summary>
 		/// Operator<< overload for std::ostream specialization,
 		///	writes more detailed map details for debugging.
@@ -91,8 +128,7 @@ namespace sds
 			ss << "MappedToVK:" << keyboardVK << " ";
 			ss << "MappedToVK(AKA):" << (isPrintable ? printed : ' ') << " ";
 			ss << "UsesRepeat:" << obj.KeymapData.UsesRepeat << " ";
-			ss << "LastAction:" << obj.ControllerButtonState.LastAction << " ";
-			ss << obj.ControllerButtonState.LastSentTime << " ";
+			ss << obj.ControllerButtonState << " ";
 			ss << "[/ControllerButtonToActionMap]" << " ";
 			return os;
 		}

@@ -44,6 +44,11 @@ namespace sds
                 if(elem != nullptr)
                     elem();
         }
+        [[nodiscard]]
+        auto empty() const noexcept -> bool
+        {
+            return TaskList.empty();
+        }
     public:
         /// <summary> Push a function with zero or more arguments, but no return value, into the task list. </summary>
         /// <typeparam name="F"> The type of the function. </typeparam>
