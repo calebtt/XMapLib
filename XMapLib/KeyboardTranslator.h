@@ -5,6 +5,7 @@
 #include "KeyboardPoller.h"
 #include <iostream>
 #include <chrono>
+#include <optional>
 
 namespace sds
 {
@@ -95,11 +96,14 @@ namespace sds
 		}
 		/// <summary>Check to see if a different axis of the same thumbstick has been pressed already</summary>
 		/// <param name="detail">Newest element being set to keydown state</param>
-		/// <returns> a <c>ControllerButtonToActionMap</c> pointer to the overtaken mapping, if is overtaking a thumbstick direction already depressed </returns>
+		///	<param name="mapBuffer">the buffer containing every other cbtam mapping. <param>
+		/// <returns> optional, a <c>ControllerButtonToActionMap</c> pointer to the overtaken mapping, if is overtaking a thumbstick direction already depressed </returns>
 		[[nodiscard]]
 		auto IsOvertaking(const ControllerButtonToActionMap& detail, std::vector<ControllerButtonToActionMap*> mapBuffer) const noexcept
 		-> std::optional<ControllerButtonToActionMap*>
 		{
+			using std::ranges::all_of, std::ranges::find;
+
 			const auto controllerVk = detail.ControllerButton.VK;
 			const auto lastAction = detail.ControllerButtonState.LastAction;
 			const auto thumbstickLeftArray = KeyboardSettings::THUMBSTICK_L_VK_LIST;
@@ -145,17 +149,19 @@ namespace sds
 			SendTheKey(detail, false, InpType::KEYUP);
 		}
 		/// <summary> Checks a <c>ControllerButtonToActionMap</c>'s <c>MappedToVK</c> and <c>SendingElementVK</c> members for out of bounds values. </summary>
-		///	<returns> Error message on error, empty string otherwise. </returns>
+		///	<returns> Error message on error, empty optional otherwise. </returns>
 		[[nodiscard]]
-		auto CheckForVKError(const ControllerButtonToActionMap& detail) const -> std::string
+		auto CheckForVKError(const ControllerButtonToActionMap& detail) const -> std::optional<std::string>
 		{
-			if ((detail.MappedToVK <= 0) || (detail.SendingElementVK <= 0))
+			const int vk = std::any_cast<int>(detail.KeyboardButton.VK);
+			const auto& cbutton = detail.ControllerButton.VK;
+			if ((vk <= 0) || (cbutton <= 0))
 			{
 				std::stringstream error;
 				error << detail;
-				return std::string("Contents:\n") + error.str() + ERR_BAD_VK;
+				return std::string("Contents:\n") + error.str() + "\nKeyboard VK and/or controller button VK out of range!";
 			}
-			return "";
+			return {};
 		}
 	};
 	/// <summary>
