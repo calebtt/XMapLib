@@ -10,7 +10,7 @@ namespace sds
 {
 	/// <summary>
 	/// This class has the app-specific logic for the mappings to keyboard buttons.
-	///	This is somewhat of the "state machine" for keyboard buttons (and mouse clicks).
+	///	Holds the functions used for mapping button -> keystroke.
 	/// </summary>
 	struct KeyboardApplyKeystroke
 	{

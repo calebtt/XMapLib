@@ -10,7 +10,7 @@
 namespace sds
 {
 	/// <summary>
-	/// Manages creation of and operating on a collection of controller button to <b>keyboard key</b> maps.
+	/// Manages operating on a collection of controller button to <b>keyboard key</b> maps.
 	///	It will be sure to add the callbacks that update the state machine (<c>KeyboardTranslator</c>) to keep track of the events.
 	/// App specific logic used for the program here, specific to keyboard key mappings.
 	/// </summary>
