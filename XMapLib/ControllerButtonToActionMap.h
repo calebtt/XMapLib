@@ -22,22 +22,6 @@ namespace sds
 		using ClockType = std::chrono::high_resolution_clock;
 		using PointInTime = std::chrono::time_point<ClockType>;
 		using StateAndCallbackPair = std::pair<ControllerButtonStateData::ActionType, CallbackRange>;
-		//using StateCallbackMap = std::array<std::pair<ControllerButtonStateData::ActionType, CallbackRange>>;
-
-		//struct ActionRanges
-		//{
-		//	// Tasks called on key-down of the controller button (key-down event)
-		//	CallbackRange ActivationTasks;
-		//	// Tasks called on key-up of the controller button (key-up event)
-		//	CallbackRange DeactivationTasks;
-		//	// Tasks called on key-repeat of the controller button (key-repeat event)
-		//	CallbackRange RepeatTasks;
-		//	/// <summary> These are the tasks called on destruction (or otherwise, cleanup), but not by this instance. </summary>
-		//	///	<remarks> Not called on destruction of this instance, because that would imply mutating non-local state.
-		//	///	They *may* be called by a state machine or container managing a collection. It would be a surprise for a user
-		//	///	to copy an instance of this class and upon destruction notice that it sent a key-up event or similar. </remarks>
-		//	CallbackRange CleanupTasks;
-		//};
 	public:
 		ControllerButtonData ControllerButton;
 		ControllerButtonStateData ControllerButtonState;
@@ -58,32 +42,13 @@ namespace sds
 		inline static thread_local std::vector<ControllerButtonToActionMap*> thisBuffer;
 	public:
 
-		///// <summary>
-		///// Constructor, adds 'this' to the thread-local thisBuffer.
-		///// </summary>
-		///// <param name="controllerElementVK"></param>
-		///// <param name="useRepeat"></param>
-		//ControllerButtonToActionMap(const int controllerElementVK, const bool useRepeat)
-		//: ControllerButton{controllerElementVK},
-		//KeymapData{useRepeat}
-		//{
-		//	using std::begin, std::end;
-		//	// Adding "this" to the thread local this buffer
-		//	const auto foundResult = std::find_if(begin(thisBuffer), end(thisBuffer), [this](auto pElem)
-		//		{
-		//			return pElem == this;
-		//		});
-		//	if (foundResult != end(thisBuffer))
-		//		thisBuffer.emplace_back(this);
-		//}
-
 		/// <summary>
 		/// Destructor, removes 'this' from the thread-local static thisBuffer.
 		/// </summary>
 		~ControllerButtonToActionMap()
 		{
-			using std::begin, std::end;
-			const auto foundResult = std::find_if(begin(thisBuffer), end(thisBuffer), [this](auto pElem)
+			using std::ranges::begin, std::ranges::end, std::ranges::find_if;
+			const auto foundResult = find_if(begin(thisBuffer), end(thisBuffer), [this](auto pElem)
 				{
 					return pElem == this;
 				});
@@ -93,9 +58,9 @@ namespace sds
 
 		ControllerButtonToActionMap()
 		{
-			using std::begin, std::end;
+			using std::ranges::begin, std::ranges::end, std::ranges::find_if;
 			// Adding "this" to the thread local this buffer
-			const auto foundResult = std::find_if(begin(thisBuffer), end(thisBuffer), [this](auto pElem)
+			const auto foundResult = find_if(begin(thisBuffer), end(thisBuffer), [this](auto pElem)
 				{
 					return pElem == this;
 				});
