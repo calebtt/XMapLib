@@ -70,11 +70,18 @@ namespace sds
 		/// <summary>Call this function to send key-ups for any in-progress key presses.</summary>
 		void CleanupInProgressEvents() const
 		{
-			for (auto& m : m_keyMaps)
+			using std::ranges::find_if, std::ranges::end;
+			for (const ControllerButtonToActionMap& m : m_keyMaps)
 			{
-				if (m.LastAction == InpType::KEYDOWN || m.LastAction == InpType::KEYREPEAT)
+				const auto& la = m.ControllerButtonState.LastAction;
+				if (la == InpType::KEYDOWN || la == InpType::KEYREPEAT)
 				{
-					m.CleanupTasks();
+					// Find the keyup callback range.
+					const auto act = find_if(m.MappedActionsArray, [&](const auto& e) { return e.first == InpType::KEYUP; });
+					// assert that it actually found the state
+					assert(act != end(m.MappedActionsArray));
+					// call the callback range functions for keyup
+					act->second();
 				}
 			}
 		}
