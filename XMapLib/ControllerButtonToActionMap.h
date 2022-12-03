@@ -47,23 +47,17 @@ namespace sds
 		/// </summary>
 		~ControllerButtonToActionMap()
 		{
-			using std::ranges::begin, std::ranges::end, std::ranges::find_if;
-			const auto foundResult = find_if(begin(thisBuffer), end(thisBuffer), [this](auto pElem)
-				{
-					return pElem == this;
-				});
+			using std::ranges::begin, std::ranges::end, std::ranges::find;
+			const auto foundResult = find(begin(thisBuffer), end(thisBuffer), this);
 			if (foundResult != end(thisBuffer))
 				thisBuffer.erase(foundResult);
 		}
 
 		ControllerButtonToActionMap()
 		{
-			using std::ranges::begin, std::ranges::end, std::ranges::find_if;
+			using std::ranges::begin, std::ranges::end, std::ranges::find;
 			// Adding "this" to the thread local this buffer
-			const auto foundResult = find_if(begin(thisBuffer), end(thisBuffer), [this](auto pElem)
-				{
-					return pElem == this;
-				});
+			const auto foundResult = find(begin(thisBuffer), end(thisBuffer), this);
 			if (foundResult != end(thisBuffer))
 				thisBuffer.emplace_back(this);
 		}
