@@ -44,18 +44,6 @@ namespace sds
 		{
 			m_keyMaps.emplace_back(button);
 		}
-		auto AddMap(const char mappedFromChar, const int controllerVk, const bool useRepeat)
-		{
-			// Get Virtual Keycode from char.
-			const auto vkOfPrintable = static_cast<int>(Utilities::VirtualMap::GetVKFromChar(mappedFromChar));
-			ControllerButtonToActionMap cbtam{ controllerVk, vkOfPrintable, true };
-			cbtam.ActivationTasks.PushInfiniteTaskBack([&]() { m_pTranslator->OnKeyDown(cbtam); });
-			cbtam.DeactivationTasks.PushInfiniteTaskBack([&]() { m_pTranslator->OnKeyUp(cbtam); });
-			if(useRepeat)
-				cbtam.RepeatTasks.PushInfiniteTaskBack([&]() { m_pTranslator->OnKeyRepeat(cbtam); });
-			// Add the map to the internal list.
-			m_keyMaps.emplace_back(cbtam);
-		}
 		[[nodiscard]]
 		auto GetMaps() const noexcept -> std::vector<ControllerButtonToActionMap>
 		{
