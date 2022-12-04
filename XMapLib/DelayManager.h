@@ -13,7 +13,7 @@ namespace sds::Utilities
 		using TimeType = std::chrono::time_point<ClockType>;
 		TimeType m_start_time{ ClockType::now() };
 		size_t m_duration{ 1 };
-		bool m_has_fired{ false };
+		mutable bool m_has_fired{ false };
 	public:
 		//us is microseconds
 		DelayManager() = delete;
@@ -38,7 +38,7 @@ namespace sds::Utilities
 			return os;
 		}
 		/// <summary>Check for elapsed.</summary>
-		bool IsElapsed() noexcept
+		bool IsElapsed() const noexcept
 		{
 			if (ClockType::now() > (m_start_time + std::chrono::microseconds(m_duration)))
 			{

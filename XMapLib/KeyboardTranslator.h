@@ -25,36 +25,41 @@ namespace sds
 		}
 		/// <summary> If enough time has passed, reset the key for use again, provided it uses the key-repeat behavior--
 		///	otherwise reset it immediately. </summary>
-		void KeyUpdateLoop()
+		static
+		void KeyUpdateLoop(const std::vector<ControllerButtonToActionMap*> &mapBuffer)
 		{
 			//If enough time has passed, reset the key for use again, provided it uses the key-repeat behavior--
 			//otherwise reset it immediately.
-			for (auto& e : m_map_token_info)
+			for (const auto& elem : mapBuffer)
 			{
-				const bool DoUpdate = (e.LastAction == InpType::KEYUP && e.LastSentTime.IsElapsed()) && e.UsesRepeat;
-				const bool DoImmediate = e.LastAction == InpType::KEYUP && !e.UsesRepeat;
+				auto &cbData = elem->ControllerButtonState;
+				const auto e = elem->KeymapData;
+				const bool DoUpdate = (cbData.LastAction == InpType::KEYUP && cbData.LastSentTime.IsElapsed()) && e.UsesRepeat;
+				const bool DoImmediate = cbData.LastAction == InpType::KEYUP && !e.UsesRepeat;
 				if (DoUpdate || DoImmediate)
-					e.LastAction = InpType::NONE;
+					cbData.LastAction = InpType::NONE;
 			}
 		}
 		/// <summary> Checks each <c>ControllerButtonToActionMap</c> in <c>m_map_token_info</c>'s <c>LastSentTime</c> timer for being
 		///	elapsed, and if so, sends the repeat keypress (if key repeat behavior is enabled for the map). </summary>
-		void KeyRepeatLoop()
+		void KeyRepeatLoop(const std::vector<ControllerButtonToActionMap*>& mapBuffer) const noexcept
 		{
-			for (auto& w : m_map_token_info)
+			using AT = InpType;
+			for (const auto& w : mapBuffer)
 			{
-				using AT = sds::ControllerButtonToActionMap::ActionType;
-				if (w.UsesRepeat && (((w.LastAction == AT::KEYDOWN) || (w.LastAction == AT::KEYREPEAT))))
+				const bool usesRepeat = w->KeymapData.UsesRepeat;
+				const auto lastAction = w->ControllerButtonState.LastAction;
+				if (usesRepeat && (lastAction == AT::KEYDOWN || lastAction == AT::KEYREPEAT))
 				{
-					if (w.LastSentTime.IsElapsed())
-						this->SendTheKey(w, true, AT::KEYREPEAT);
+					if (w->ControllerButtonState.LastSentTime.IsElapsed())
+						SendTheKey(*w, true, AT::KEYREPEAT);
 				}
 			}
 		}
 		/// <summary>Normal keypress simulation logic.</summary>
-		void Normal(ControllerButtonToActionMap& detail, const KeyStateWrapper& stroke) noexcept
+		void Normal(ControllerButtonToActionMap& detail, const KeyStateWrapper& stroke) const noexcept
 		{
-			const auto controllerVk = detail.ControllerButton.VK;
+			//const auto controllerVk = detail.ControllerButton.VK;
 			const auto lastAction = detail.ControllerButtonState.LastAction;
 			const auto keymaps = detail.thisBuffer;
 
@@ -96,46 +101,47 @@ namespace sds
 		}
 		/// <summary>Check to see if a different axis of the same thumbstick has been pressed already</summary>
 		/// <param name="detail">Newest element being set to keydown state</param>
-		///	<param name="mapBuffer">the buffer containing every other cbtam mapping. <param>
+		///	<param name="mapBuffer">the buffer containing every other cbtam mapping. </param>
 		/// <returns> optional, a <c>ControllerButtonToActionMap</c> pointer to the overtaken mapping, if is overtaking a thumbstick direction already depressed </returns>
 		[[nodiscard]]
-		auto IsOvertaking(const ControllerButtonToActionMap& detail, std::vector<ControllerButtonToActionMap*> mapBuffer) const noexcept
+		static
+		auto IsOvertaking(const ControllerButtonToActionMap& detail, std::vector<ControllerButtonToActionMap*> mapBuffer) noexcept
 		-> std::optional<ControllerButtonToActionMap*>
 		{
-			using std::ranges::all_of, std::ranges::find;
+			using std::ranges::all_of, std::ranges::find, std::ranges::find_if, std::ranges::begin, std::ranges::end;
 
 			const auto controllerVk = detail.ControllerButton.VK;
 			const auto lastAction = detail.ControllerButtonState.LastAction;
-			const auto thumbstickLeftArray = KeyboardSettings::THUMBSTICK_L_VK_LIST;
-			const auto thumbstickRightArray = KeyboardSettings::THUMBSTICK_R_VK_LIST;
+			constexpr auto thumbstickLeftArray = KeyboardSettings::THUMBSTICK_L_VK_LIST;
+			constexpr auto thumbstickRightArray = KeyboardSettings::THUMBSTICK_R_VK_LIST;
 
 			//Is detail a thumbstick direction map, and if so, which thumbstick.
-			const auto leftAxisIterator = std::ranges::find(thumbstickLeftArray, controllerVk);
-			const auto rightAxisIterator = std::ranges::find(thumbstickRightArray, controllerVk);
+			const auto leftAxisIterator = find(thumbstickLeftArray, controllerVk);
+			const auto rightAxisIterator = find(thumbstickRightArray, controllerVk);
 			const bool isLeftStick = leftAxisIterator != thumbstickLeftArray.end();
 			const bool isRightStick = rightAxisIterator != thumbstickRightArray.end();
 
 			//find a key-down'd or repeat'd direction of the same thumbstick
 			if (isLeftStick || isRightStick)
 			{
-				//build list of key-down state maps that match the thumbstick of the current "detail" map.
+				//build list of key-down state VKs that match the thumbstick of the current "detail" map.
 				const auto stickSettingList = isLeftStick ? thumbstickLeftArray : thumbstickRightArray;
 
 				auto TestFunc = [&](const ControllerButtonToActionMap* elem)
 				{
-					constexpr auto noneType = InpType::NONE;
 					constexpr auto downType = InpType::KEYDOWN;
 					constexpr auto repeatType = InpType::KEYREPEAT;
-					//const auto upType = InpType::KEYUP;
+					const bool isPressed = lastAction == downType || lastAction == repeatType;
+					// this is the case where the key we're testing for is the same key we're investigating
+					const bool isSameKey = elem->ControllerButton == detail.ControllerButton;
 
-					if ((lastAction == downType || lastAction == repeatType) 
-						&& elem->ControllerButton.VK != detail.ControllerButton.VK)
-						return std::ranges::find(stickSettingList, elem->ControllerButton.VK) != stickSettingList.end();
+					if (isPressed && !isSameKey)
+						return find(stickSettingList, elem->ControllerButton.VK) != end(stickSettingList);
 					return false;
 				};
 
-				const auto mpit = std::ranges::find_if(mapBuffer, TestFunc);
-				if (mpit == mapBuffer.end())
+				const auto mpit = find_if(mapBuffer, TestFunc);
+				if (mpit == end(mapBuffer))
 					return {};
 				return *mpit;
 			}

@@ -14,6 +14,16 @@ namespace sds
 	{
 		// VK of controller button
 		int VK{ 0 };
+
+		friend bool operator==(const ControllerButtonData& lhs, const ControllerButtonData& rhs)
+		{
+			return lhs.VK == rhs.VK;
+		}
+
+		friend bool operator!=(const ControllerButtonData& lhs, const ControllerButtonData& rhs)
+		{
+			return !(lhs == rhs);
+		}
 	};
 
 	/// <summary>
