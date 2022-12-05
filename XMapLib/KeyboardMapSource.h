@@ -17,9 +17,10 @@ namespace sds
 	struct KeyboardMapSource
 	{
 		using InpType = sds::ControllerButtonStateData::ActionType;
+		using TranslatorFunctions_t = KeyboardApplyKeystroke;
 	private:
 		// non-owning pointer to a KeyboardTranslator object.
-		KeyboardTranslator* m_pTranslator{};
+		TranslatorFunctions_t* m_pTranslator{};
 		// List of controller btn to kbd key maps (this class is used explicitly to create
 		// the keyboard key maps, not just controller btn to action).
 		std::vector<ControllerButtonToActionMap> m_keyMaps;
@@ -27,7 +28,7 @@ namespace sds
 		KeyboardSettingsPack m_ksp;
 		Utilities::SendKeyInput m_key_send;
 	public:
-		explicit KeyboardMapSource(KeyboardTranslator &kt) : m_pTranslator(&kt)
+		explicit KeyboardMapSource(TranslatorFunctions_t &kt) : m_pTranslator(&kt)
 		{
 			// Might also extract the logic in a form that is easier to use. Updating the state machine
 			// would entail adding to the end of the task list for each functionality in ControllerButtonToActionMap.
@@ -42,6 +43,7 @@ namespace sds
 		/// <summary><c>AddMap(ControllerButtonToActionMap)</c> Adds a key map.</summary>
 		void AddMap(const ControllerButtonToActionMap button)
 		{
+			
 			m_keyMaps.emplace_back(button);
 		}
 		[[nodiscard]]
