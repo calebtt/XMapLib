@@ -145,30 +145,17 @@ namespace sds
 		-> std::optional<ControllerButtonToActionMap*>
 		{
 			using std::ranges::all_of, std::ranges::find, std::ranges::find_if, std::ranges::begin, std::ranges::end;
-
-			//const auto controllerVk = detail.ControllerButton.VK;
+			// Get copy of range to pointers to all mappings in existence.
 			const auto mapBuffer = detail.GetThisBuffer();
+			// Get copy of pointers to all mappings in the same exclusivity grouping as this mapping.
 			const auto groupedBuffer = std::ranges::views::transform(mapBuffer, [exGroup = m_currentMapping->ExclusivityGrouping](const auto& elem)
 				{
 					return elem->ExclusivityGrouping == exGroup;
 				});
 
-			//constexpr auto thumbstickLeftArray = KeyboardSettings::THUMBSTICK_L_VK_LIST;
-			//constexpr auto thumbstickRightArray = KeyboardSettings::THUMBSTICK_R_VK_LIST;
-
-			//Is detail a thumbstick direction map, and if so, which thumbstick.
-			//const auto leftAxisIterator = find(thumbstickLeftArray, controllerVk);
-			//const auto rightAxisIterator = find(thumbstickRightArray, controllerVk);
-			//const bool isLeftStick = leftAxisIterator != thumbstickLeftArray.end();
-			//const bool isRightStick = rightAxisIterator != thumbstickRightArray.end();
-
-			//find a key-down'd or repeat'd direction of the same thumbstick
-			//if (isLeftStick || isRightStick)
+			// If exclusivity grouping has some other members...
 			if(!groupedBuffer.empty())
 			{
-				//build list of key-down state VKs that match the thumbstick of the current "detail" map.
-				//const auto stickSettingList = isLeftStick ? thumbstickLeftArray : thumbstickRightArray;
-
 				auto IsGroupedBtnPressedFn = [&](const ControllerButtonToActionMap* groupedButtonElem)
 				{
 					const auto elemState = groupedButtonElem->ControllerButtonState.LastAction;
