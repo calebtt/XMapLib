@@ -2,7 +2,6 @@
 #include "stdafx.h"
 #include "KeyboardTranslator.h"
 #include "ControllerStatus.h"
-#include "KeyboardTranslatorAsync.h"
 #include "ControllerButtonToActionMap.h"
 #include "Utilities.h"
 #include "Smarts.h"

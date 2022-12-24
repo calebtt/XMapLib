@@ -22,7 +22,7 @@ namespace sds
 				const bool isDown = m_tempState.Flags & XINPUT_KEYSTROKE_KEYDOWN;
 				const bool isUp = m_tempState.Flags & XINPUT_KEYSTROKE_KEYUP;
 				const bool isRepeat = m_tempState.Flags & XINPUT_KEYSTROKE_REPEAT;
-				return KeyStateWrapper{ .VirtualKey = m_tempState.VirtualKey, .KeyDown = isDown, .KeyRepeat = isRepeat, .KeyUp = isUp };
+				return KeyStateWrapper{ .VirtualKey = m_tempState.VirtualKey, .KeyDown = isDown, .KeyUp = isUp, .KeyRepeat = isRepeat };
 			}
 			assert(error != ERROR_BAD_ARGUMENTS);
 			return {};

@@ -63,6 +63,24 @@ namespace sds
 			KEYREPEAT = XINPUT_KEYSTROKE_REPEAT,
 			KEYUP = XINPUT_KEYSTROKE_KEYUP
 		};
+		//struct IdleState {
+		//	ControllerButtonStateData::ActionType value = ControllerButtonStateData::ActionType
+		//		::NONE;
+		//};
+		//struct KeyDownState {
+		//	ControllerButtonStateData::ActionType value = ControllerButtonStateData::ActionType
+		//		::KEYDOWN;
+		//};
+		//struct KeyRepeatState {
+		//	ControllerButtonStateData::ActionType value = ControllerButtonStateData::ActionType
+		//		::KEYREPEAT;
+		//};
+		//struct KeyUpState {
+		//	ControllerButtonStateData::ActionType value = ControllerButtonStateData::ActionType
+		//		::KEYUP;
+		//};
+		//std::variant<IdleState, KeyDownState, KeyUpState, KeyRepeatState> LastAction = IdleState{};
+
 		// state machine info for controller btn
 		ActionType LastAction{ ActionType::NONE };
 		// last sent time, normally used for key repeat

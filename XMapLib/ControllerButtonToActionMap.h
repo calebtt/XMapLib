@@ -7,6 +7,7 @@
 #include "VirtualMap.h"
 #include "CallbackRange.h"
 #include "ControllerSideDetails.h"
+#include "KeyboardTranslator.h"
 
 namespace sds
 {
@@ -19,9 +20,15 @@ namespace sds
 	///	Hence, the callback function ranges for events occurring such as activation, deactivation, repeat. </remarks>
 	struct ControllerButtonToActionMap
 	{
+	public:
+		//TODO this class should be the one constructing a default mapping.
+		//So, we will template it for a concept interface that has things like "Normal()" etc.
+		//using MappingFuncs = KeyboardTranslator;
 		using ClockType = std::chrono::high_resolution_clock;
 		using PointInTime = std::chrono::time_point<ClockType>;
 		using StateAndCallbackPair = std::pair<ControllerButtonStateData::ActionType, CallbackRange>;
+		// 3rd and optional property for mappings, a grouping for exclusivity.
+		using GroupingProperty_t = int;
 	public:
 		ControllerButtonData ControllerButton;
 		ControllerButtonStateData ControllerButtonState;
@@ -29,8 +36,9 @@ namespace sds
 		KeyboardButtonData KeyboardButton;
 		//ActionRanges MappedActions;
 		ControllerToKeyMapData KeymapData;
+		GroupingProperty_t ExclusivityGrouping{};
 
-		std::array<StateAndCallbackPair, 3> MappedActionsArray
+		std::map<ControllerButtonStateData::ActionType, CallbackRange> MappedActionsArray
 		{ {
 			{ControllerButtonStateData::ActionType::KEYDOWN, CallbackRange{} },
 			{ControllerButtonStateData::ActionType::KEYREPEAT, CallbackRange{} },
@@ -65,7 +73,13 @@ namespace sds
 		ControllerButtonToActionMap(ControllerButtonToActionMap&& other) = default;
 		ControllerButtonToActionMap& operator=(const ControllerButtonToActionMap& other) = default;
 		ControllerButtonToActionMap& operator=(ControllerButtonToActionMap&& other) = default;
-		
+	public:
+		[[nodiscard]]
+		static auto GetThisBuffer() noexcept
+		{
+			return thisBuffer;
+		}
+	public:
 		/// <summary>
 		/// Operator<< overload for std::ostream specialization,
 		///	writes more detailed map details for debugging.

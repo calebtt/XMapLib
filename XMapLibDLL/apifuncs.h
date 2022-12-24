@@ -16,7 +16,7 @@
 	/// </summary>
 	struct StaticMapper
 	{
-		using ThreadUnit_t = impcool::ThreadUnitPlus;
+		using ThreadUnit_t = imp::ThreadUnitPlusPlus;
 	private:
 		// Aprox. 32kb buffer for map string.
 		static constexpr std::size_t MapInfoBufferSize{ 1'024ull * 32 };

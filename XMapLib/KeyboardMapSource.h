@@ -17,7 +17,7 @@ namespace sds
 	struct KeyboardMapSource
 	{
 		using InpType = sds::ControllerButtonStateData::ActionType;
-		using TranslatorFunctions_t = KeyboardApplyKeystroke;
+		using TranslatorFunctions_t = KeyboardTranslator;
 	private:
 		// non-owning pointer to a KeyboardTranslator object.
 		TranslatorFunctions_t* m_pTranslator{};
@@ -40,10 +40,24 @@ namespace sds
 			CleanupInProgressEvents();
 		}
 	public:
+		auto BuildMapping(const ControllerButtonData &cbd, const KeyboardButtonData &kbd, const ControllerToKeyMapData &ctkmd = {})
+		{
+			// Add the various data packs
+			ControllerButtonToActionMap cbtam;
+			cbtam.ControllerButton = cbd;
+			cbtam.KeyboardButton = kbd;
+			cbtam.KeymapData = ctkmd;
+			// Add the app-specific logic for keyboard mappings.
+			cbtam.MappedActionsArray[InpType::KEYDOWN].PushInfiniteTaskBack(
+				[trns = m_pTranslator](ControllerButtonToActionMap &cbta, const KeyStateWrapper &stroke ) { trns->Normal(cbta, stroke); }
+			);
+			cbtam.MappedActionsArray[InpType::KEYREPEAT].PushInfiniteTaskBack(
+				[trns = m_pTranslator](ControllerButtonToActionMap& cbta, const KeyStateWrapper& stroke) { trns->Normal(cbta, stroke); }
+			);
+		}
 		/// <summary><c>AddMap(ControllerButtonToActionMap)</c> Adds a key map.</summary>
 		void AddMap(const ControllerButtonToActionMap button)
 		{
-			
 			m_keyMaps.emplace_back(button);
 		}
 		[[nodiscard]]

@@ -128,9 +128,6 @@
     <ClInclude Include="Smarts.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="KeyboardTranslatorAsync.h">
-      <Filter>Header Files\Keyboard</Filter>
-    </ClInclude>
     <ClInclude Include="ScalingDefaults.h">
       <Filter>Header Files\Mouse\SettingsAndConfig</Filter>
     </ClInclude>
@@ -157,6 +154,9 @@
     </ClInclude>
     <ClInclude Include="ControllerSideDetails.h">
       <Filter>Header Files\Keyboard\KeyInfoWrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyEventFactory.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
