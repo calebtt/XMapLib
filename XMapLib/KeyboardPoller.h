@@ -1,6 +1,6 @@
 #pragma once
 #include "stdafx.h"
-#include "KeyStateWrapper.h"
+#include "ControllerStateWrapper.h"
 
 namespace sds
 {
@@ -9,9 +9,9 @@ namespace sds
 	{
 		XINPUT_KEYSTROKE m_tempState{};
 	public:
-		/// <summary>Returns an updated KeyStateWrapper containing information gathered about a controller keypress. </summary>
+		/// <summary>Returns an updated ControllerStateWrapper containing information gathered about a controller keypress. </summary>
 		[[nodiscard]]
-		KeyStateWrapper GetUpdatedState(const int playerId) noexcept
+		ControllerStateWrapper GetUpdatedState(const int playerId) noexcept
 		{
 			// zero controller state struct
 			m_tempState = {};
@@ -22,7 +22,7 @@ namespace sds
 				const bool isDown = m_tempState.Flags & XINPUT_KEYSTROKE_KEYDOWN;
 				const bool isUp = m_tempState.Flags & XINPUT_KEYSTROKE_KEYUP;
 				const bool isRepeat = m_tempState.Flags & XINPUT_KEYSTROKE_REPEAT;
-				return KeyStateWrapper{ .VirtualKey = m_tempState.VirtualKey, .KeyDown = isDown, .KeyUp = isUp, .KeyRepeat = isRepeat };
+				return ControllerStateWrapper{ .VirtualKey = m_tempState.VirtualKey, .KeyDown = isDown, .KeyUp = isUp, .KeyRepeat = isRepeat };
 			}
 			assert(error != ERROR_BAD_ARGUMENTS);
 			return {};

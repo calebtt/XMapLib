@@ -178,7 +178,7 @@
     <ClInclude Include="KeyboardSettingsPack.h" />
     <ClInclude Include="KeyboardMapSource.h" />
     <ClInclude Include="KeyEventFactory.h" />
-    <ClInclude Include="KeyStateWrapper.h" />
+    <ClInclude Include="ControllerStateWrapper.h" />
     <ClInclude Include="MouseMoveInfoPacket.h" />
     <ClInclude Include="MouseMover.h" />
     <ClInclude Include="MousePoller.h" />

@@ -137,7 +137,7 @@
     <ClInclude Include="StickMap.h">
       <Filter>Header Files\Mouse\SettingsAndConfig</Filter>
     </ClInclude>
-    <ClInclude Include="KeyStateWrapper.h">
+    <ClInclude Include="ControllerStateWrapper.h">
       <Filter>Header Files\Keyboard\KeyInfoWrappers</Filter>
     </ClInclude>
     <ClInclude Include="KeyboardMapSource.h">

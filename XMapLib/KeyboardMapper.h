@@ -15,7 +15,7 @@ namespace sds
 	concept IsInputPoller = requires(Poller_t & t)
 	{
 		{ t.GetUpdatedState(0) };
-		{ t.GetUpdatedState(0) } -> std::convertible_to<KeyStateWrapper>;
+		{ t.GetUpdatedState(0) } -> std::convertible_to<ControllerStateWrapper>;
 	};
 
 	/// <summary> Main class for use, for mapping controller input to keyboard input. Uses ControllerButtonToActionMap for the details.

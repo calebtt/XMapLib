@@ -49,10 +49,10 @@ namespace sds
 			cbtam.KeymapData = ctkmd;
 			// Add the app-specific logic for keyboard mappings.
 			cbtam.MappedActionsArray[InpType::KEYDOWN].PushInfiniteTaskBack(
-				[trns = m_pTranslator](ControllerButtonToActionMap &cbta, const KeyStateWrapper &stroke ) { trns->Normal(cbta, stroke); }
+				[trns = m_pTranslator](ControllerButtonToActionMap &cbta, const ControllerStateWrapper &stroke ) { trns->Normal(cbta, stroke); }
 			);
 			cbtam.MappedActionsArray[InpType::KEYREPEAT].PushInfiniteTaskBack(
-				[trns = m_pTranslator](ControllerButtonToActionMap& cbta, const KeyStateWrapper& stroke) { trns->Normal(cbta, stroke); }
+				[trns = m_pTranslator](ControllerButtonToActionMap& cbta, const ControllerStateWrapper& stroke) { trns->Normal(cbta, stroke); }
 			);
 		}
 		/// <summary><c>AddMap(ControllerButtonToActionMap)</c> Adds a key map.</summary>

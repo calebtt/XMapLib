@@ -5,7 +5,7 @@
 namespace sds
 {
 	/// <summary> Wrapper for XINPUT_KEYSTROKE in this case, to make the code processing it more portable. </summary>
-	struct KeyStateWrapper
+	struct ControllerStateWrapper
 	{
 		//virtual keycode for controller button activity.
 		unsigned short VirtualKey{};

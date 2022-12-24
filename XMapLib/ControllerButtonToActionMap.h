@@ -36,7 +36,6 @@ namespace sds
 		KeyboardButtonData KeyboardButton;
 		//ActionRanges MappedActions;
 		ControllerToKeyMapData KeymapData;
-		GroupingProperty_t ExclusivityGrouping{};
 
 		std::map<ControllerButtonStateData::ActionType, CallbackRange> MappedActionsArray
 		{ {

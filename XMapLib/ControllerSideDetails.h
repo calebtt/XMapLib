@@ -41,13 +41,20 @@ namespace sds
 	/// </summary>
 	struct ControllerToKeyMapData
 	{
-		using cms = std::chrono::milliseconds;
+		using GroupingProperty_t = int;
+		using Cms_t = std::chrono::milliseconds;
 		// Uses the key-repeat behavior when held down
 		bool UsesRepeat{ true };
 		// Delay before activating the key-repeat behavior.
-		cms DelayBeforeRepeatActivation{ cms{250} };
+		Cms_t DelayBeforeRepeatActivation{ Cms_t{500} };
 		// Delay after or in-between key repeat events.
-		cms DelayAfterRepeatActivation{ cms{250} };
+		Cms_t DelayAfterRepeatActivation{ Cms_t{250} };
+		// Grouping for exclusivity with overtaking, if a new key is pressed while
+		// a key in the grouping is already pressed, the new press overtakes the old.
+		GroupingProperty_t ExclusivityGrouping{};
+		// Grouping for exclusivity with no overtaking, if a new key is pressed while
+		// a key in the grouping is already pressed, nothing happens.
+		GroupingProperty_t ExclusivityNoUpdateGrouping{};
 	};
 
 	/// <summary>
