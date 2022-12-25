@@ -3,7 +3,6 @@
 #include <vector>
 
 #include "ControllerButtonToActionMap.h"
-#include "ControllerButtonToActionMap.h"
 #include "KeyboardTranslator.h"
 #include "VirtualMap.h"
 
@@ -40,20 +39,36 @@ namespace sds
 			CleanupInProgressEvents();
 		}
 	public:
-		auto BuildMapping(const ControllerButtonData &cbd, const KeyboardButtonData &kbd, const ControllerToKeyMapData &ctkmd = {})
+		auto BuildMapping(
+			const int controllerVK,
+			const int keyboardVK,
+			const int exclusivityGrouping = 0, 
+			const int exclusivityGroupingNoUpdate = 0,
+			const bool usesRepeat = true,
+			const int delayAfterRepeat = 250,
+			const ControllerToKeyMapData &ctkmd = {})
 		{
 			// Add the various data packs
 			ControllerButtonToActionMap cbtam;
-			cbtam.ControllerButton = cbd;
-			cbtam.KeyboardButton = kbd;
-			cbtam.KeymapData = ctkmd;
-			// Add the app-specific logic for keyboard mappings.
-			cbtam.MappedActionsArray[InpType::KEYDOWN].PushInfiniteTaskBack(
-				[trns = m_pTranslator](ControllerButtonToActionMap &cbta, const ControllerStateWrapper &stroke ) { trns->Normal(cbta, stroke); }
-			);
-			cbtam.MappedActionsArray[InpType::KEYREPEAT].PushInfiniteTaskBack(
-				[trns = m_pTranslator](ControllerButtonToActionMap& cbta, const ControllerStateWrapper& stroke) { trns->Normal(cbta, stroke); }
-			);
+			cbtam.ControllerButton.VK = controllerVK;
+			cbtam.KeyboardButton.VK = keyboardVK;
+			cbtam.KeymapData.ExclusivityGrouping = exclusivityGrouping;
+			cbtam.KeymapData.ExclusivityNoUpdateGrouping = exclusivityGroupingNoUpdate;
+			cbtam.KeymapData.UsesRepeat = usesRepeat;
+			
+			KeyboardTranslator kt{ std::move(cbtam), m_ksp};
+			// TODO continue here.
+
+			//cbtam.ControllerButton = cbd;
+			//cbtam.KeyboardButton = kbd;
+			//cbtam.KeymapData = ctkmd;
+			//// Add the app-specific logic for keyboard mappings.
+			//cbtam.MappedActionsArray[InpType::KEYDOWN].PushInfiniteTaskBack(
+			//	[trns = m_pTranslator](ControllerButtonToActionMap &cbta, const ControllerStateWrapper &stroke ) { trns->Normal(cbta, stroke); }
+			//);
+			//cbtam.MappedActionsArray[InpType::KEYREPEAT].PushInfiniteTaskBack(
+			//	[trns = m_pTranslator](ControllerButtonToActionMap& cbta, const ControllerStateWrapper& stroke) { trns->Normal(cbta, stroke); }
+			//);
 		}
 		/// <summary><c>AddMap(ControllerButtonToActionMap)</c> Adds a key map.</summary>
 		void AddMap(const ControllerButtonToActionMap button)

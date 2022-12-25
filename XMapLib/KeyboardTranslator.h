@@ -9,11 +9,10 @@
 
 namespace sds
 {
-	/// <summary>
-	///	Holds the functions used for mapping button -> keystroke.
-	///	App-specific logic in the context of a generic controller button -> action library.
-	///	TODO this may be moved to it's own project (app-specific stuff project).
-	/// </summary>
+	/**
+	 * \brief Instances are attached to CBTAM mappings, It operates a state machine for the case of
+	 * controller button to keyboard button mappings. Just feed it ControllerStateWrapper structs.
+	 */
 	struct KeyboardTranslator
 	{
 		using InpType = ControllerButtonStateData::ActionType;
@@ -94,12 +93,12 @@ namespace sds
 		};
 	public:
 		KeyboardSettingsPack m_ksp;
-		ControllerButtonToActionMap* m_currentMapping{};
+		ControllerButtonToActionMap m_currentMapping;
 	public:
-		explicit KeyboardTranslator(ControllerButtonToActionMap& mapToOperateOn, const KeyboardSettingsPack& ksp = {})
-			: m_ksp(ksp), m_currentMapping(&mapToOperateOn)
+		explicit KeyboardTranslator(ControllerButtonToActionMap&& mapToOperateOn, const KeyboardSettingsPack& ksp = {})
+			: m_ksp(ksp), m_currentMapping(std::move(mapToOperateOn))
 		{
-			assert(m_currentMapping != nullptr);
+
 		}
 
 		/**
@@ -159,41 +158,41 @@ namespace sds
 		void Normal(const ControllerStateWrapper& stroke) noexcept
 		{
 			// Start with key-update loop and key-repeat loop
-			KeyUpdateLoop(m_currentMapping->GetThisBuffer());
+			KeyUpdateLoop(m_currentMapping.GetThisBuffer());
 
 			constexpr auto noneType = InpType::NONE;
 			constexpr auto downType = InpType::KEYDOWN;
 			constexpr auto repeatType = InpType::KEYREPEAT;
 			constexpr auto upType = InpType::KEYUP;
 
-			const auto lastAction = m_currentMapping->ControllerButtonState.LastAction;
+			const auto lastAction = m_currentMapping.ControllerButtonState.LastAction;
 
 			// If this cbtam is being asked to do down/repeat/up.
-			const bool AskUp = stroke.KeyUp && stroke.VirtualKey == m_currentMapping->ControllerButton.VK;
-			const bool AskDown = stroke.KeyDown && stroke.VirtualKey == m_currentMapping->ControllerButton.VK;
-			const bool AskRepeat = stroke.KeyRepeat && stroke.VirtualKey == m_currentMapping->ControllerButton.VK;
+			const bool AskUp = stroke.KeyUp && stroke.VirtualKey == m_currentMapping.ControllerButton.VK;
+			const bool AskDown = stroke.KeyDown && stroke.VirtualKey == m_currentMapping.ControllerButton.VK;
+			const bool AskRepeat = stroke.KeyRepeat && stroke.VirtualKey == m_currentMapping.ControllerButton.VK;
 
 			// If the current state will allow it to actually do down/repeat/up.
 			const bool DoDown = ((lastAction == upType) || (lastAction == noneType)) && AskDown;
-			const bool DoRepeat = (lastAction == repeatType || lastAction == downType) && AskRepeat && m_currentMapping->KeymapData.UsesRepeat;
+			const bool DoRepeat = (lastAction == repeatType || lastAction == downType) && AskRepeat && m_currentMapping.KeymapData.UsesRepeat;
 			const bool DoUp = (lastAction == downType || lastAction == repeatType) && AskUp;
 
 			// Then do down/repeat/up.
 			if (DoDown)
 			{
-				auto overtakingAction = IsOvertaking(*m_currentMapping);
+				auto overtakingAction = IsOvertaking(m_currentMapping);
 				//const InpType inputType = DoDown ? downType : repeatType;
 				std::visit([&](auto& t) { t(downType); }, overtakingAction);
 			}
 			else if (DoRepeat)
 			{
 				//Repeat'd key cannot be overtaking, only a newly key-down'd key.
-				NormalKeyDown_t t{ m_currentMapping };
+				NormalKeyDown_t t{ &m_currentMapping };
 				t(InpType::KEYREPEAT);
 			}
 			else if (DoUp)
 			{
-				KeyUp_t k(m_currentMapping);
+				KeyUp_t k(&m_currentMapping);
 				k(InpType::KEYUP);
 			}
 		}
@@ -211,11 +210,11 @@ namespace sds
 			// Get copy of range to pointers to all mappings in existence.
 			const auto mapBuffer = detail.GetThisBuffer();
 			// Get copy of pointers to all mappings in the same exclusivity grouping as this mapping.
-			const auto groupedBuffer = std::ranges::views::transform(mapBuffer, [exGroup = m_currentMapping->KeymapData.ExclusivityGrouping](const auto& elem)
+			const auto groupedBuffer = std::ranges::views::transform(mapBuffer, [exGroup = m_currentMapping.KeymapData.ExclusivityGrouping](const auto& elem)
 				{
 					return elem->KeymapData.ExclusivityGrouping == exGroup;
 				});
-			const auto groupedNoUpdateBuffer = std::ranges::views::transform(mapBuffer, [exGroup = m_currentMapping->KeymapData.ExclusivityNoUpdateGrouping](const auto& elem)
+			const auto groupedNoUpdateBuffer = std::ranges::views::transform(mapBuffer, [exGroup = m_currentMapping.KeymapData.ExclusivityNoUpdateGrouping](const auto& elem)
 				{
 					return elem->KeymapData.ExclusivityNoUpdateGrouping == exGroup;
 				});
