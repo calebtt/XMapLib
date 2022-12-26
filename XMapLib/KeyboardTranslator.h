@@ -100,14 +100,14 @@ namespace sds
 		{
 
 		}
-
+	public:
 		/**
 		 * \brief If enough time has passed, reset the key for use again, provided it uses the key-repeat behavior--otherwise reset it immediately.
 		 * The LastAction and LastSentTime get updated here.
 		 * \param mapBuffer container holding all CBTAM pointers.
 		 */
 		static
-		void KeyUpdateLoop(const std::vector<ControllerButtonToActionMap*> &mapBuffer) noexcept
+		void KeyUpdateLoop(const std::vector<ControllerButtonToActionMap*> mapBuffer) noexcept
 		{
 			using std::chrono::duration_cast, std::chrono::microseconds;
 			//If enough time has passed, reset the key for use again, provided it uses the key-repeat behavior--
@@ -132,7 +132,7 @@ namespace sds
 		 * \param mapBuffer container holding all CBTAM pointers.
 		 */
 		static
-		void KeyRepeatLoop(const std::vector<ControllerButtonToActionMap*>& mapBuffer) noexcept
+		void KeyRepeatLoop(const std::vector<ControllerButtonToActionMap*> mapBuffer) noexcept
 		{
 			using AT = InpType;
 			for (const auto& w : mapBuffer)
@@ -151,51 +151,96 @@ namespace sds
 		}
 
 		/**
-		 * \brief Entry point for keypress state machine logic. Manages explicitly the requested action,
-		 * normally keydown/keyrepeat/keyup. Then performs the KeyRepeat loop and the KeyUpdate loop (resets keys for use again).
+		 * \brief Entry point for key-down state machine logic. Manages explicitly the requested action.
+		 * Then performs the KeyRepeat loop and the KeyUpdate loop (resets keys for use again).
 		 * \param stroke info about controller key-press event.
 		 */
-		void Normal(const ControllerStateWrapper& stroke) noexcept
+		void DoDown(const ControllerStateWrapper& stroke) noexcept
 		{
 			// Start with key-update loop and key-repeat loop
 			KeyUpdateLoop(m_currentMapping.GetThisBuffer());
 
 			constexpr auto noneType = InpType::NONE;
 			constexpr auto downType = InpType::KEYDOWN;
-			constexpr auto repeatType = InpType::KEYREPEAT;
 			constexpr auto upType = InpType::KEYUP;
 
 			const auto lastAction = m_currentMapping.ControllerButtonState.LastAction;
 
 			// If this cbtam is being asked to do down/repeat/up.
-			const bool AskUp = stroke.KeyUp && stroke.VirtualKey == m_currentMapping.ControllerButton.VK;
 			const bool AskDown = stroke.KeyDown && stroke.VirtualKey == m_currentMapping.ControllerButton.VK;
-			const bool AskRepeat = stroke.KeyRepeat && stroke.VirtualKey == m_currentMapping.ControllerButton.VK;
 
 			// If the current state will allow it to actually do down/repeat/up.
 			const bool DoDown = ((lastAction == upType) || (lastAction == noneType)) && AskDown;
-			const bool DoRepeat = (lastAction == repeatType || lastAction == downType) && AskRepeat && m_currentMapping.KeymapData.UsesRepeat;
-			const bool DoUp = (lastAction == downType || lastAction == repeatType) && AskUp;
 
 			// Then do down/repeat/up.
 			if (DoDown)
 			{
 				auto overtakingAction = IsOvertaking(m_currentMapping);
-				//const InpType inputType = DoDown ? downType : repeatType;
 				std::visit([&](auto& t) { t(downType); }, overtakingAction);
 			}
-			else if (DoRepeat)
-			{
-				//Repeat'd key cannot be overtaking, only a newly key-down'd key.
-				NormalKeyDown_t t{ &m_currentMapping };
-				t(InpType::KEYREPEAT);
-			}
-			else if (DoUp)
+			KeyRepeatLoop(m_currentMapping.GetThisBuffer());
+		}
+
+		/**
+		 * \brief For key-up state machine logic. Manages explicitly the requested action.
+		 * Then performs the KeyRepeat loop and the KeyUpdate loop (resets keys for use again).
+		 * \param stroke info about controller key-press event.
+		 */
+		void DoUp(const ControllerStateWrapper& stroke) noexcept
+		{
+			// Start with key-update loop and key-repeat loop
+			KeyUpdateLoop(m_currentMapping.GetThisBuffer());
+
+			constexpr auto downType = InpType::KEYDOWN;
+			constexpr auto repeatType = InpType::KEYREPEAT;
+
+			const auto lastAction = m_currentMapping.ControllerButtonState.LastAction;
+
+			// If this cbtam is being asked to do down/repeat/up.
+			const bool AskUp = stroke.KeyUp && stroke.VirtualKey == m_currentMapping.ControllerButton.VK;
+
+			// If the current state will allow it to actually do down/repeat/up.
+			const bool DoUp = (lastAction == downType || lastAction == repeatType) && AskUp;
+
+			// Then do down/repeat/up.
+			if (DoUp)
 			{
 				KeyUp_t k(&m_currentMapping);
 				k(InpType::KEYUP);
 			}
 		}
+		
+		/**
+		 * \brief For key-repeat state machine logic. Manages explicitly the requested action.
+		 *  Also performs the KeyRepeat loop and the KeyUpdate loop (resets keys for use again).
+		 * \param stroke info about controller key-press event.
+		 */
+		void DoRepeat(const ControllerStateWrapper& stroke) noexcept
+		{
+			// Start with key-update loop and key-repeat loop
+			KeyUpdateLoop(m_currentMapping.GetThisBuffer());
+
+			constexpr auto downType = InpType::KEYDOWN;
+			constexpr auto repeatType = InpType::KEYREPEAT;
+
+			const auto lastAction = m_currentMapping.ControllerButtonState.LastAction;
+
+			// If this cbtam is being asked to do down/repeat/up.
+			const bool AskRepeat = stroke.KeyRepeat && stroke.VirtualKey == m_currentMapping.ControllerButton.VK;
+
+			// If the current state will allow it to actually do down/repeat/up.
+			const bool DoRepeat = (lastAction == repeatType || lastAction == downType) && AskRepeat && m_currentMapping.KeymapData.UsesRepeat;
+
+			// Then do down/repeat/up.
+			if (DoRepeat)
+			{
+				//Repeat'd key cannot be overtaking, only a newly key-down'd key.
+				NormalKeyDown_t t{ &m_currentMapping };
+				t(InpType::KEYREPEAT);
+			}
+			KeyRepeatLoop(m_currentMapping.GetThisBuffer());
+		}
+	private:
 
 		/**
 		 * \brief Check to see if an exclusivity grouping has been pressed already
@@ -204,7 +249,7 @@ namespace sds
 		 */
 		[[nodiscard]]
 		auto IsOvertaking(const ControllerButtonToActionMap& detail) noexcept
-		-> std::variant<OvertakingKeyDown_t, NoUpdate_t, NormalKeyDown_t>
+			-> std::variant<OvertakingKeyDown_t, NoUpdate_t, NormalKeyDown_t>
 		{
 			using std::ranges::all_of, std::ranges::find, std::ranges::find_if, std::ranges::begin, std::ranges::end;
 			// Get copy of range to pointers to all mappings in existence.
@@ -221,18 +266,18 @@ namespace sds
 
 			// If one or the other has members, assert that they don't BOTH have members as this is obviously
 			// a problem.
-			if(!groupedBuffer.empty() || !groupedNoUpdateBuffer.empty())
+			if (!groupedBuffer.empty() || !groupedNoUpdateBuffer.empty())
 				assert(groupedBuffer.empty() ^ groupedNoUpdateBuffer.empty());
 
 			const auto groupedResult = GetGroupedOvertaken(detail, groupedBuffer);
 			const auto groupedNoUpdateResult = GetGroupedOvertaken(detail, groupedNoUpdateBuffer);
 			if (groupedResult)
-				return OvertakingKeyDown_t{ groupedResult.value(), m_currentMapping };
+				return OvertakingKeyDown_t{ groupedResult.value(), &m_currentMapping };
 			if (groupedNoUpdateResult)
 				return NoUpdate_t{};
-			return NormalKeyDown_t{m_currentMapping};
+			return NormalKeyDown_t{ &m_currentMapping };
 		}
-	private:
+
 		/**
 		 * \brief Checks the exclusivity group members for a key being overtaken by the newly pressed key.
 		 * \param detail button newly pressed

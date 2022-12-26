@@ -42,20 +42,20 @@ namespace sds
 		auto BuildMapping(
 			const int controllerVK,
 			const int keyboardVK,
-			const int exclusivityGrouping = 0, 
-			const int exclusivityGroupingNoUpdate = 0,
-			const bool usesRepeat = true,
-			const int delayAfterRepeat = 250,
-			const ControllerToKeyMapData &ctkmd = {})
+			ControllerToKeyMapData ctkmd = {})
 		{
 			// Add the various data packs
 			ControllerButtonToActionMap cbtam;
 			cbtam.ControllerButton.VK = controllerVK;
 			cbtam.KeyboardButton.VK = keyboardVK;
-			cbtam.KeymapData.ExclusivityGrouping = exclusivityGrouping;
-			cbtam.KeymapData.ExclusivityNoUpdateGrouping = exclusivityGroupingNoUpdate;
-			cbtam.KeymapData.UsesRepeat = usesRepeat;
-			
+			cbtam.KeymapData = std::move(ctkmd);
+			cbtam.MappedActionsArray[InpType::KEYDOWN].PushInfiniteTaskBack([]() {});
+
+			//cbtam.KeymapData.ExclusivityGrouping = exclusivityGrouping;
+			//cbtam.KeymapData.ExclusivityNoUpdateGrouping = exclusivityGroupingNoUpdate;
+			//cbtam.KeymapData.UsesRepeat = usesRepeat;
+			//cbtam.KeymapData.DelayAfterRepeatActivation = delayAfterRepeat;
+			//
 			KeyboardTranslator kt{ std::move(cbtam), m_ksp};
 			// TODO continue here.
 
@@ -64,10 +64,10 @@ namespace sds
 			//cbtam.KeymapData = ctkmd;
 			//// Add the app-specific logic for keyboard mappings.
 			//cbtam.MappedActionsArray[InpType::KEYDOWN].PushInfiniteTaskBack(
-			//	[trns = m_pTranslator](ControllerButtonToActionMap &cbta, const ControllerStateWrapper &stroke ) { trns->Normal(cbta, stroke); }
+			//	[trns = m_pTranslator](ControllerButtonToActionMap &cbta, const ControllerStateWrapper &stroke ) { trns->DoDown(cbta, stroke); }
 			//);
 			//cbtam.MappedActionsArray[InpType::KEYREPEAT].PushInfiniteTaskBack(
-			//	[trns = m_pTranslator](ControllerButtonToActionMap& cbta, const ControllerStateWrapper& stroke) { trns->Normal(cbta, stroke); }
+			//	[trns = m_pTranslator](ControllerButtonToActionMap& cbta, const ControllerStateWrapper& stroke) { trns->DoDown(cbta, stroke); }
 			//);
 		}
 		/// <summary><c>AddMap(ControllerButtonToActionMap)</c> Adds a key map.</summary>

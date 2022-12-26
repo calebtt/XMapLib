@@ -21,9 +21,6 @@ namespace sds
 	struct ControllerButtonToActionMap
 	{
 	public:
-		//TODO this class should be the one constructing a default mapping.
-		//So, we will template it for a concept interface that has things like "Normal()" etc.
-		//using MappingFuncs = KeyboardTranslator;
 		using ClockType = std::chrono::high_resolution_clock;
 		using PointInTime = std::chrono::time_point<ClockType>;
 		using StateAndCallbackPair = std::pair<ControllerButtonStateData::ActionType, CallbackRange>;
