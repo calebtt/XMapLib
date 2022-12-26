@@ -51,12 +51,16 @@ namespace sds
 			cbtam.KeymapData = std::move(ctkmd);
 			cbtam.MappedActionsArray[InpType::KEYDOWN].PushInfiniteTaskBack([]() {});
 
+			KeyboardTranslator kt{ std::move(cbtam), m_ksp };
+
+			m_keyMaps.emplace_back(cbtam);
+
 			//cbtam.KeymapData.ExclusivityGrouping = exclusivityGrouping;
-			//cbtam.KeymapData.ExclusivityNoUpdateGrouping = exclusivityGroupingNoUpdate;
+			//cbtam.KeymapData.ExclusivityNoOvertakingGrouping = exclusivityGroupingNoUpdate;
 			//cbtam.KeymapData.UsesRepeat = usesRepeat;
 			//cbtam.KeymapData.DelayAfterRepeatActivation = delayAfterRepeat;
 			//
-			KeyboardTranslator kt{ std::move(cbtam), m_ksp};
+			
 			// TODO continue here.
 
 			//cbtam.ControllerButton = cbd;

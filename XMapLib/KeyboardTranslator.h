@@ -92,6 +92,8 @@ namespace sds
 			}
 		};
 	public:
+		//using TriggerState = std::variant<NoUpdate_t>;
+
 		KeyboardSettingsPack m_ksp;
 		ControllerButtonToActionMap m_currentMapping;
 	public:
@@ -259,9 +261,9 @@ namespace sds
 				{
 					return elem->KeymapData.ExclusivityGrouping == exGroup;
 				});
-			const auto groupedNoUpdateBuffer = std::ranges::views::transform(mapBuffer, [exGroup = m_currentMapping.KeymapData.ExclusivityNoUpdateGrouping](const auto& elem)
+			const auto groupedNoUpdateBuffer = std::ranges::views::transform(mapBuffer, [exGroup = m_currentMapping.KeymapData.ExclusivityNoOvertakingGrouping](const auto& elem)
 				{
-					return elem->KeymapData.ExclusivityNoUpdateGrouping == exGroup;
+					return elem->KeymapData.ExclusivityNoOvertakingGrouping == exGroup;
 				});
 
 			// If one or the other has members, assert that they don't BOTH have members as this is obviously

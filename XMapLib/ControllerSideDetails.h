@@ -54,7 +54,7 @@ namespace sds
 		GroupingProperty_t ExclusivityGrouping{};
 		// Grouping for exclusivity with no overtaking, if a new key is pressed while
 		// a key in the grouping is already pressed, nothing happens.
-		GroupingProperty_t ExclusivityNoUpdateGrouping{};
+		GroupingProperty_t ExclusivityNoOvertakingGrouping{};
 	};
 
 	/// <summary>

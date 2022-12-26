@@ -11,18 +11,18 @@
 
 namespace sds
 {
-	template<typename Poller_t>
-	concept IsInputPoller = requires(Poller_t & t)
-	{
-		{ t.GetUpdatedState(0) };
-		{ t.GetUpdatedState(0) } -> std::convertible_to<ControllerStateWrapper>;
-	};
+	//template<typename Poller_t>
+	//concept IsInputPoller = requires(Poller_t & t)
+	//{
+	//	{ t.GetUpdatedState(0) };
+	//	{ t.GetUpdatedState(0) } -> std::convertible_to<ControllerStateWrapper>;
+	//};
 
 	/// <summary> Main class for use, for mapping controller input to keyboard input. Uses ControllerButtonToActionMap for the details.
 	///	<para> Construction requires an instance of a <c>ThreadUnitPlus</c> type, managing infinite tasks running on a single thread. </para>
 	///	<para> Copyable, movable. Shallow copy of shared_ptr to polling and translation. </para>
 	///	</summary>
-	template<IsInputPoller InputPoller_t = KeyboardPoller, typename ThreadPool_t = imp::ThreadUnitPlusPlus>
+	template<typename InputPoller_t = KeyboardPoller>
 	class KeyboardMapper
 	{
 		/// <summary>
@@ -36,7 +36,7 @@ namespace sds
 		struct PollingAndTranslation
 		{
 			// class that contains the keypress handling logic, used async.
-			KeyboardTranslatorAsync m_translator;
+			//KeyboardTranslatorAsync m_translator;
 			// class that wraps the syscalls for getting a controller update.
 			InputPoller_t m_poller;
 			// bool to disable processing
@@ -52,11 +52,11 @@ namespace sds
 			}
 		};
 	public:
-		using ThreadManager = ThreadPool_t;
+		//using ThreadManager = ThreadPool_t;
 		using KeyMapRange_t = std::deque<ControllerButtonToActionMap>;
 	private:
 		// Thread unit, runs tasks.
-		SharedPtrType<ThreadManager> m_statRunner;
+		//SharedPtrType<ThreadManager> m_statRunner;
 		// Keyboard settings pack, needed for iscontrollerconnected func args and others.
 		KeyboardSettingsPack m_keySettingsPack;
 		// Combined object for polling and translation into action,

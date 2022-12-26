@@ -158,6 +158,12 @@
     <ClInclude Include="KeyEventFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="KeyStateMachine.h">
+      <Filter>Header Files\Keyboard</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyStateMachineInformational.h">
+      <Filter>Header Files\Keyboard</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />

@@ -8,6 +8,7 @@
 #include "CallbackRange.h"
 #include "ControllerSideDetails.h"
 #include "KeyboardTranslator.h"
+#include "KeyStateMachineInformational.h"
 
 namespace sds
 {
@@ -26,13 +27,13 @@ namespace sds
 		using StateAndCallbackPair = std::pair<ControllerButtonStateData::ActionType, CallbackRange>;
 		// 3rd and optional property for mappings, a grouping for exclusivity.
 		using GroupingProperty_t = int;
+		using InpType = ControllerButtonStateData::ActionType;
 	public:
 		ControllerButtonData ControllerButton;
 		ControllerButtonStateData ControllerButtonState;
-		//TODO probably remove this, the data will be stored in the type-erasure of the std::function holding the lambda fn being called.
 		KeyboardButtonData KeyboardButton;
-		//ActionRanges MappedActions;
 		ControllerToKeyMapData KeymapData;
+		KeyStateMachineInformational KeyStateMachine;
 
 		std::map<ControllerButtonStateData::ActionType, CallbackRange> MappedActionsArray
 		{ {
@@ -58,12 +59,14 @@ namespace sds
 		}
 
 		ControllerButtonToActionMap()
+		: KeyStateMachine(ControllerButtonState, ControllerButton, KeymapData, IsExclusive(), IsExclusiveNoOvertaking(), IsExclusivityBlocked)
 		{
 			using std::ranges::begin, std::ranges::end, std::ranges::find;
 			// Adding "this" to the thread local this buffer
 			const auto foundResult = find(begin(thisBuffer), end(thisBuffer), this);
 			if (foundResult != end(thisBuffer))
 				thisBuffer.emplace_back(this);
+
 		}
 		ControllerButtonToActionMap(const ControllerButtonToActionMap& other) = default;
 		ControllerButtonToActionMap(ControllerButtonToActionMap&& other) = default;
@@ -71,10 +74,70 @@ namespace sds
 		ControllerButtonToActionMap& operator=(ControllerButtonToActionMap&& other) = default;
 	public:
 		[[nodiscard]]
-		static auto GetThisBuffer() noexcept
+		static
+		auto GetThisBuffer() noexcept
+		-> const std::vector<ControllerButtonToActionMap*>&
 		{
 			return thisBuffer;
 		}
+		[[nodiscard]]
+		auto IsExclusive() const noexcept
+		{
+			return KeymapData.ExclusivityGrouping != 0;
+		}
+		[[nodiscard]]
+		auto IsExclusiveNoOvertaking() const noexcept
+		{
+			return KeymapData.ExclusivityNoOvertakingGrouping != 0;
+		}
+
+		/**
+		 * \brief If the type is exclusive, (not ExclusiveNoOvertaking) it will return true when pressing this key would be overtaking another key.
+		 * <p>AKA <b>IsOvertaking()</b> </p>
+		 * \return true if this key would be overtaking another in it's exclusivity grouping
+		 */
+		[[nodiscard]]
+		auto IsExclusivityBlocked() const noexcept -> bool
+		{
+			using std::ranges::all_of, std::ranges::find, std::ranges::find_if, std::ranges::begin, std::ranges::end;
+			// Get copy of range to pointers to all mappings in existence.
+			const auto& mapBuffer = GetThisBuffer();
+			// Get copy of pointers to all mappings in the same exclusivity grouping as this mapping.
+			const auto groupedBuffer = std::ranges::views::transform(mapBuffer, [exGroup = KeymapData.ExclusivityGrouping](const auto& elem)
+				{
+					return elem->KeymapData.ExclusivityGrouping == exGroup;
+				});
+			return GetGroupedOvertaken(*this, groupedBuffer);
+		}
+
+		auto KeyUpdate()
+		{
+			using std::chrono::duration_cast, std::chrono::microseconds;
+
+			auto& cbData = ControllerButtonState;
+			const auto mapData = KeymapData;
+			const bool DoUpdate = (cbData.LastAction == InpType::KEYUP && cbData.LastSentTime.IsElapsed()) && mapData.UsesRepeat;
+			const bool DoImmediate = cbData.LastAction == InpType::KEYUP && !mapData.UsesRepeat;
+			if (DoUpdate || DoImmediate)
+			{
+				cbData.LastAction = InpType::NONE;
+				cbData.LastSentTime.Reset(duration_cast<microseconds>(KeymapData.DelayAfterRepeatActivation).count());
+			}
+		}
+		//auto KeyRepeat()
+		//{
+		//	using AT = InpType;
+		//	const bool usesRepeat = KeymapData.UsesRepeat;
+		//	const auto lastAction = ControllerButtonState.LastAction;
+		//	if (usesRepeat && (lastAction == AT::KEYDOWN || lastAction == AT::KEYREPEAT))
+		//	{
+		//		if (ControllerButtonState.LastSentTime.IsElapsed())
+		//		{
+		//			RepeatKeyDown_t t{ w };
+		//			t(InpType::KEYREPEAT);
+		//		}
+		//	}
+		//}
 	public:
 		/// <summary>
 		/// Operator<< overload for std::ostream specialization,
@@ -138,6 +201,46 @@ namespace sds
 		friend bool operator!=(const ControllerButtonToActionMap& lhs, const ControllerButtonToActionMap& rhs) noexcept
 		{
 			return !(lhs == rhs);
+		}
+	private:
+		/**
+		 * \brief Checks the exclusivity group members for a key being overtaken by the newly pressed key.
+		 * \param detail button newly pressed
+		 * \param groupedBuffer buffer holding the state of all keys at present within the grouping
+		 * \return optional, pointer to cbtam being overtaken
+		 */
+		auto GetGroupedOvertaken(
+			const ControllerButtonToActionMap& detail,
+			const auto& groupedBuffer) const noexcept -> bool
+		{
+			using std::ranges::find_if, std::ranges::end;
+			// If exclusivity with update grouping has some other members...
+			if (!groupedBuffer.empty())
+			{
+				auto IsGroupedBtnPressedFn = [&](const ControllerButtonToActionMap* groupedButtonElem)
+				{
+					const auto elemState = groupedButtonElem->ControllerButtonState.LastAction;
+					const auto elemButtonVK = groupedButtonElem->ControllerButton.VK;
+					constexpr auto DownType = InpType::KEYDOWN;
+					constexpr auto RepeatType = InpType::KEYREPEAT;
+					const bool isOtherButtonPressed = elemState == DownType || elemState == RepeatType;
+					// this is the case where the key we're testing for is the same key we're investigating
+					const bool isSameKey = elemButtonVK == detail.ControllerButton.VK;
+					if (!isSameKey)
+					{
+						return isOtherButtonPressed;
+					}
+					return false;
+				};
+
+				const auto mpit = find_if(groupedBuffer, IsGroupedBtnPressedFn);
+				if (mpit == end(groupedBuffer))
+				{
+					return false;
+				}
+				return true;
+			}
+			return false;
 		}
 	};
 }
