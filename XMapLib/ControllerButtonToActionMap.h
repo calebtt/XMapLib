@@ -12,28 +12,26 @@
 
 namespace sds
 {
-	/// <summary> The <b>map type</b> which means the structure holding some controller to action mapping.
-	/// For operating on controller button to [action] callback fn maps,
-	///	it contains and manages the state machine logic used to activate/de-activate the callbacks.
-	/// The mapping is SendingElementVK to callback list. </summary>
-	///	<remarks> The hope is that this mapping style will make the "engine" processing it more
-	///	generic and not totally reliant on processing explicit controller button -> keyboard key mappings.
-	///	Hence, the callback function ranges for events occurring such as activation, deactivation, repeat. </remarks>
+	/**
+	 * \brief The <b>map type</b> which means the structure holding some controller to action mapping. For operating on controller button to [action] callback fn maps,
+	 * it contains and manages the state machine logic used to activate/de-activate the callbacks. The mapping is SendingElementVK to callback list.
+	 * \remarks The hope is that this mapping style will make the "engine" processing it more generic and not totally reliant on processing explicit controller button -> keyboard key mappings.
+	 * Hence, the callback function ranges for events occurring such as activation, deactivation, repeat.
+	 */
+	template<typename KeyStateMachine_t = KeyStateMachineInformational>
 	struct ControllerButtonToActionMap
 	{
 	public:
-		using ClockType = std::chrono::high_resolution_clock;
-		using PointInTime = std::chrono::time_point<ClockType>;
 		using StateAndCallbackPair = std::pair<ControllerButtonStateData::ActionType, CallbackRange>;
 		// 3rd and optional property for mappings, a grouping for exclusivity.
-		using GroupingProperty_t = int;
+		//using GroupingProperty_t = int;
 		using InpType = ControllerButtonStateData::ActionType;
 	public:
 		ControllerButtonData ControllerButton;
 		ControllerButtonStateData ControllerButtonState;
 		KeyboardButtonData KeyboardButton;
 		ControllerToKeyMapData KeymapData;
-		KeyStateMachineInformational KeyStateMachine;
+		KeyStateMachine_t KeyStateMachine;
 
 		std::map<ControllerButtonStateData::ActionType, CallbackRange> MappedActionsArray
 		{ {
@@ -46,10 +44,9 @@ namespace sds
 		// Non-owning pointers!
 		inline static thread_local std::vector<ControllerButtonToActionMap*> thisBuffer;
 	public:
-
-		/// <summary>
-		/// Destructor, removes 'this' from the thread-local static thisBuffer.
-		/// </summary>
+		/**
+		 * \brief Destructor, removes 'this' from the thread-local static thisBuffer.
+		 */
 		~ControllerButtonToActionMap()
 		{
 			using std::ranges::begin, std::ranges::end, std::ranges::find;
@@ -83,12 +80,14 @@ namespace sds
 		[[nodiscard]]
 		auto IsExclusive() const noexcept
 		{
-			return KeymapData.ExclusivityGrouping != 0;
+			constexpr auto ZeroVal = decltype(KeymapData.ExclusivityGrouping){};
+			return KeymapData.ExclusivityGrouping != ZeroVal;
 		}
 		[[nodiscard]]
 		auto IsExclusiveNoOvertaking() const noexcept
 		{
-			return KeymapData.ExclusivityNoOvertakingGrouping != 0;
+			constexpr auto ZeroVal = decltype(KeymapData.ExclusivityNoOvertakingGrouping){};
+			return KeymapData.ExclusivityNoOvertakingGrouping != ZeroVal;
 		}
 
 		/**
@@ -110,6 +109,9 @@ namespace sds
 			return GetGroupedOvertaken(*this, groupedBuffer);
 		}
 
+		/**
+		 * \brief Runs the update tasks, resetting the timer and LastAction if necessary.
+		 */
 		auto KeyUpdate()
 		{
 			using std::chrono::duration_cast, std::chrono::microseconds;
@@ -124,20 +126,6 @@ namespace sds
 				cbData.LastSentTime.Reset(duration_cast<microseconds>(KeymapData.DelayAfterRepeatActivation).count());
 			}
 		}
-		//auto KeyRepeat()
-		//{
-		//	using AT = InpType;
-		//	const bool usesRepeat = KeymapData.UsesRepeat;
-		//	const auto lastAction = ControllerButtonState.LastAction;
-		//	if (usesRepeat && (lastAction == AT::KEYDOWN || lastAction == AT::KEYREPEAT))
-		//	{
-		//		if (ControllerButtonState.LastSentTime.IsElapsed())
-		//		{
-		//			RepeatKeyDown_t t{ w };
-		//			t(InpType::KEYREPEAT);
-		//		}
-		//	}
-		//}
 	public:
 		/// <summary>
 		/// Operator<< overload for std::ostream specialization,

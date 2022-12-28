@@ -52,8 +52,8 @@ namespace sds
 			}
 		};
 	public:
-		//using ThreadManager = ThreadPool_t;
-		using KeyMapRange_t = std::deque<ControllerButtonToActionMap>;
+		using CBTAM_t = ControllerButtonToActionMap<>;
+		using KeyMapRange_t = std::deque<CBTAM_t>;
 	private:
 		// Thread unit, runs tasks.
 		//SharedPtrType<ThreadManager> m_statRunner;
