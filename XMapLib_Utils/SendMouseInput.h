@@ -1,5 +1,6 @@
 #pragma once
-#include "stdafx.h"
+#include "pch.h"
+#include "IOFuncs.h"
 
 namespace sds::Utilities
 {
@@ -32,14 +33,6 @@ namespace sds::Utilities
 			m_mouse_move_input.mi.dwExtraInfo = GetMessageExtraInfo();
 			//Finally, send the input
 			CallSendInput(&m_mouse_move_input, 1);
-		}
-		/// <summary>One member function calls SendInput with the eventual built INPUT struct.
-		/// This is useful for debugging or re-routing the output for logging/testing of a real-time system.</summary>
-		/// <param name="inp">Pointer to first element of INPUT array.</param>
-		/// <param name="numSent">Number of elements in the array to send.</param>
-		static UINT CallSendInput(INPUT* inp, size_t numSent) noexcept
-		{
-			return SendInput(static_cast<UINT>(numSent), inp, sizeof(INPUT));
 		}
 	};
 }

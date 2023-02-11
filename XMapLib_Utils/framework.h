@@ -1,46 +1,45 @@
-// stdafx.h : include file for standard system include files,
-// or project specific include files that are used frequently, but
-// are changed infrequently
-//
-
 #pragma once
 
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
 #ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 #endif
 #include <Windows.h>
 #include <Xinput.h>
 #include <tchar.h>
 
 #include <iostream>
+#include <syncstream>
+#include <sstream>
+#include <fstream>
+
 #include <string>
 #include <vector>
-#include <sstream>
-#include <algorithm>
 #include <map>
+#include <array>
+#include <tuple>
+#include <variant>
+
+#include <algorithm>
 #include <utility>
-#include <limits>
+
 #include <thread>
 #include <memory>
 #include <mutex>
 #include <atomic>
 #include <functional>
-#include <tuple>
+#include <future>
+
 #include <locale>
 #include <format>
+
 #include <chrono>
-#include <variant>
-#include <array>
+
 #include <numbers>
-#include <fstream>
+#include <limits>
 
 #include <ranges>
 
 #include <cassert>
-
-
-// Include some commonly used global stuff.
-#include "KeyboardSettingsPack.h"

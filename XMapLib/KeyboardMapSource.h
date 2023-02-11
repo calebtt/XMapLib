@@ -25,12 +25,13 @@ namespace sds
 		Utilities::SendKeyInput m_keySend;
 	public:
 		KeyboardMapSource() = default;
-		~KeyboardMapSource()
+		~KeyboardMapSource() = default;
+
+		auto ProcessState(const ControllerStateWrapper& detail)
 		{
-			//Cleanup in-progress key-presses.
-			CleanupInProgressEvents();
+			for (auto& elem : m_keyMaps)
+				elem.ProcessState(detail);
 		}
-	public:
 		/**
 		 * \brief Constructs a mapping and adds it to the internal collection.
 		 * \param controllerVK VK of controller button
@@ -82,7 +83,7 @@ namespace sds
 			CleanupInProgressEvents();
 			m_keyMaps.clear();
 		}
-	private:
+
 		/**
 		 * \brief Call this function to send key-ups for any in-progress key presses.
 		 */

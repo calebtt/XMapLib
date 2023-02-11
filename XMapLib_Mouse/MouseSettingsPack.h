@@ -1,13 +1,25 @@
 #pragma once
-#include "stdafx.h"
+#include "LibIncludes.h"
 #include "StickMap.h"
 
 namespace sds
 {
+	[[nodiscard]]
+	inline
+	constexpr
+	auto GetComputedDzVal() noexcept -> int
+	{
+		constexpr int def{8689};
+		//return def + (def >> 2);
+		return static_cast<int>(def + static_cast<int>(def * 0.2f));
+	}
+
 	/// <summary> Some mouse movement mapping program specific constants that might someday be configurable,
 	/// and the functions that help validate associated values. </summary>
 	struct MouseSettings
 	{
+		using Dz_t = int;
+	public:
 		// Current mouse sensitivity value.
 		int SensitivityValue{SENSITIVITY_DEFAULT};
 		// Current selected thumbstick.
@@ -36,11 +48,11 @@ namespace sds
 		//Microseconds Max is the maximum delay for the thumbstick axis thread loop at the lowest thumbstick value.
 		static constexpr int MICROSECONDS_MAX{ 32'000 };
 		//Deadzone Min is the minimum allowable value for a thumbstick deadzone.
-		static constexpr int DEADZONE_MIN{ 1 };
+		static constexpr Dz_t DEADZONE_MIN{ 1 };
 		//Deadzone Max is the maximum allowable value for a thumbstick deadzone.
-		static constexpr int DEADZONE_MAX{ std::numeric_limits<SHORT>::max() - 1 };
+		static constexpr Dz_t DEADZONE_MAX{ std::numeric_limits<SHORT>::max() - 1 };
 		//Deadzone Default is the default deadzone value for a thumbstick.
-		static constexpr int DEADZONE_DEFAULT{ XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE };
+		static constexpr Dz_t DEADZONE_DEFAULT{ GetComputedDzVal() };
 		//Alt Deadzone Default is the multiplier to use when a deadzone is already activated,
 		//the deadzone value for the other axis is lessened via this value.
 		static constexpr float ALT_DEADZONE_MULT_DEFAULT{ 0.45f };

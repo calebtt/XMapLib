@@ -13,32 +13,11 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\Utilities">
-      <UniqueIdentifier>{d830bcc2-0167-4f03-b0c1-3f37a8bab79c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Mouse">
-      <UniqueIdentifier>{400366d3-6546-48ed-bfbc-e5b34b2f8766}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Keyboard">
       <UniqueIdentifier>{30035b3e-a651-4eb0-a45c-c6f9c1e7cd53}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Utilities\Async">
-      <UniqueIdentifier>{a33d14d8-5416-46dd-8f3e-ebb4d48c5d90}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Utilities\Timing">
-      <UniqueIdentifier>{3ad1d1ca-af41-40cb-896c-57dfe1aa5450}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Keyboard\SettingsAndConfig">
       <UniqueIdentifier>{1bed7456-95b8-4364-8fd9-fbca1b2543cd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Mouse\SettingsAndConfig">
-      <UniqueIdentifier>{990d5241-0b82-4351-8c3d-e86a0933de36}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Utilities\IOHelpers">
-      <UniqueIdentifier>{fa1bad36-c9bf-4349-8421-3c2ac015c567}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Mouse\ThumbInfoWrappers">
-      <UniqueIdentifier>{b8c463e2-24b4-4ab2-b95f-fdfabd2da928}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\Keyboard\KeyInfoWrappers">
       <UniqueIdentifier>{b10fb71e-8161-4c60-94e7-db754fb603eb}</UniqueIdentifier>
@@ -56,86 +35,17 @@
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ThumbstickToDelay.h">
-      <Filter>Header Files\Mouse</Filter>
-    </ClInclude>
     <ClInclude Include="KeyboardTranslator.h">
       <Filter>Header Files\Keyboard</Filter>
-    </ClInclude>
-    <ClInclude Include="XELog.h">
-      <Filter>Header Files\Utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="Utilities.h">
-      <Filter>Header Files\Utilities</Filter>
     </ClInclude>
     <ClInclude Include="KeyboardMapper.h">
       <Filter>Header Files\Keyboard</Filter>
     </ClInclude>
-    <ClInclude Include="MouseMapper.h">
-      <Filter>Header Files\Mouse</Filter>
-    </ClInclude>
-    <ClInclude Include="Arithmetic.h">
-      <Filter>Header Files\Utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="ThumbDzInfo.h">
-      <Filter>Header Files\Mouse</Filter>
-    </ClInclude>
-    <ClInclude Include="STMouseMapping.h">
-      <Filter>Header Files\Mouse</Filter>
-    </ClInclude>
-    <ClInclude Include="MouseMoveInfoPacket.h">
-      <Filter>Header Files\Mouse</Filter>
-    </ClInclude>
     <ClInclude Include="KeyboardPoller.h">
       <Filter>Header Files\Keyboard</Filter>
     </ClInclude>
-    <ClInclude Include="DelayManager.h">
-      <Filter>Header Files\Utilities\Timing</Filter>
-    </ClInclude>
-    <ClInclude Include="ReadRadiusScaleValues.h">
-      <Filter>Header Files\Mouse\SettingsAndConfig</Filter>
-    </ClInclude>
-    <ClInclude Include="TPrior.h">
-      <Filter>Header Files\Utilities\Async</Filter>
-    </ClInclude>
-    <ClInclude Include="ControllerStatus.h">
-      <Filter>Header Files\Utilities\IOHelpers</Filter>
-    </ClInclude>
-    <ClInclude Include="SendKeyInput.h">
-      <Filter>Header Files\Utilities\IOHelpers</Filter>
-    </ClInclude>
-    <ClInclude Include="SendMouseInput.h">
-      <Filter>Header Files\Utilities\IOHelpers</Filter>
-    </ClInclude>
-    <ClInclude Include="VirtualMap.h">
-      <Filter>Header Files\Utilities\IOHelpers</Filter>
-    </ClInclude>
     <ClInclude Include="KeyboardSettingsPack.h">
       <Filter>Header Files\Keyboard\SettingsAndConfig</Filter>
-    </ClInclude>
-    <ClInclude Include="MouseSettingsPack.h">
-      <Filter>Header Files\Mouse\SettingsAndConfig</Filter>
-    </ClInclude>
-    <ClInclude Include="MousePoller.h">
-      <Filter>Header Files\Mouse</Filter>
-    </ClInclude>
-    <ClInclude Include="ThumbStateWrapper.h">
-      <Filter>Header Files\Mouse\ThumbInfoWrappers</Filter>
-    </ClInclude>
-    <ClInclude Include="MouseMover.h">
-      <Filter>Header Files\Mouse</Filter>
-    </ClInclude>
-    <ClInclude Include="Smarts.h">
-      <Filter>Header Files\Utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="ScalingDefaults.h">
-      <Filter>Header Files\Mouse\SettingsAndConfig</Filter>
-    </ClInclude>
-    <ClInclude Include="ScalingConcepts.h">
-      <Filter>Header Files\Mouse\SettingsAndConfig</Filter>
-    </ClInclude>
-    <ClInclude Include="StickMap.h">
-      <Filter>Header Files\Mouse\SettingsAndConfig</Filter>
     </ClInclude>
     <ClInclude Include="ControllerStateWrapper.h">
       <Filter>Header Files\Keyboard\KeyInfoWrappers</Filter>
@@ -145,12 +55,6 @@
     </ClInclude>
     <ClInclude Include="ControllerButtonToActionMap.h">
       <Filter>Header Files\Keyboard\KeyInfoWrappers</Filter>
-    </ClInclude>
-    <ClInclude Include="CallbackRange.h">
-      <Filter>Header Files\Utilities\Async</Filter>
-    </ClInclude>
-    <ClInclude Include="StoppableAsync.h">
-      <Filter>Header Files\Utilities\Async</Filter>
     </ClInclude>
     <ClInclude Include="ControllerSideDetails.h">
       <Filter>Header Files\Keyboard\KeyInfoWrappers</Filter>
@@ -163,6 +67,9 @@
     </ClInclude>
     <ClInclude Include="KeyStateMachineInformational.h">
       <Filter>Header Files\Keyboard</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyboardTickUpdateLoop.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

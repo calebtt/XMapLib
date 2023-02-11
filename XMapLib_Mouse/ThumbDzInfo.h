@@ -1,7 +1,6 @@
 #pragma once
-#include "stdafx.h"
+#include "LibIncludes.h"
 #include "MouseSettingsPack.h"
-#include "../PolarCode/PolarQuadrantCalc/PolarCalcFaster.h"
 
 namespace sds
 {
@@ -12,14 +11,21 @@ namespace sds
 	{
 		using PolarMagInt = decltype(MouseSettings::DEADZONE_DEFAULT);
 		using AltDzFloat = decltype(MouseSettings::ALT_DEADZONE_MULT_DEFAULT);
-		using LogFnType = std::function<void(std::string)>;
 		bool m_is_deadzone_activated{ false };
-		const PolarMagInt m_polar_magnitude_deadzone;
-		const AltDzFloat m_alt_deadzone_multiplier;
-		PolarCalcFaster m_pc;
+		PolarMagInt m_polar_magnitude_deadzone;
+		AltDzFloat m_alt_deadzone_multiplier;
+		MouseSettingsPack m_msp;
 	private:
-		/// <summary> Used to validate polar deadzone arg value. </summary>
-		[[nodiscard]] static constexpr auto ValidatePolarDz(
+		/**
+		 * \brief Used to validate polar deadzone arg value
+		 * \param sm current stick it's activated for
+		 * \param msp mouse settings pack, needs a dz validation fn and some dz vals
+		 * \return returns a validated deadzone value
+		 */
+		[[nodiscard]]
+		static
+		constexpr
+		auto ValidatePolarDz(
 			const StickMap sm,
 			const MouseSettingsPack msp = {})  noexcept
 		{
@@ -30,24 +36,28 @@ namespace sds
 				return cdz;
 			return msp.settings.DEADZONE_DEFAULT;
 		}
-		/// <summary> Used to validate alt deadzone multiplier arg. </summary>
-		[[nodiscard]] static constexpr auto ValidateAltMultiplier(const MouseSettingsPack ms)  noexcept
-		{
-			return ms.settings.ALT_DEADZONE_MULT_DEFAULT;
-		}
 	public:
-		explicit ThumbDzInfo(const StickMap sm, const MouseSettingsPack msp = {}, const LogFnType logFn = nullptr)
-		: m_polar_magnitude_deadzone(ValidatePolarDz(sm, msp)),
-		m_alt_deadzone_multiplier(ValidateAltMultiplier(msp)),
-		m_pc(msp.settings.ThumbstickValueMax, logFn)
+		explicit ThumbDzInfo(const StickMap sm, const MouseSettingsPack msp = {})
+		:
+		m_polar_magnitude_deadzone(ValidatePolarDz(sm, msp)),
+		m_alt_deadzone_multiplier(msp.settings.ALT_DEADZONE_MULT_DEFAULT),
+		m_msp(msp)
 		{ }
-		/// <summary>Takes a cartesian value and returns true if equal or over deadzone. </summary>
-		[[nodiscard]] std::pair<bool,bool> IsBeyondDeadzone(const int cartesianX, const int cartesianY) noexcept
+
+		/**
+		 * \brief Takes a cartesian value and returns true if equal or over deadzone
+		 * \param cartesianX x stick value in cartesian space
+		 * \param cartesianY y stick value in cartesian space
+		 * \return returns a pair of bools wherein the first bool is 'x' the second is 'y'
+		 */
+		[[nodiscard]]
+		auto IsBeyondDeadzone(const int cartesianX, const int cartesianY) noexcept
+			-> std::pair<bool, bool>
 		{
 			using Utilities::ToA;
 			using Utilities::ConstAbs;
 			// Get polar X and Y magnitudes, and theta angle from cartesian X and Y
-			const auto fullInfo = m_pc.ComputePolarCompleteInfo(cartesianX, -cartesianY);
+			const auto fullInfo = PolarTransformMag<>{ cartesianX, -cartesianY, m_msp.settings.PolarRadiusValueMax }.get();
 			const auto& [xPolarMag, yPolarMag] = fullInfo.adjusted_magnitudes;
 			//get positive polar values
 			const auto absX = ConstAbs(xPolarMag);
@@ -60,8 +70,13 @@ namespace sds
 				m_is_deadzone_activated = true;
 			return { isBeyondX, isBeyondY };
 		}
-		/// <summary> Returns the polar rad dz, or the alternate if the dz is already activated.</summary>
-		[[nodiscard]] constexpr int GetDeadzoneCurrentValue() const noexcept
+
+		/**
+		 * \brief Returns the polar rad dz, or the alternate if the dz is already activated.
+		 */
+		[[nodiscard]]
+		constexpr
+		int GetDeadzoneCurrentValue() const noexcept
 		{
 			using sds::Utilities::ToA;
 			if (m_is_deadzone_activated)

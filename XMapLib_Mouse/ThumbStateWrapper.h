@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "stdafx.h"
+#include "LibIncludes.h"
 
 namespace sds
 {

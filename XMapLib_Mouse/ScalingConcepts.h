@@ -1,5 +1,5 @@
 #pragma once
-#include "stdafx.h"
+#include "LibIncludes.h"
 #include <type_traits>
 #include <ranges>
 
@@ -14,7 +14,7 @@ namespace sds
 		{ std::is_default_constructible_v<typename T::FloatType> };
 		{ std::is_default_constructible_v<typename T::RangeType> };
 		{ t.GetScalingValues() } -> std::convertible_to<typename T::RangeType>;
-		{ T("Some File Name") };
+		{ T("SomeFileName") };
 		{ std::ranges::range<typename T::RangeType> };
 	};
 }

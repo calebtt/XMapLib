@@ -1,10 +1,8 @@
 #pragma once
-#include "stdafx.h"
-#include "Utilities.h"
+#include "LibIncludes.h"
 #include "ReadRadiusScaleValues.h"
 #include "ScalingConcepts.h"
-#include "../PolarCode/PolarQuadrantCalc/PolarCalcFaster.h"
-
+#include "MouseSettingsPack.h"
 
 namespace sds
 {
@@ -19,7 +17,7 @@ namespace sds
 	template<ReadScalesType ScaleReader_t = ReadRadiusScaleValues, class LogFn_t = std::function<void(std::string)>>
 	class ThumbstickToDelay
 	{
-		using PolarCalc_t = sds::PolarCalcFaster;
+		using PolarCalc_t = sds::PolarTransformMag<>;
 		using DelayType = int;
 		using MultFloat = decltype(MouseSettings::ALT_DEADZONE_MULT_DEFAULT);
 		using SensInt = decltype(MouseSettings::SENSITIVITY_DEFAULT);
@@ -27,24 +25,6 @@ namespace sds
 		using PRadInt = decltype(MouseSettings::PolarRadiusValueMax);
 		using ScaleFloat = typename ScaleReader_t::FloatType;
 		using ScaleRange = typename ScaleReader_t::RangeType;
-	public:
-		void SetSensitivity(const SensInt newSens) noexcept
-		{
-			m_axis_sensitivity = ValidateSensitivity(newSens, m_mouse_settings);
-		}
-		[[nodiscard]] SensInt GetSensitivity() const noexcept
-		{
-			return m_axis_sensitivity;
-		}
-		/// <summary> Used to disable or enable processing based on having a stick set for processing. </summary>
-		void SetActive(const bool isStickActive) noexcept
-		{
-			m_isActiveStick = isStickActive;
-		}
-		[[nodiscard]] bool GetActive() const noexcept
-		{
-			return m_isActiveStick;
-		}
 	private:
 		// Additional multiplier applied to polar radius scaling values for cartesian adjustments.
 		static constexpr double AdditionalMultiplier{ 1.36 };
@@ -53,13 +33,11 @@ namespace sds
 		// Is there a stick set for processing
 		std::atomic<bool> m_isActiveStick{ true };
 		// local copy of MouseSettings info struct, contains some program information occasionally used.
-		const MouseSettingsPack m_mouse_settings;
+		MouseSettingsPack m_mouse_settings;
 		// logging function pointer, used if not null.
-		const LogFn_t m_logFn;
+		LogFn_t m_logFn;
 		// container/range holding radius scaling values.
-		const ScaleRange m_radius_scale_values;
-		// Utility class for performing polar coordinate calculations.
-		PolarCalc_t m_pc;
+		ScaleRange m_radius_scale_values;
 
 		/// <summary> Used to make some assertions about the settings values this class depends upon. </summary>
 		static void AssertSettings(const MouseSettingsPack& ms) noexcept
@@ -75,7 +53,10 @@ namespace sds
 				"Exception in ThumbstickToDelay() ctor, SENSITIVITY_MAX > 100");
 		}
 		/// <summary> Used to validate sensitivity arg value to within range SENSITIVITY_MIN to SENSITIVITY_MAX in MouseSettings. </summary>
-		[[nodiscard]] static constexpr auto ValidateSensitivity(const SensInt si, const MouseSettingsPack& ms)  noexcept -> int
+		[[nodiscard]]
+		static
+		constexpr
+		auto ValidateSensitivity(const SensInt si, const MouseSettingsPack& ms)  noexcept -> int
 		{
 			//range bind sensitivity
 			return std::clamp(si, ms.settings.SENSITIVITY_MIN, ms.settings.SENSITIVITY_MAX);
@@ -89,13 +70,12 @@ namespace sds
 		ThumbstickToDelay(
 			const int sensitivity,
 			const MouseSettingsPack ms = {},
-			const LogFn_t logFn = nullptr
-		) noexcept
-			: m_axis_sensitivity(ValidateSensitivity(sensitivity, ms)),
+			const LogFn_t logFn = nullptr) noexcept
+			:
+			m_axis_sensitivity(ValidateSensitivity(sensitivity, ms)),
 			m_mouse_settings(ms),
 			m_logFn(logFn),
-			m_radius_scale_values(ScaleReader_t{ "" }.GetScalingValues()),
-			m_pc(ms.settings.PolarRadiusValueMax, logFn)
+			m_radius_scale_values(ScaleReader_t{ "" }.GetScalingValues())
 		{
 			AssertSettings(ms);
 		}
@@ -105,13 +85,14 @@ namespace sds
 		ThumbstickToDelay& operator=(const ThumbstickToDelay& other) = delete;
 		ThumbstickToDelay& operator=(ThumbstickToDelay&& other) = delete;
 		~ThumbstickToDelay() = default;
-
+	public:
 		/// <summary>
 		/// Main func for use. NOTE cartesian Y is inverted HERE due to thumbstick hardware. This
 		///	might change when a cross-platform build is implemented.
 		///	</summary>
 		///	<returns>pair X,Y Delay in US</returns>
-		[[nodiscard]] auto GetDelaysFromThumbstickValues(const int cartesianX, const int cartesianY)
+		[[nodiscard]]
+		auto GetDelaysFromThumbstickValues(const int cartesianX, const int cartesianY)
 			const noexcept -> std::pair<DelayType, DelayType>
 		{
 			if (m_isActiveStick)
@@ -120,7 +101,8 @@ namespace sds
 		}
 		/// <summary> Calculates microsecond delay values from cartesian X and Y thumbstick values.
 		/// Probably needs optimized. </summary>
-		[[nodiscard]] auto BuildDelayInfo(const auto cartesianX, const auto cartesianY)
+		[[nodiscard]]
+		auto BuildDelayInfo(const auto cartesianX, const auto cartesianY)
 			const noexcept -> std::pair<DelayType, DelayType>
 		{
 			using namespace sds::Utilities;
@@ -130,7 +112,7 @@ namespace sds
 			// And if that doesn't work, I'm going to try scaling the microsecond delay range.
 			// Correction, scale the hardware input values.
 			// Get info pack for polar computations
-			const auto fullInfo = m_pc.ComputePolarCompleteInfo(cartesianX, cartesianY);
+			const auto fullInfo = PolarCalc_t{ cartesianX, cartesianY, m_mouse_settings.settings.PolarRadiusValueMax }.get();
 			// Get scaling mult and inverse
 			const auto mult = GetScalingMultiplier(fullInfo.polar_info.polar_theta_angle);
 			const auto invMult = GetInverseOfPercentagePlusOne(mult) * AdditionalMultiplier;
@@ -141,7 +123,8 @@ namespace sds
 			return ConvertToDelays(scaledX, scaledY);
 		}
 		/// <summary> Converts scaled thumbstick values to delay values. Does not apply any scaling, direct linear interpolation of the inverse percentage. </summary>
-		[[nodiscard]] auto ConvertToDelays(const double xScaledValue, const double yScaledValue)
+		[[nodiscard]]
+		auto ConvertToDelays(const double xScaledValue, const double yScaledValue)
 			const noexcept -> std::pair<DelayType, DelayType>
 		{
 			using namespace sds::Utilities;
@@ -173,8 +156,14 @@ namespace sds
 			const auto yResult = static_cast<DelayType>(std::lerp(UsDelayMin, UsDelayMax, clampedY));
 			return { xResult, yResult };
 		}
-		/// <summary> Gets the (config file loaded) scaling value for the given (float representation) polarThetaAngle. </summary>
-		[[nodiscard]] auto GetScalingMultiplier(const std::floating_point auto polarThetaAngle) const noexcept -> ScaleFloat
+
+		/**
+		 * \brief Gets the (config file loaded) scaling value for the given (float representation) polarThetaAngle.
+		 * \param polarThetaAngle polar theta angle for which to lookup the scaling mult
+		 * \return scaling multiplier
+		 */
+		[[nodiscard]]
+		auto GetScalingMultiplier(const std::floating_point auto polarThetaAngle) const noexcept -> ScaleFloat
 		{
 			// Theta angle of vertical edge of quadrant 1
 			static constexpr auto MaxTheta = static_cast<unsigned>((std::numbers::pi / 2.0) * 100u);
@@ -187,6 +176,25 @@ namespace sds
 			thetaIndex = std::clamp(thetaIndex, 0u, MaxTheta);
 			// return scaling multiplier
 			return m_radius_scale_values[thetaIndex];
+		}
+		void SetSensitivity(const SensInt newSens) noexcept
+		{
+			m_axis_sensitivity = ValidateSensitivity(newSens, m_mouse_settings);
+		}
+		[[nodiscard]]
+		SensInt GetSensitivity() const noexcept
+		{
+			return m_axis_sensitivity;
+		}
+		/// <summary> Used to disable or enable processing based on having a stick set for processing. </summary>
+		void SetActive(const bool isStickActive) noexcept
+		{
+			m_isActiveStick = isStickActive;
+		}
+		[[nodiscard]]
+		bool GetActive() const noexcept
+		{
+			return m_isActiveStick;
 		}
 	};
 }

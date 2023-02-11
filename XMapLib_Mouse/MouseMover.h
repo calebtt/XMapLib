@@ -1,7 +1,6 @@
 #pragma once
-#include "stdafx.h"
+#include "LibIncludes.h"
 #include <cassert>
-#include "Utilities.h"
 #include "MouseMoveInfoPacket.h"
 #include "MouseSettingsPack.h"
 
@@ -12,7 +11,7 @@ namespace sds
 	/// </summary>
 	class MouseMover
 	{
-		const MouseSettingsPack m_msp;
+		MouseSettingsPack m_msp;
 		Utilities::SendMouseInput m_keySend{};
 		Utilities::DelayManager xTime;
 		Utilities::DelayManager yTime;
@@ -25,7 +24,7 @@ namespace sds
 
 		/// <summary> <c>PerformMove()</c> performs the microsecond delay mouse movement processing.
 		///	<para>It uses <c>MouseMoveInfoPacket</c> structs to perform the appropriate mouse move based on the delays.</para> </summary>
-		void PerformMove(const MouseMoveInfoPacket mmip)
+		void PerformMove(const MouseMoveInfoPacket mmip) noexcept
 		{
 			using namespace std::chrono;
 			//A loop with no delay, that checks each delay value

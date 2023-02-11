@@ -1,5 +1,5 @@
 #pragma once
-#include "stdafx.h"
+#include "LibIncludes.h"
 #include "ThumbstickToDelay.h"
 #include "MousePoller.h"
 #include "MouseMover.h"
@@ -20,7 +20,7 @@ namespace sds
 		// which controller thumbstick is chosen
 		std::atomic<StickMap> m_stickmap_info{ StickMap::RIGHT_STICK };
 		// Mouse settings aggregate struct
-		const MouseSettingsPack m_msp;
+		MouseSettingsPack m_msp;
 		// Polling object, to retrieve MousePoller::ThumbstickStateWrapper wrapped thumbstick values.
 		MousePoller m_mousePoller;
 		// Delay calculator, uses ThumbstickStateWrapper wrapped thumbstick values to calculate microsecond delay values.
@@ -43,12 +43,35 @@ namespace sds
 		: m_mouseSensitivity(sensitivity),
 		m_stickmap_info(whichStick),
 		m_msp(msp),
-		m_mousePoller(fn),
 		m_delayCalc(sensitivity, msp, fn),
-		m_dzInfo(whichStick, msp, fn)
+		m_dzInfo(whichStick, msp)
 		{
 			
 		}
+
+		void getDelaysAndSend(const ThumbStateWrapper& tempState) noexcept
+		{
+			// choose correct x,y pair
+			const auto xValue = m_stickmap_info == StickMap::RIGHT_STICK ? tempState.RightThumbX : tempState.LeftThumbX;
+			const auto yValue = m_stickmap_info == StickMap::RIGHT_STICK ? tempState.RightThumbY : tempState.LeftThumbY;
+			// calculate delays based on cartesian x,y pair
+			const auto[xDelay, yDelay] = m_delayCalc.GetDelaysFromThumbstickValues(xValue, yValue);
+			// get info for which cartesian values are beyond their respective deadzone
+			const auto[xAct, yAct] = m_dzInfo.IsBeyondDeadzone(xValue, yValue);
+			// build mouse move info packet
+			const MouseMoveInfoPacket mmip
+			{
+				.x_delay = xDelay,
+				.y_delay = yDelay,
+				.is_x_positive = (xValue > 0),
+				.is_y_positive = (yValue > 0),
+				.is_beyond_dz_x = xAct,
+				.is_beyond_dz_y = yAct
+			};
+			// [send it!]
+			m_mover.PerformMove(mmip);
+		}
+
 		/// <summary>Worker thread function called in a loop on the STRunner's thread. Updates with delays which are used by the MouseMoveThread.
 		/// The MouseMoveThread is time critical and not included in the thread pool maintained by an STRunner instance. </summary>
 		void operator()()
@@ -57,40 +80,23 @@ namespace sds
 			using sds::Utilities::ToA;
 			if (m_is_enabled)
 			{
-				// get state from poller.
-				const ThumbStateWrapper tempState = m_mousePoller.GetUpdatedState(m_msp.playerInfo.player_id);
-				// choose correct x,y pair
-				const auto xValue = m_stickmap_info == StickMap::RIGHT_STICK ? tempState.RightThumbX : tempState.LeftThumbX;
-				const auto yValue = m_stickmap_info == StickMap::RIGHT_STICK ? tempState.RightThumbY : tempState.LeftThumbY;
-				// calculate delays based on cartesian x,y pair
-				const std::pair<int, int> delayPair = m_delayCalc.GetDelaysFromThumbstickValues(xValue, yValue);
-				// get info for which cartesian values are beyond their respective deadzone
-				const std::pair<bool, bool> activatedPair = m_dzInfo.IsBeyondDeadzone(xValue, yValue);
-				// build mouse move info packet
-				const MouseMoveInfoPacket mmip
-				{
-					.x_delay = std::get<0>(delayPair),
-					.y_delay = std::get<1>(delayPair),
-					.is_x_positive = (xValue > 0),
-					.is_y_positive = (yValue > 0),
-					.is_beyond_dz_x = activatedPair.first,
-					.is_beyond_dz_y = activatedPair.second
-				};
-				// [send it!]
-				m_mover.PerformMove(mmip);
+				// get state from poller, if success then get delays and send.
+				if (const auto tempState = m_mousePoller.GetUpdatedState(m_msp.playerInfo.player_id); tempState.has_value())
+					getDelaysAndSend(tempState.value());
 			}
 		}
-		[[nodiscard]] bool IsRunning() const
+		[[nodiscard]]
+		bool IsRunning() const noexcept
 		{
 			return m_is_enabled;
 		}
 		void Start() noexcept
 		{
-			this->m_is_enabled = true;
+			m_is_enabled = true;
 		}
 		void Stop() noexcept
 		{
-			this->m_is_enabled = false;
+			m_is_enabled = false;
 		}
 		void SetSensitivity(const int newSens) noexcept
 		{
@@ -100,8 +106,10 @@ namespace sds
 		{
 			return m_delayCalc.GetSensitivity();
 		}
-		/// <summary> Sets the controller stick for processing, will enable
-		///	processing if not NEITHER_STICK </summary>
+		/**
+		 * \brief Sets the controller stick for processing, will enable processing if not NEITHER_STICK
+		 * \param newStick Stick for which the processing should occur.
+		 */
 		void SetStick(StickMap newStick) noexcept
 		{
 			m_stickmap_info = newStick;
@@ -110,9 +118,9 @@ namespace sds
 			m_delayCalc.SetActive(toEnable);
 			m_is_enabled = toEnable;
 		}
-		StickMap GetStick() const noexcept
+		auto GetStick() const noexcept -> StickMap
 		{
-			return m_delayCalc.GetStick();
+			return m_stickmap_info;
 		}
 	private:
 

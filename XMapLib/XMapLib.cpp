@@ -9,12 +9,12 @@
 using namespace std;
 
 // adds a bunch of key mappings for common binds.
-void AddTestKeyMappings(sds::KeyboardMapper& mapper, std::osyncstream &ss);
+void AddTestKeyMappings(sds::KeyboardMapper<>& mapper, std::osyncstream &ss);
 
 // used to asynchronously await the enter key being pressed, before
 // dumping the contents of the key maps.
 class GetterExit {
-	using KeyboardPtrType = std::shared_ptr<sds::KeyboardMapper>;
+	using KeyboardPtrType = sds::KeyboardMapper<>;
 	std::unique_ptr<std::jthread> workerThread{};
 	std::atomic<bool> m_exitState{ false };
 	const KeyboardPtrType m_mp;
@@ -39,7 +39,7 @@ protected:
 		std::osyncstream ss(std::cerr);
 		//prints out the maps, for debugging info.
 		auto mapList = m_mp->GetMaps();
-		ranges::for_each(mapList, [&ss](const sds::ControllerButtonToActionMap& theMap)	{
+		ranges::for_each(mapList.GetMaps(), [&ss](const sds::ControllerButtonToActionMap<>& theMap)	{
 				ss << theMap << endl << endl;
 			});
 		m_exitState = true;
@@ -47,36 +47,33 @@ protected:
 	}
 };
 
-auto CreateKeyMapper(const std::shared_ptr<impcool::ThreadUnitPlus> &runner)
+auto CreateKeyMapper()
 {
 	using namespace sds;
 	KeyboardSettingsPack ksp{};
-	return std::make_shared<KeyboardMapper>(runner, ksp);
+	return KeyboardMapper{ ksp };
+	//return std::make_shared<KeyboardMapper>(runner, ksp);
 }
-auto CreateMouseMapper(const std::shared_ptr<impcool::ThreadUnitPlus>& runner)
-{
-	using namespace sds;
-	MouseSettingsPack msp{};
-	return std::make_shared<MouseMapper<>>(runner, msp, Utilities::LogError);
-}
+//auto CreateMouseMapper(const std::shared_ptr<imp::ThreadUnitPlusPlus>& runner)
+//{
+//	using namespace sds;
+//	MouseSettingsPack msp{};
+//	return std::make_shared<MouseMapper<>>(runner, msp, Utilities::LogError);
+//}
 /* Entry Point */
 int main()
 {
 	using namespace sds;
 	using namespace sds::Utilities;
 	//construct some mapping objects...
-	auto threadPool = std::make_shared<impcool::ThreadUnitPlus>();
-	auto keyboardThreadPool = std::make_shared<impcool::ThreadUnitPlus>();
-	threadPool->CreateThread();
-	auto mouser = CreateMouseMapper(threadPool);
-	auto keyer = CreateKeyMapper(keyboardThreadPool);
+	auto keyer = CreateKeyMapper();
 
 	std::osyncstream ss(std::cout);
 	AddTestKeyMappings(*keyer, ss);
 	GetterExit getter(keyer);
-	const std::string err = mouser->SetSensitivity(1); //sensitivity
+	//const std::string err = mouser->SetSensitivity(1); //sensitivity
 	Utilities::LogError(err); // won't do anything if the string is empty
-	mouser->SetStick(StickMap::RIGHT_STICK);
+	//mouser->SetStick(StickMap::RIGHT_STICK);
 
 	auto IsControllerConnected = [](const int pid)
 	{
@@ -113,7 +110,7 @@ int main()
 	return 0;
 }
 
-void AddTestKeyMappings(sds::KeyboardMapper& mapper, std::osyncstream &ss)
+void AddTestKeyMappings(sds::KeyboardMapper<>& mapper, std::osyncstream &ss)
 {
 	using namespace sds;
 	const auto buttons =
@@ -142,7 +139,7 @@ void AddTestKeyMappings(sds::KeyboardMapper& mapper, std::osyncstream &ss)
 		ControllerButtonToActionMap{VK_PAD_X, 0x52, false} // 'r'
 	};
 	std::string errorCondition;
-	ranges::for_each(buttons, [&mapper, &errorCondition](const ControllerButtonToActionMap& m)
+	ranges::for_each(buttons, [&mapper, &errorCondition](const ControllerButtonToActionMap<>& m)
 		{
 			if (errorCondition.empty())
 			{

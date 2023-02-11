@@ -1,5 +1,5 @@
 #pragma once
-#include "stdafx.h"
+#include "LibIncludes.h"
 #include "ScalingDefaults.h"
 
 namespace sds
@@ -41,7 +41,8 @@ namespace sds
 		/// The index into the vector is the integral part of (polar theta * 100) for the first quadrant.
 		/// Extend to all quadrants despite containing only values for quadrant 1 (positive [x,y] values). </summary>
 		/// <returns>Empty vector on error reading or parsing file. vector of double otherwise.</returns>
-		[[nodiscard]] RangeType GetScalingValues()
+		[[nodiscard]]
+		auto GetScalingValues() const -> RangeType
 		{
 			// Mutex protected access, values should be cached.
 			LockType tempLock(m_fileMutex);

@@ -16,12 +16,14 @@ namespace sds
 	struct KeyboardTranslator
 	{
 		using InpType = ControllerButtonStateData::ActionType;
+		using CBTAM = ControllerButtonToActionMap<>;
+
 		// These are *class* states when processing a keystroke.
 		struct OvertakingKeyDown_t
 		{
-			ControllerButtonToActionMap* pOvertaken{};
-			ControllerButtonToActionMap* pCurrentKeyState{};
-			OvertakingKeyDown_t(ControllerButtonToActionMap* overtakenBtn, ControllerButtonToActionMap* newPressBtn)
+			CBTAM* pOvertaken{};
+			CBTAM* pCurrentKeyState{};
+			OvertakingKeyDown_t(CBTAM* overtakenBtn, CBTAM* newPressBtn)
 				: pOvertaken(overtakenBtn), pCurrentKeyState(newPressBtn) { }
 			void operator()(const InpType downType) const noexcept
 			{
@@ -41,63 +43,64 @@ namespace sds
 		};
 		struct NormalKeyDown_t
 		{
-			ControllerButtonToActionMap* pCurrentKeyState{};
-			NormalKeyDown_t(ControllerButtonToActionMap* newPressBtn)
+			CBTAM* pCurrentKeyState{};
+			NormalKeyDown_t(CBTAM* newPressBtn)
 			: pCurrentKeyState(newPressBtn) { }
 			void operator()(const InpType downType) const noexcept
 			{
-				using std::chrono::duration_cast, std::chrono::microseconds;
+				using std::chrono::duration_cast;
+				using timeUnit_t = ControllerToKeyMapData::Cms_t;
 				assert(pCurrentKeyState != nullptr);
 				// send downtype
 				pCurrentKeyState->MappedActionsArray[downType]();
 				// update LastAction
 				pCurrentKeyState->ControllerButtonState.LastAction = downType;
 				// and last sent time
-				pCurrentKeyState->ControllerButtonState.LastSentTime.Reset(duration_cast<microseconds>(pCurrentKeyState->KeymapData.DelayBeforeRepeatActivation).count());
+				pCurrentKeyState->ControllerButtonState.LastSentTime.Reset(duration_cast<timeUnit_t>(pCurrentKeyState->KeymapData.DelayBeforeRepeatActivation).count());
 			}
 		};
 		struct KeyUp_t
 		{
-			ControllerButtonToActionMap* pCurrentKeyState{};
-			KeyUp_t(ControllerButtonToActionMap* newPressBtn) : pCurrentKeyState(newPressBtn) { }
+			CBTAM* pCurrentKeyState{};
+			KeyUp_t(CBTAM* newPressBtn) : pCurrentKeyState(newPressBtn) { }
 			void operator()([[maybe_unused]] const InpType upType) const noexcept
 			{
-				using std::chrono::duration_cast, std::chrono::microseconds;
+				using std::chrono::duration_cast;
+				using timeUnit_t = ControllerToKeyMapData::Cms_t;
 				assert(pCurrentKeyState != nullptr);
 				auto& curState = pCurrentKeyState->ControllerButtonState;
 				// send keyup
 				pCurrentKeyState->MappedActionsArray[InpType::KEYUP]();
 				// update LastAction
 				curState.LastAction = InpType::KEYUP;
-				curState.LastSentTime.Reset(duration_cast<microseconds>(pCurrentKeyState->KeymapData.DelayBeforeRepeatActivation).count());
+				curState.LastSentTime.Reset(duration_cast<timeUnit_t>(pCurrentKeyState->KeymapData.DelayBeforeRepeatActivation).count());
 			}
 		};
 		struct RepeatKeyDown_t
 		{
-			ControllerButtonToActionMap* pCurrentKeyState{};
-			RepeatKeyDown_t(ControllerButtonToActionMap* newPressBtn)
+			CBTAM* pCurrentKeyState{};
+			RepeatKeyDown_t(CBTAM* newPressBtn)
 				: pCurrentKeyState(newPressBtn) { }
 			void operator()(const InpType downType) const noexcept
 			{
 				// This is repeated here because it has to use a different duration on the timer.
 				// todo extract into a function
-				using std::chrono::duration_cast, std::chrono::microseconds;
+				using std::chrono::duration_cast;
+				using timeUnit_t = ControllerToKeyMapData::Cms_t;
 				assert(pCurrentKeyState != nullptr);
 				// send downtype
 				pCurrentKeyState->MappedActionsArray[downType]();
 				// update LastAction
 				pCurrentKeyState->ControllerButtonState.LastAction = downType;
 				// and last sent time
-				pCurrentKeyState->ControllerButtonState.LastSentTime.Reset(duration_cast<microseconds>(pCurrentKeyState->KeymapData.DelayAfterRepeatActivation).count());
+				pCurrentKeyState->ControllerButtonState.LastSentTime.Reset(duration_cast<timeUnit_t>(pCurrentKeyState->KeymapData.DelayAfterRepeatActivation).count());
 			}
 		};
 	public:
-		//using TriggerState = std::variant<NoUpdate_t>;
-
 		KeyboardSettingsPack m_ksp;
-		ControllerButtonToActionMap m_currentMapping;
+		CBTAM m_currentMapping;
 	public:
-		explicit KeyboardTranslator(ControllerButtonToActionMap&& mapToOperateOn, const KeyboardSettingsPack& ksp = {})
+		explicit KeyboardTranslator(CBTAM&& mapToOperateOn, const KeyboardSettingsPack& ksp = {})
 			: m_ksp(ksp), m_currentMapping(std::move(mapToOperateOn))
 		{
 
@@ -109,7 +112,7 @@ namespace sds
 		 * \param mapBuffer container holding all CBTAM pointers.
 		 */
 		static
-		void KeyUpdateLoop(const std::vector<ControllerButtonToActionMap*> mapBuffer) noexcept
+		void KeyUpdateLoop(const std::vector<CBTAM*> mapBuffer) noexcept
 		{
 			using std::chrono::duration_cast, std::chrono::microseconds;
 			//If enough time has passed, reset the key for use again, provided it uses the key-repeat behavior--
@@ -134,7 +137,7 @@ namespace sds
 		 * \param mapBuffer container holding all CBTAM pointers.
 		 */
 		static
-		void KeyRepeatLoop(const std::vector<ControllerButtonToActionMap*> mapBuffer) noexcept
+		void KeyRepeatLoop(const std::vector<CBTAM*> mapBuffer) noexcept
 		{
 			using AT = InpType;
 			for (const auto& w : mapBuffer)
@@ -250,7 +253,7 @@ namespace sds
 		 * \return one of three states, to be std::visit'd for what to do in that state
 		 */
 		[[nodiscard]]
-		auto IsOvertaking(const ControllerButtonToActionMap& detail) noexcept
+		auto IsOvertaking(const CBTAM& detail) noexcept
 			-> std::variant<OvertakingKeyDown_t, NoUpdate_t, NormalKeyDown_t>
 		{
 			using std::ranges::all_of, std::ranges::find, std::ranges::find_if, std::ranges::begin, std::ranges::end;
@@ -287,14 +290,14 @@ namespace sds
 		 * \return optional, pointer to cbtam being overtaken
 		 */
 		auto GetGroupedOvertaken(
-			const ControllerButtonToActionMap& detail,
-			const auto& groupedBuffer) -> std::optional<ControllerButtonToActionMap*>
+			const CBTAM& detail,
+			const auto& groupedBuffer) -> std::optional<CBTAM*>
 		{
 			using std::ranges::find_if, std::ranges::end;
 			// If exclusivity with update grouping has some other members...
 			if (!groupedBuffer.empty())
 			{
-				auto IsGroupedBtnPressedFn = [&](const ControllerButtonToActionMap* groupedButtonElem)
+				auto IsGroupedBtnPressedFn = [&](const CBTAM* groupedButtonElem)
 				{
 					const auto elemState = groupedButtonElem->ControllerButtonState.LastAction;
 					const auto elemButtonVK = groupedButtonElem->ControllerButton.VK;

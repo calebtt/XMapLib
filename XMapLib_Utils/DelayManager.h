@@ -1,5 +1,5 @@
 #pragma once
-#include "stdafx.h"
+#include "pch.h"
 #include <ostream>
 #include <chrono>
 
@@ -12,12 +12,12 @@ namespace sds::Utilities
 		using ClockType = std::chrono::steady_clock;
 		using TimeType = std::chrono::time_point<ClockType>;
 		TimeType m_start_time{ ClockType::now() };
-		size_t m_duration{ 1 };
+		std::size_t m_duration{ 1 };
 		mutable bool m_has_fired{ false };
 	public:
 		//us is microseconds
 		DelayManager() = delete;
-		explicit DelayManager(size_t duration_us) : m_duration(duration_us) { }
+		explicit DelayManager(std::size_t duration_us) : m_duration(duration_us) { }
 		DelayManager(const DelayManager& other) = default;
 		DelayManager(DelayManager&& other) = default;
 		DelayManager& operator=(const DelayManager& other) = default;
@@ -48,7 +48,7 @@ namespace sds::Utilities
 			return false;
 		}
 		/// <summary>Reset delay for elapsing.</summary>
-		void Reset(size_t microsec_delay) noexcept
+		void Reset(std::size_t microsec_delay) noexcept
 		{
 			m_start_time = ClockType::now();
 			m_has_fired = false;

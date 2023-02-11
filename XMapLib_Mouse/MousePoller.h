@@ -1,5 +1,5 @@
 #pragma once
-#include "stdafx.h"
+#include "LibIncludes.h"
 #include "ThumbStateWrapper.h"
 
 namespace sds
@@ -7,19 +7,16 @@ namespace sds
 	/// <summary> Encapsulates the logic for querying the OS to gather information about a controller thumbstick event. </summary>
 	class MousePoller
 	{
-		using LogFnType = std::function<void(std::string)>;
-		const LogFnType m_logFn;
 		XINPUT_STATE m_tempState{};
 	public:
-		MousePoller(const LogFnType logFn = nullptr) : m_logFn(logFn)
-		{ }
 		/// <summary>Returns an updated ThumbStateWrapper containing information gathered about a controller keypress. </summary>
-		ThumbStateWrapper GetUpdatedState(const int playerId) noexcept
+		[[nodiscard]]
+		auto GetUpdatedState(const int playerId) noexcept -> std::optional<ThumbStateWrapper>
 		{
 			// zero controller state struct
 			m_tempState = {};
 			// get updated controller state information
-			const DWORD error = XInputGetState(playerId, &m_tempState);
+			const auto error = XInputGetState(playerId, &m_tempState);
 			if (error == ERROR_SUCCESS || error == ERROR_EMPTY)
 			{
 				return ThumbStateWrapper {
@@ -28,11 +25,6 @@ namespace sds
 					.LeftThumbX = m_tempState.Gamepad.sThumbLX,
 					.LeftThumbY = m_tempState.Gamepad.sThumbLY
 				};
-			}
-			if (error == ERROR_BAD_ARGUMENTS)
-			{
-				if (m_logFn != nullptr)
-					m_logFn("Exception in MousePoller::GetUpdatedState(...): Call to XInputGetState() reported ERROR_BAD_ARGUMENTS");
 			}
 			return {};
 		}

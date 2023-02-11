@@ -7,24 +7,22 @@
 #include "VirtualMap.h"
 #include "CallbackRange.h"
 #include "ControllerSideDetails.h"
-#include "KeyboardTranslator.h"
 #include "KeyStateMachineInformational.h"
 
 namespace sds
 {
+
 	/**
 	 * \brief The <b>map type</b> which means the structure holding some controller to action mapping. For operating on controller button to [action] callback fn maps,
 	 * it contains and manages the state machine logic used to activate/de-activate the callbacks. The mapping is SendingElementVK to callback list.
 	 * \remarks The hope is that this mapping style will make the "engine" processing it more generic and not totally reliant on processing explicit controller button -> keyboard key mappings.
 	 * Hence, the callback function ranges for events occurring such as activation, deactivation, repeat.
 	 */
-	template<typename KeyStateMachine_t = KeyStateMachineInformational>
+	template<class KeyStateMachine_t = KeyStateMachineInformational>
 	struct ControllerButtonToActionMap
 	{
 	public:
 		using StateAndCallbackPair = std::pair<ControllerButtonStateData::ActionType, CallbackRange>;
-		// 3rd and optional property for mappings, a grouping for exclusivity.
-		//using GroupingProperty_t = int;
 		using InpType = ControllerButtonStateData::ActionType;
 	public:
 		ControllerButtonData ControllerButton;
@@ -70,6 +68,16 @@ namespace sds
 		ControllerButtonToActionMap& operator=(const ControllerButtonToActionMap& other) = default;
 		ControllerButtonToActionMap& operator=(ControllerButtonToActionMap&& other) = default;
 	public:
+		auto ProcessState(const ControllerStateWrapper& detail)
+		{
+			//TODO this doesn't do the overtaking behavior yet.
+			if (KeyStateMachine.TestDown(detail))
+				MappedActionsArray[InpType::KEYDOWN]();
+			else if (KeyStateMachine.TestRepeat(detail))
+				MappedActionsArray[InpType::KEYREPEAT]();
+			else if (KeyStateMachine.TestUp(detail))
+				MappedActionsArray[InpType::KEYUP]();
+		}
 		[[nodiscard]]
 		static
 		auto GetThisBuffer() noexcept

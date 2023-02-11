@@ -144,7 +144,7 @@ namespace sds
 	    /**
 	     * \brief This class must be updated when the key update loop resets the timer (and thus state).
 	     */
-	    auto ResetForRepeat(const ControllerStateWrapper& stroke)
+	    auto ResetForRepeat(const ControllerStateWrapper& stroke) -> void
 	 	{
 			auto& cbState = GetRepeatTimer();
 
@@ -176,22 +176,22 @@ namespace sds
 		    return m_controllerButtonVK->VK;
 	    }
 		[[nodiscard]]
-		auto GetUsesRepeat() const noexcept
+		auto GetUsesRepeat() const noexcept -> bool
 	    {
 			return m_keyMapData->UsesRepeat;
 	    }
 		[[nodiscard]]
-		auto& GetRepeatTimer() const noexcept
+		auto GetRepeatTimer() const noexcept -> Utilities::DelayManager&
 	    {
 			return m_buttonStateData->LastSentTime;
 	    }
 		[[nodiscard]]
-		auto GetDelayBeforeRepeat() const noexcept
+		auto GetDelayBeforeRepeat() const noexcept -> std::chrono::milliseconds
 	    {
 			return m_keyMapData->DelayBeforeRepeatActivation;
 	    }
 		[[nodiscard]]
-		auto GetDelayAfterRepeat() const noexcept
+		auto GetDelayAfterRepeat() const noexcept -> std::chrono::milliseconds
 	    {
 			return m_keyMapData->DelayAfterRepeatActivation;
 	    }

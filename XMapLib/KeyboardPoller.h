@@ -11,7 +11,7 @@ namespace sds
 	public:
 		/// <summary>Returns an updated ControllerStateWrapper containing information gathered about a controller keypress. </summary>
 		[[nodiscard]]
-		ControllerStateWrapper GetUpdatedState(const int playerId) noexcept
+		auto GetUpdatedState(const int playerId) noexcept -> ControllerStateWrapper
 		{
 			// zero controller state struct
 			m_tempState = {};
