@@ -13,6 +13,8 @@ namespace sds
 		using AltDzFloat = decltype(MouseSettings::ALT_DEADZONE_MULT_DEFAULT);
 		bool m_is_deadzone_activated{ false };
 		PolarMagInt m_polar_magnitude_deadzone;
+		// TODO, a single errant value returned from the hardware will turn alt-deadzone mode on incorrectly.
+		// It will be more noticeable with a small multiplier value. Could implement a count or something.
 		AltDzFloat m_alt_deadzone_multiplier;
 		MouseSettingsPack m_msp;
 	private:
@@ -54,20 +56,28 @@ namespace sds
 		auto IsBeyondDeadzone(const int cartesianX, const int cartesianY) noexcept
 			-> std::pair<bool, bool>
 		{
+			using std::abs;
 			using Utilities::ToA;
-			using Utilities::ConstAbs;
 			// Get polar X and Y magnitudes, and theta angle from cartesian X and Y
 			const auto fullInfo = PolarTransformMag<>{ cartesianX, -cartesianY, m_msp.settings.PolarRadiusValueMax }.get();
 			const auto& [xPolarMag, yPolarMag] = fullInfo.adjusted_magnitudes;
 			//get positive polar values
-			const auto absX = ConstAbs(xPolarMag);
-			const auto absY = ConstAbs(yPolarMag);
+			const auto absX = abs(xPolarMag);
+			const auto absY = abs(yPolarMag);
 			// Test for deadzone
 			const auto dzCurrent = GetDeadzoneCurrentValue();
+			assert(dzCurrent > 0);
 			const bool isBeyondX = absX >= dzCurrent;
 			const bool isBeyondY = absY >= dzCurrent;
 			if (isBeyondX || isBeyondY)
 				m_is_deadzone_activated = true;
+
+			//[&]()
+			//{
+			//	std::cerr << std::format("xPolarMag:{0}, yPolarMag:{1}, absX:{2}, absY:{3} dzCurrent:{4}, isBeyondX:{5}, isBeyondY{6}\n",
+			//		xPolarMag, yPolarMag, absX, absY, dzCurrent, isBeyondX, isBeyondY);
+			//}();
+
 			return { isBeyondX, isBeyondY };
 		}
 

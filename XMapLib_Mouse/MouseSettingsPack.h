@@ -55,7 +55,7 @@ namespace sds
 		static constexpr Dz_t DEADZONE_DEFAULT{ GetComputedDzVal() };
 		//Alt Deadzone Default is the multiplier to use when a deadzone is already activated,
 		//the deadzone value for the other axis is lessened via this value.
-		static constexpr float ALT_DEADZONE_MULT_DEFAULT{ 0.45f };
+		static constexpr float ALT_DEADZONE_MULT_DEFAULT{ 0.85f };
 		//File name for the file containing the thumbstick scaling values.
 		static constexpr std::string_view SCALING_VALUES_FNAME{ "adjustment_values.txt" };
 		//Static assertions about the const members

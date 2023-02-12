@@ -27,7 +27,7 @@ namespace sds
 		void PerformMove(const MouseMoveInfoPacket mmip) noexcept
 		{
 			using namespace std::chrono;
-			//A loop with no delay, that checks each delay value
+			//A loop with no delay (non-blocking), that checks each delay value
 			//against a timepoint, and performs the move for that axis if it beyond the timepoint
 			//and in that way, will perform the single pixel move with two different (non-blocking) variable time delays.
 			const bool isXPos = mmip.is_x_positive;
