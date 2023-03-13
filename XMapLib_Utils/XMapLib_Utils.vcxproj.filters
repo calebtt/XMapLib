@@ -19,9 +19,6 @@
     <Filter Include="Header Files\IOHelpers">
       <UniqueIdentifier>{9cde9328-3b2a-44af-8211-c4781b638a59}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Timing">
-      <UniqueIdentifier>{2bf4c443-8aaa-4233-b31e-57f02141c28e}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -50,9 +47,6 @@
     </ClInclude>
     <ClInclude Include="VirtualMap.h">
       <Filter>Header Files\IOHelpers</Filter>
-    </ClInclude>
-    <ClInclude Include="DelayManager.h">
-      <Filter>Header Files\Timing</Filter>
     </ClInclude>
     <ClInclude Include="GetterExit.h">
       <Filter>Header Files\IOHelpers</Filter>

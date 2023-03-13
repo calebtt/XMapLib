@@ -11,42 +11,6 @@ using namespace std;
 // adds a bunch of key mappings for common binds.
 void AddTestKeyMappings(sds::KeyboardMapper<>& mapper, std::osyncstream &ss);
 
-// used to asynchronously await the enter key being pressed, before
-// dumping the contents of the key maps.
-class GetterExit {
-	using KeyboardPtrType = sds::KeyboardMapper<>;
-	std::unique_ptr<std::jthread> workerThread{};
-	std::atomic<bool> m_exitState{ false };
-	const KeyboardPtrType m_mp;
-public:
-	GetterExit(const KeyboardPtrType m) : m_mp(m) { startThread(); }
-	~GetterExit() { stopThread(); }
-	//Returns a bool indicating if the thread should stop.
-	bool operator()() { return m_exitState; }
-protected:
-	void stopThread()
-	{
-		if (workerThread)
-			if (workerThread->joinable())
-				workerThread->join();
-	}
-	void startThread() {
-		workerThread = std::make_unique<std::jthread>([this]() { workThread(); });
-	}
-	void workThread() {
-		std::cin.get(); // block and wait for enter key
-		std::cin.clear();
-		std::osyncstream ss(std::cerr);
-		//prints out the maps, for debugging info.
-		auto mapList = m_mp->GetMaps();
-		ranges::for_each(mapList.GetMaps(), [&ss](const sds::ControllerButtonToActionMap<>& theMap)	{
-				ss << theMap << endl << endl;
-			});
-		m_exitState = true;
-		ss.emit();
-	}
-};
-
 auto CreateKeyMapper()
 {
 	using namespace sds;

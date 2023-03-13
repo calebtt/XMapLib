@@ -105,6 +105,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -120,6 +121,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -132,12 +134,28 @@
     <ClCompile Include="XMapLib_Keyboard.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DelayManagerProj\DelayManager\DelayManager.vcxproj">
+      <Project>{74b1b2b0-2a3d-4832-845f-fdc9883c1c9f}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\impcool_sol\immutable_thread_pool\immutable_thread_pool.vcxproj">
       <Project>{1991c70b-0764-4765-8d93-da83356c603b}</Project>
     </ProjectReference>
     <ProjectReference Include="..\XMapLib_Utils\XMapLib_Utils.vcxproj">
       <Project>{1f7d3830-b362-44af-b782-8fd89b948a97}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ControllerButtonToActionMap.h" />
+    <ClInclude Include="ControllerSideDetails.h" />
+    <ClInclude Include="ControllerStateWrapper.h" />
+    <ClInclude Include="KeyboardMapper.h" />
+    <ClInclude Include="KeyboardMapSource.h" />
+    <ClInclude Include="KeyboardPoller.h" />
+    <ClInclude Include="KeyboardSettingsPack.h" />
+    <ClInclude Include="KeyboardTranslator.h" />
+    <ClInclude Include="KeyStateMachine.h" />
+    <ClInclude Include="KeyStateMachineInformational.h" />
+    <ClInclude Include="LibIncludes.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

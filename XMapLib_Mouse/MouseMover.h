@@ -11,15 +11,17 @@ namespace sds
 	/// </summary>
 	class MouseMover
 	{
+		using Us_t = std::chrono::microseconds;
 		MouseSettingsPack m_msp;
 		Utilities::SendMouseInput m_keySend{};
-		Utilities::DelayManager xTime;
-		Utilities::DelayManager yTime;
+		DelayManagement::DelayManager<Us_t> xTime;
+		DelayManagement::DelayManager<Us_t> yTime;
 	public:
 		explicit MouseMover(const MouseSettingsPack msp = {})
-		: m_msp(msp),
-		xTime( msp.settings.MICROSECONDS_MAX ),
-		yTime( msp.settings.MICROSECONDS_MAX )
+		:
+		m_msp(msp),
+		xTime(Us_t{ msp.settings.MICROSECONDS_MAX }),
+		yTime(Us_t{ msp.settings.MICROSECONDS_MAX })
 		{ }
 
 		/// <summary> <c>PerformMove()</c> performs the microsecond delay mouse movement processing.
@@ -32,8 +34,8 @@ namespace sds
 			//and in that way, will perform the single pixel move with two different (non-blocking) variable time delays.
 			const bool isXPos = mmip.is_x_positive;
 			const bool isYPos = mmip.is_y_positive;
-			const size_t xDelay = mmip.x_delay;
-			const size_t yDelay = mmip.y_delay;
+			const std::size_t xDelay = mmip.x_delay;
+			const std::size_t yDelay = mmip.y_delay;
 			// Assertion for delay values.
 			assert(xDelay > 0 && yDelay > 0);
 			const bool m_isXM = mmip.is_beyond_dz_x;

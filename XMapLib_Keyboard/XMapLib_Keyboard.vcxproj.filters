@@ -13,10 +13,54 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\Keyboard">
+      <UniqueIdentifier>{a47992e6-5fdc-4e51-beab-ade5cd4e7e65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Keyboard\KeyInfoWrappers">
+      <UniqueIdentifier>{b56c2449-2429-4552-aceb-b63de8833d99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Keyboard\SettingsAndConfig">
+      <UniqueIdentifier>{c4b2771a-42ff-42ae-ac75-d8ef12a48cfb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="XMapLib_Keyboard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ControllerButtonToActionMap.h">
+      <Filter>Header Files\Keyboard\KeyInfoWrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="ControllerSideDetails.h">
+      <Filter>Header Files\Keyboard\KeyInfoWrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="ControllerStateWrapper.h">
+      <Filter>Header Files\Keyboard\KeyInfoWrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyboardMapSource.h">
+      <Filter>Header Files\Keyboard\KeyInfoWrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyboardSettingsPack.h">
+      <Filter>Header Files\Keyboard\SettingsAndConfig</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyboardMapper.h">
+      <Filter>Header Files\Keyboard</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyboardPoller.h">
+      <Filter>Header Files\Keyboard</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyboardTranslator.h">
+      <Filter>Header Files\Keyboard</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyStateMachine.h">
+      <Filter>Header Files\Keyboard</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyStateMachineInformational.h">
+      <Filter>Header Files\Keyboard</Filter>
+    </ClInclude>
+    <ClInclude Include="LibIncludes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

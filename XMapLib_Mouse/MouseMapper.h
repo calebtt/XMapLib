@@ -24,15 +24,19 @@ namespace sds
 		// Combined object used for most of the mouse input processing, added to thread pool, performs the polling, calculation, and mouse moving.
 		SharedPtrType<STMouseMapping<>> m_stmapper;
 	public:
-		/// <summary>Ctor allows setting a custom MousePlayerInfo</summary>
+		/// <summary>Ctor allows setting a custom MouseSettingsPack</summary>
 		MouseMapper(
 			const SharedPtrType<ThreadUnit_t> &statRunner,
 			const MouseSettingsPack &settings = {}
 		)
 		: m_statRunner(statRunner),
 		  m_mouseSettingsPack(settings)
-	{
+		{
 			assert(m_statRunner != nullptr);
+			if(m_statRunner == nullptr)
+			{
+				throw std::exception();
+			}
 			// Construct an STMouseMapping object, copy into class data member for lifetime control and access to it's functions.
 			m_stmapper = MakeSharedSmart<STMouseMapping<>>(m_mouseSettingsPack.settings.SensitivityValue, m_mouseSettingsPack.settings.SelectedStick);
 			// Get the task source, push a new task.
@@ -79,7 +83,7 @@ namespace sds
 		/// <summary><c>GetStick()</c> A getter for the current <code>StickMap</code> enum data member.</summary>
 		/// <returns><c>StickMap</c> enum class denoting which controller thumbstick is set for processing,
 		/// or default constructed StickMap on error. </returns>
-		auto GetStick() const noexcept -> StickMap
+		auto GetStick() const noexcept -> std::optional<StickMap>
 		{
 			if (m_stmapper == nullptr)
 				return {};

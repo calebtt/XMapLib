@@ -43,4 +43,3 @@
 
 
 // Include some commonly used global stuff.
-#include "KeyboardSettingsPack.h"

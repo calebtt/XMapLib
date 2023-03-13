@@ -1,6 +1,5 @@
 #pragma once
-#include "stdafx.h"
-#include "Utilities.h"
+#include "LibIncludes.h"
 #include "KeyboardPoller.h"
 #include "ControllerSideDetails.h"
 #include <iostream>
@@ -29,17 +28,18 @@ namespace sds
 	 */
 	 struct KeyStateMachineInformational
 	 {
-	 	using InpType = ControllerButtonStateData::ActionType;
+		using Delay_t = ControllerButtonStateData::Delay_t;
+		using InpType = ControllerButtonStateData::ActionType;
 		InpType m_lastAction{};
-	 public:
+		public:
 		ControllerButtonStateData* m_buttonStateData{};
 		ControllerButtonData* m_controllerButtonVK{};
 		ControllerToKeyMapData* m_keyMapData{};
 		bool m_isInExclusivityGroup{ false };
 		bool m_isInExclusivityNoUpdateGroup{ false };
 		std::function<bool()> IsBlockedByExclusiveGroup;
-	 public:
-	 	explicit KeyStateMachineInformational(
+		public:
+		explicit KeyStateMachineInformational(
 			ControllerButtonStateData &cbsd, 
 			ControllerButtonData &cbd, 
 			ControllerToKeyMapData &ctkmd,
@@ -47,15 +47,15 @@ namespace sds
 			const bool isInExclusivityNoUpdateGroup,
 			auto&& isExclusivityBlockedFn
 		)
-	 		: m_buttonStateData(&cbsd),
-	 	m_controllerButtonVK(&cbd),
-	 	m_keyMapData(&ctkmd),
+			: m_buttonStateData(&cbsd),
+		m_controllerButtonVK(&cbd),
+		m_keyMapData(&ctkmd),
 		m_isInExclusivityGroup(isInExclusivityGroup),
-	 	m_isInExclusivityNoUpdateGroup(isInExclusivityNoUpdateGroup),
-	 	IsBlockedByExclusiveGroup(isExclusivityBlockedFn)
-	 	{
+		m_isInExclusivityNoUpdateGroup(isInExclusivityNoUpdateGroup),
+		IsBlockedByExclusiveGroup(isExclusivityBlockedFn)
+		{
 
-	 	}
+		}
 	 public:
 	 	/**
 	 	 * \brief Tests the stroke against the state machine to see if a key-down should be sent.
@@ -181,7 +181,7 @@ namespace sds
 			return m_keyMapData->UsesRepeat;
 	    }
 		[[nodiscard]]
-		auto GetRepeatTimer() const noexcept -> Utilities::DelayManager&
+		auto GetRepeatTimer() const noexcept -> Delay_t
 	    {
 			return m_buttonStateData->LastSentTime;
 	    }

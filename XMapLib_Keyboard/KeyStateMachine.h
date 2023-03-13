@@ -1,6 +1,5 @@
 #pragma once
-#include "stdafx.h"
-#include "Utilities.h"
+#include "LibIncludes.h"
 #include "ControllerButtonToActionMap.h"
 #include "KeyboardPoller.h"
 #include <iostream>

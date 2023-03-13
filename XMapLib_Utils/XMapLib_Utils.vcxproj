@@ -113,6 +113,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -134,6 +135,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -149,7 +151,6 @@
   <ItemGroup>
     <ClInclude Include="CallbackRange.h" />
     <ClInclude Include="ControllerStatus.h" />
-    <ClInclude Include="DelayManager.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="GetterExit.h" />
     <ClInclude Include="IOFuncs.h" />

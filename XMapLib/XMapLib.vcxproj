@@ -169,19 +169,7 @@
     <ClCompile Include="XMapLib.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ControllerSideDetails.h" />
-    <ClInclude Include="KeyboardPoller.h" />
-    <ClInclude Include="KeyboardSettingsPack.h" />
-    <ClInclude Include="KeyboardMapSource.h" />
-    <ClInclude Include="KeyboardTickUpdateLoop.h" />
-    <ClInclude Include="KeyEventFactory.h" />
-    <ClInclude Include="ControllerStateWrapper.h" />
-    <ClInclude Include="KeyStateMachine.h" />
-    <ClInclude Include="KeyStateMachineInformational.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="KeyboardMapper.h" />
-    <ClInclude Include="ControllerButtonToActionMap.h" />
-    <ClInclude Include="KeyboardTranslator.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\impcool_sol\immutable_thread_pool\immutable_thread_pool.vcxproj">

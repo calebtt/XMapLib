@@ -33,6 +33,7 @@
 
 #include <locale>
 #include <format>
+#include <stdexcept>
 
 #include <chrono>
 
@@ -47,12 +48,6 @@
 #include "../DelayManagerProj/DelayManager/DelayManager.hpp"
 #include "../DelayManagerProj/DelayManager/DelayManagerSafe.hpp"
 
-#include "../PolarCode/PolarQuadrantCalc/PolarCalc.h"
-#include "../PolarCode/PolarQuadrantCalc/PolarCalcFaster.h"
-#include "../PolarCode/PolarQuadrantCalc/PolarTransform.h"
-#include "../PolarCode/PolarQuadrantCalc/PolarTransformMag.h"
-#include "../PolarCode/PolarQuadrantCalc/PolarTransformOptional.h"
-
 #include "../XMapLib_Utils/Arithmetic.h"
 #include "../XMapLib_Utils/ControllerStatus.h"
 #include "../XMapLib_Utils/CallbackRange.h"
@@ -64,3 +59,5 @@
 #include "../XMapLib_Utils/GetterExit.h"
 
 #include "../impcool_sol/immutable_thread_pool/ThreadUnitFP.h"
+
+#include <magic_enum.hpp>

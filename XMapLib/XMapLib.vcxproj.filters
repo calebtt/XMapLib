@@ -35,42 +35,6 @@
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="KeyboardTranslator.h">
-      <Filter>Header Files\Keyboard</Filter>
-    </ClInclude>
-    <ClInclude Include="KeyboardMapper.h">
-      <Filter>Header Files\Keyboard</Filter>
-    </ClInclude>
-    <ClInclude Include="KeyboardPoller.h">
-      <Filter>Header Files\Keyboard</Filter>
-    </ClInclude>
-    <ClInclude Include="KeyboardSettingsPack.h">
-      <Filter>Header Files\Keyboard\SettingsAndConfig</Filter>
-    </ClInclude>
-    <ClInclude Include="ControllerStateWrapper.h">
-      <Filter>Header Files\Keyboard\KeyInfoWrappers</Filter>
-    </ClInclude>
-    <ClInclude Include="KeyboardMapSource.h">
-      <Filter>Header Files\Keyboard\KeyInfoWrappers</Filter>
-    </ClInclude>
-    <ClInclude Include="ControllerButtonToActionMap.h">
-      <Filter>Header Files\Keyboard\KeyInfoWrappers</Filter>
-    </ClInclude>
-    <ClInclude Include="ControllerSideDetails.h">
-      <Filter>Header Files\Keyboard\KeyInfoWrappers</Filter>
-    </ClInclude>
-    <ClInclude Include="KeyEventFactory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="KeyStateMachine.h">
-      <Filter>Header Files\Keyboard</Filter>
-    </ClInclude>
-    <ClInclude Include="KeyStateMachineInformational.h">
-      <Filter>Header Files\Keyboard</Filter>
-    </ClInclude>
-    <ClInclude Include="KeyboardTickUpdateLoop.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />

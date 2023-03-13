@@ -1,15 +1,15 @@
 #pragma once
-#include "stdafx.h"
+#include "LibIncludes.h"
 #include <any>
 #include <ostream>
+#include "KeyboardSettingsPack.h"
 
 // Most of these structs are used by ControllerButtonToActionMap
 namespace sds
 {
-	/// <summary>
-	/// The specific data used to describe the controller button in the mapping.
-	///	This type is probably relatively concrete within the mapping logic.
-	/// </summary>
+	/**
+	 * \brief The specific data used to describe the controller button in the mapping. This type is probably relatively concrete within the mapping logic.
+	 */
 	struct ControllerButtonData
 	{
 		// VK of controller button
@@ -26,9 +26,9 @@ namespace sds
 		}
 	};
 
-	/// <summary>
-	/// The specific data used to describe the mapped-to (kbd/mouse) key in the mapping.
-	/// </summary>
+	/**
+	 * \brief The specific data used to describe the mapped-to (kbd/mouse) key in the mapping.
+	 */
 	struct KeyboardButtonData
 	{
 		// Presumably, the VK of mapped-to input (key or mouse button)
@@ -36,9 +36,9 @@ namespace sds
 		std::any VK;
 	};
 
-	/// <summary>
-	/// The extra information regarding the controller button to keyboard key mapping.
-	/// </summary>
+	/**
+	 * \brief The extra information regarding the controller button to keyboard key mapping.
+	 */
 	struct ControllerToKeyMapData
 	{
 		using GroupingProperty_t = int;
@@ -57,12 +57,12 @@ namespace sds
 		GroupingProperty_t ExclusivityNoOvertakingGrouping{};
 	};
 
-	/// <summary>
-	/// Specific info regarding the state machine which is used to track the events being fired,
-	///	based on what the controller button reports.
-	/// </summary>
+	/**
+	 * \brief Specific info regarding the state machine which is used to track the events being fired, based on what the controller button reports.
+	 */
 	struct ControllerButtonStateData
 	{
+		using Delay_t = DelayManagement::DelayManager<std::chrono::microseconds>;
 		enum class ActionType : int
 		{
 			NONE = 0,
@@ -70,28 +70,11 @@ namespace sds
 			KEYREPEAT = XINPUT_KEYSTROKE_REPEAT,
 			KEYUP = XINPUT_KEYSTROKE_KEYUP
 		};
-		//struct IdleState {
-		//	ControllerButtonStateData::ActionType value = ControllerButtonStateData::ActionType
-		//		::NONE;
-		//};
-		//struct KeyDownState {
-		//	ControllerButtonStateData::ActionType value = ControllerButtonStateData::ActionType
-		//		::KEYDOWN;
-		//};
-		//struct KeyRepeatState {
-		//	ControllerButtonStateData::ActionType value = ControllerButtonStateData::ActionType
-		//		::KEYREPEAT;
-		//};
-		//struct KeyUpState {
-		//	ControllerButtonStateData::ActionType value = ControllerButtonStateData::ActionType
-		//		::KEYUP;
-		//};
-		//std::variant<IdleState, KeyDownState, KeyUpState, KeyRepeatState> LastAction = IdleState{};
 
 		// state machine info for controller btn
 		ActionType LastAction{ ActionType::NONE };
 		// last sent time, normally used for key repeat
-		Utilities::DelayManager LastSentTime{ KeyboardSettings::MICROSECONDS_DELAY_KEYREPEAT };
+		DelayManagement::DelayManager<std::chrono::microseconds> LastSentTime{ KeyboardSettings::MICROSECONDS_DELAY_KEYREPEAT };
 
 		friend std::ostream& operator<<(std::ostream& os, const ControllerButtonStateData& obj)
 		{
