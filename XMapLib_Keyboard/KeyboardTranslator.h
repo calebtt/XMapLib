@@ -21,10 +21,8 @@ namespace sds
 		bool DoUp{ false };
 		bool DoRepeat{ false };
 		bool DoReset{ false };
-		CBActionMap* ButtonMapping;
+		CBActionMap* ButtonMapping{};
 	};
-	//TODO if this were a module, this would probably not be exported.
-	using MappingAndStatePair_t = std::pair<CBActionMap, MappingStateManager>;
 
 	template<typename T>
 	concept MappingRange_c = requires (T & t)
@@ -32,6 +30,7 @@ namespace sds
 		{ std::ranges::range<T> };
 		{ std::same_as<typename T::value_type, CBActionMap> };
 	};
+
 	/*
 	 *	Free functions.
 	 */
@@ -43,14 +42,14 @@ namespace sds
 	 */
 	[[nodiscard]]
 	inline
-	bool AreExclusivityGroupsUnique(const std::vector<MappingAndStatePair_t>& mappingsList)
+	bool AreExclusivityGroupsUnique(const std::vector<CBActionMap>& mappingsList)
 	{
 		std::map<int, std::optional<int>> groupMap;
 		for (const auto& e : mappingsList)
 		{
 			// If an exclusivity group is set, we must verify no duplicate ex groups are set to the same vk
-			const auto& vk = e.first.Vk;
-			const auto& currentMappingGroupOpt = e.first.ExclusivityGrouping;
+			const auto& vk = e.Vk;
+			const auto& currentMappingGroupOpt = e.ExclusivityGrouping;
 			const auto& existingGroupOpt = groupMap[vk];
 			if (currentMappingGroupOpt.has_value() && existingGroupOpt.has_value())
 			{
@@ -96,21 +95,66 @@ namespace sds
 		return iterBuffer;
 	}
 
-	// Returns a vec of iterators
+	// Returns a vec of pointers, not iterators because we don't want to iterate at all.
 	inline
 	auto GetMappingsMatchingVk(const int vk, MappingRange_c auto& mappingsList)
-	-> std::vector<typename decltype(mappingsList)::iterator>
+	-> std::vector<typename decltype(mappingsList)::value_type*>
 	{
 		using MappingsList_t = decltype(mappingsList);
 		using MappingsListIterator_t = typename MappingsList_t::iterator;
+		using MappingsListPointer_t = typename MappingsList_t::value_type*;
 		using std::ranges::begin, std::ranges::end, std::ranges::for_each, std::ranges::cbegin, std::ranges::cend;
 
 		// Create vec of pointers and add elements matching the VK
-		std::vector<MappingsListIterator_t> buf;
-		for_each(mappingsList, [vk, &buf](MappingsListIterator_t elem) { if (elem.first.Vk == vk) buf.emplace_back(elem); });
+		std::vector<MappingsListPointer_t> buf;
+		for_each(mappingsList, [vk, &buf](auto& elem) { if (elem.first.Vk == vk) buf.emplace_back(&elem); });
 		return buf;
 	}
+	/**
+	 * \brief If enough time has passed, the key requests to be rest for use again; provided it uses the key-repeat behavior--
+	 * otherwise it requests to be reset immediately.
+	 */
+	inline
+	auto GetMappingsForUpdate(MappingRange_c auto& mappingsList) -> std::vector<TranslationResult>
+	{
+		using std::ranges::begin, std::ranges::end;
+		std::vector<TranslationResult> resetBuffer;
+		for (auto elemIt = begin(mappingsList); elemIt != end(mappingsList); ++elemIt)
+		{
+			auto& elem = *elemIt;
+			const bool DoUpdate = (elem.LastAction.IsUp() && elem.LastAction.LastSentTime.IsElapsed()) && elem.UsesRepeat;
+			const bool DoImmediate = elem.LastAction.IsUp() && !elem.UsesRepeat;
+			if (DoUpdate || DoImmediate)
+			{
+				resetBuffer.emplace_back(TranslationResult{ false, false, false, true, &elem });
+			}
+		}
+		return resetBuffer;
+	}
+	inline
+	auto GetMappingsForRepeat(MappingRange_c auto& mappingsList) -> std::vector<TranslationResult>
+	{
+		using std::ranges::begin, std::ranges::end;
+		std::vector<TranslationResult> repeatBuffer;
+		for (auto elemIt = begin(mappingsList); elemIt != end(mappingsList); ++elemIt)
+		{
+			auto& w = *elemIt;
+			const bool doesRepeat = w.UsesRepeat;
+			const bool isDown = w.LastAction.IsDown();
+			const bool isRepeating = w.LastAction.IsRepeating();
+			const bool downOrRepeat = isDown || isRepeating;
+			if (doesRepeat && downOrRepeat)
+			{
+				if (w.LastAction.LastSentTime.IsElapsed())
+				{
+					repeatBuffer.emplace_back(TranslationResult{ false, false, true, false, &w });
+				}
+			}
+		}
+		return repeatBuffer;
+	}
 
+	//TODO do something else with these send functions.
 	inline
 	auto DoKeyUpForMatchingExclusivityGroupMappings(CBActionMap mapping, MappingRange_c auto& mappingsList)
 	{
@@ -135,7 +179,6 @@ namespace sds
 			}
 		}
 	}
-
 	/**
 	 * \brief DOES NOT CHECK THE STATE or the TIMER before sending, merely does the send & update logic.
 	 *  NOTE that here, sending the key-ups for all the overtaken mappings in the same exclusivity grouping counts as "UPDATE"
@@ -153,7 +196,6 @@ namespace sds
 		// Update last sent time
 		mapping.second.LastSentTime.Reset();
 	}
-
 	/**
 	 * \brief DOES NOT CHECK THE STATE or the TIMER before sending, merely does the send & update logic.
 	 */
@@ -171,7 +213,6 @@ namespace sds
 		// Update last sent time
 		mapping.LastAction.LastSentTime.Reset();
 	}
-
 	/**
 	 * \brief DOES NOT CHECK THE STATE or the TIMER before sending, merely does the send & update logic.
 	 */
@@ -201,111 +242,97 @@ namespace sds
 	class CBActionTranslator
 	{
 	private:
-		using Clock_t = std::chrono::high_resolution_clock;
-		using TimePoint_t = DelayManagement::DelayManager<std::chrono::microseconds>;
-		using LastAction_t = MappingStateManager;
-		std::vector<std::pair<CBActionMap, LastAction_t>> m_mappings;
+		std::vector<CBActionMap> m_mappings;
+		std::map<int, std::vector<CBActionMap*>> m_exGroupMap;
 	public:
 		/**
-		 * \brief Throwing constructor, will not leave a partially constructed zombie object in the event of error.
+		 * \brief COPIES the mappings into the internal vector.
+		 * Throwing constructor, will not leave a partially constructed zombie object in the event of error.
 		 * \param mappingsList STL container/range of CBActionMap controller button to action mappings.
 		 * \throws std::invalid_argument exception
 		 */
-		CBActionTranslator(const std::ranges::range auto& mappingsList)
+		CBActionTranslator(const MappingRange_c auto& mappingsList)
 		{
 			if (!AreExclusivityGroupsUnique(mappingsList))
 				throw std::invalid_argument("Mapping list contained multiple exclusivity groupings for a single controller button.");
-			for(const auto& e: mappingsList)
+			m_mappings.reserve(std::size(mappingsList));
+			for(const CBActionMap& elem: mappingsList)
 			{
+				// Add to internal vector, possibly with custom repeat delay.
 				LastAction_t lastStateM{};
-				if(e.CustomRepeatDelay)
-					lastStateM.LastSentTime.Reset(e.CustomRepeatDelay.value());
-				m_mappings.emplace_back(std::make_pair(e, lastStateM));
+				if (elem.CustomRepeatDelay)
+					lastStateM.LastSentTime.Reset(elem.CustomRepeatDelay.value());
+				m_mappings.emplace_back(elem);
+				// If has an exclusivity grouping, add to map
+				auto& tempBack = m_mappings.back();
+				if (tempBack.ExclusivityGrouping)
+				{
+					// Build map with pointers to elements of internal buffer.
+					m_exGroupMap[*tempBack.ExclusivityGrouping].emplace_back(&tempBack);
+				}
 			}
 		}
-		
-		auto ProcessState(const ControllerStateWrapper& state, MappingRange_c auto& mappingsList)
-		-> std::vector<TranslationResult>
+		// Move-ctor for mappings list.
+		CBActionTranslator(MappingRange_c auto&& mappingsList)
+		{
+			if (!AreExclusivityGroupsUnique(mappingsList))
+				throw std::invalid_argument("Mapping list contained multiple exclusivity groupings for a single controller button.");
+			m_mappings.reserve(std::size(mappingsList));
+			for (CBActionMap& elem : mappingsList)
+			{
+				// Move to internal vector, possibly with custom repeat delay.
+				LastAction_t lastStateM{};
+				if (elem.CustomRepeatDelay)
+					lastStateM.LastSentTime.Reset(elem.CustomRepeatDelay.value());
+				m_mappings.emplace_back(std::move(elem));
+				// If has an exclusivity grouping, add to map
+				auto& tempBack = m_mappings.back();
+				if (tempBack.ExclusivityGrouping)
+				{
+					// Build map with pointers to elements of internal buffer.
+					m_exGroupMap[*tempBack.ExclusivityGrouping].emplace_back(&tempBack);
+				}
+			}
+		}
+
+		auto GetExGroupOvertaken(const CBActionMap& currentMapping) -> std::vector<TranslationResult>
 		{
 			std::vector<TranslationResult> results;
-			const auto matchingMappings = GetMappingsMatchingVk(state.VirtualKey, mappingsList);
-			const auto updateMappings = GetMappingsForUpdate(mappingsList);
-			const auto repeatMappings = GetMappingsForRepeat(mappingsList);
-
-
-			// todo combine into one vec and return
-			return results;
-		}
-		void ProcessState(const ControllerStateWrapper& state, const bool doUpdateLoop = true)
-		{
-			// Update timers/reset mappings.
-			KeyUpdateLoop();
-			// Send repeats
-			KeyRepeatLoop();
-			// Get a view to the elements matching the controller key vk
-			const auto matchingMappings = GetMappingsMatchingVk(state.VirtualKey, m_mappings);
-			// For each controller button matching mapping...
-			for(auto currMapIt : matchingMappings)
+			// Iterate through each matching mapping and find ones with an exclusivity grouping, and then add the rest of the grouping to the results with key-up
+			if(currentMapping.ExclusivityGrouping)
 			{
-				// Ref to pointed-to mapping
-				auto& currentElem = *currMapIt;
-				// TODO The decision of whether to send down()/up() etc. needs to occur here
-				if(state.KeyDown)
+				auto& tempVec = m_exGroupMap[*currentMapping.ExclusivityGrouping];
+				for (CBActionMap* p : tempVec)
 				{
-					SendAndUpdateKeyDown(currentElem, matchingMappings);
-				}
-				else if(state.KeyUp)
-				{
-					SendAndUpdateKeyUp(currentElem, matchingMappings);
-				}
-				else if(state.KeyRepeat)
-				{
-					SendAndUpdateKeyRepeat(currentElem, matchingMappings);
-				}
-			}
-		}
-	private:
-		/**
-		 * \brief Retrieves a vector of iterators to elements requesting to be reset.
-		 * If enough time has passed, the key requests to be rest for use again; provided it uses the key-repeat behavior--
-		 * otherwise it requests to be reset immediately.
-		 */
-		auto GetMappingsForUpdate(MappingRange_c auto& mappingsList)
-		{
-			using std::ranges::begin, std::ranges::end;
-			std::vector<TranslationResult> resetBuffer;
-			for(auto elemIt = begin(mappingsList); elemIt != end(mappingsList); ++elemIt)
-			{
-				auto& elem = *elemIt;
-				const bool DoUpdate = (elem.LastAction.IsUp() && elem.LastAction.LastSentTime.IsElapsed()) && elem.UsesRepeat;
-				const bool DoImmediate = elem.LastAction.IsUp() && !elem.UsesRepeat;
-				if (DoUpdate || DoImmediate)
-				{
-					resetBuffer.emplace_back(TranslationResult{false, false, false, true, &elem});
-				}
-			}
-			return resetBuffer;
-		}
-		auto GetMappingsForRepeat(MappingRange_c auto& mappingsList)
-		{
-			using std::ranges::begin, std::ranges::end;
-			std::vector<TranslationResult> repeatBuffer;
-			for (auto elemIt = begin(mappingsList); elemIt != end(mappingsList); ++elemIt)
-			{
-				auto& w = *elemIt;
-				const bool doesRepeat = w.UsesRepeat;
-				const bool isDown = w.LastAction.IsDown();
-				const bool isRepeating = w.LastAction.IsRepeating();
-				const bool downOrRepeat = isDown || isRepeating;
-				if (doesRepeat && downOrRepeat)
-				{
-					if (w.LastAction.LastSentTime.IsElapsed())
+					if (p != &currentMapping)
 					{
-						repeatBuffer.emplace_back(TranslationResult{ false, false, true, false, &w});
+						if (p->LastAction.IsDown() || p->LastAction.IsRepeating())
+							results.emplace_back(TranslationResult{ false, true, false, false, p });
 					}
 				}
 			}
-			return repeatBuffer;
+			
+			return results;
+		}
+
+		auto ProcessState(const ControllerStateWrapper& state, MappingRange_c auto& mappingsList)
+		-> std::vector<TranslationResult>
+		{
+			using std::ranges::find_if;
+			std::vector<TranslationResult> results;
+			// Adds maps being reset
+			results.append_range(GetMappingsForUpdate(m_mappings));
+			// Adds maps being key-repeat'd
+			results.append_range(GetMappingsForRepeat(m_mappings));
+			// Adds maps being overtaken and sent a key-up
+			auto matchingMappings = GetMappingsMatchingVk(state.VirtualKey, m_mappings);
+			for(const auto &elem : matchingMappings)
+			{
+				results.append_range(GetExGroupOvertaken(elem));
+			}
+			// Adds maps doing key-down for matching the controller button
+			results.append_range(matchingMappings);
+			return results;
 		}
 	};
 }

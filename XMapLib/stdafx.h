@@ -43,3 +43,6 @@
 
 
 // Include some commonly used global stuff.
+
+#include "../XMapLib_Keyboard/KeyboardTranslator.h"
+#include "../XMapLib_Keyboard/KeyboardPoller.h"

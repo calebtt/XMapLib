@@ -4,6 +4,7 @@
 #include "ControllerButtonToActionMap.h"
 #include "KeyboardMapSource.h"
 #include "KeyboardPoller.h"
+#include "KeyboardTranslator.h"
 
 namespace sds
 {
@@ -13,7 +14,11 @@ namespace sds
 		{ t.GetUpdatedState(0) };
 		{ t.GetUpdatedState(0) } -> std::convertible_to<ControllerStateWrapper>;
 	};
-
+	template<typename T>
+	concept IsRv = requires(T & t)
+	{
+		{ !std::is_lvalue_reference_v<T> };
+	};
 	/**
 	 * \brief Main class for use, for mapping controller input to <b>keyboard</b> input.
 	 * Construction requires an instance of a <b>Thread Unit</b> type, managing infinite tasks running on a single thread.
@@ -27,18 +32,28 @@ namespace sds
 	private:
 		// Thread task pool class, our work functors get added to here and called in succession on a separate thread for performance reasons.
 		SharedPtrType<ThreadUnit_t> m_statRunner;
-		//TODO develop in isolation, the simple task of controller-vk + exclusivity grouping to action mapping.
+		SharedPtrType<InputPoller_t> m_poller;
 		KeyboardSettingsPack m_keySettingsPack;
-		SharedPtrType<InputPoller_t> m_poller = MakeSharedSmart<InputPoller_t>();
-		// TODO ?
+		CBActionTranslator m_translator;
 		//SharedPtrType<KeyboardMapSource> m_mappings = MakeSharedSmart<KeyboardMapSource>();
 		std::atomic<bool> m_stopReq{ false };
 	public:
+		/**
+		 * \brief 
+		 * \param statRunner The thread to run it all on.
+		 * \param poller The source for updated controller state information.
+		 * \param translator std::move'd in, The object that produces updates wrt the mappings.
+		 * \param settPack Keyboard settings pack
+		 */
 		KeyboardMapper( 
 			const SharedPtrType<ThreadUnit_t>& statRunner,
+			const SharedPtrType<InputPoller_t>& poller,
+			CBActionTranslator&& translator,
 			const KeyboardSettingsPack &settPack = {})
 		:
 		m_statRunner(statRunner),
+		m_poller(poller),
+		m_translator(std::move(translator)),
 		m_keySettingsPack(settPack)
 		{
 			assert(m_statRunner != nullptr);
