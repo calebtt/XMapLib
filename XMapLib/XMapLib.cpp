@@ -30,89 +30,93 @@ int main()
 	using namespace sds;
 	using namespace sds::Utilities;
 	//construct some mapping objects...
-	auto keyer = CreateKeyMapper();
 
-	std::osyncstream ss(std::cout);
-	AddTestKeyMappings(*keyer, ss);
-	GetterExit getter(keyer);
-	//const std::string err = mouser->SetSensitivity(1); //sensitivity
-	Utilities::LogError(err); // won't do anything if the string is empty
-	//mouser->SetStick(StickMap::RIGHT_STICK);
+	// Construct the thread upon which the polling, translation, and mapping will occur.
+	std::shared_ptr<imp::ThreadUnitFP> threadUnit = std::make_shared<imp::ThreadUnitFP>();
 
-	auto IsControllerConnected = [](const int pid)
-	{
-		return ControllerStatus::IsControllerConnected(pid);
-	};
-	ss << "[Enter] to dump keymap contents and quit." << endl;
-	ss << "Xbox controller polling started..." << endl;
-	ss << "Controller reported as: " << (IsControllerConnected(0) ? "Connected." : "Disconnected.") << std::endl;
-	ss.emit();
+	//auto keyer = CreateKeyMapper();
 
-	// main loop
-	do
-	{
-		const bool isControllerConnected = ControllerStatus::IsControllerConnected(0);
-		const bool isThreadRunning = mouser->IsRunning() && keyer->IsRunning();
-		const bool doConnectStart = !isThreadRunning && isControllerConnected;
-		const bool doConnectStop = isThreadRunning && !isControllerConnected;
-		if (doConnectStart)
-		{
-			ss << "Controller reported as: Connected. Starting mapping objects." << std::endl;
-			keyer->Start();
-			mouser->Start();
-			ss.emit();
-		}
-		if (doConnectStop)
-		{
-			ss << "Controller reported as: Disconnected. Stopping mapping objects." << std::endl;
-			keyer->Stop();
-			mouser->Stop();
-			ss.emit();
-		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
-	} while (!getter());
-	return 0;
+	//std::osyncstream ss(std::cout);
+	//AddTestKeyMappings(*keyer, ss);
+	//GetterExit getter(keyer);
+	////const std::string err = mouser->SetSensitivity(1); //sensitivity
+	//Utilities::LogError(err); // won't do anything if the string is empty
+	////mouser->SetStick(StickMap::RIGHT_STICK);
+
+	//auto IsControllerConnected = [](const int pid)
+	//{
+	//	return ControllerStatus::IsControllerConnected(pid);
+	//};
+	//ss << "[Enter] to dump keymap contents and quit." << endl;
+	//ss << "Xbox controller polling started..." << endl;
+	//ss << "Controller reported as: " << (IsControllerConnected(0) ? "Connected." : "Disconnected.") << std::endl;
+	//ss.emit();
+
+	//// main loop
+	//do
+	//{
+	//	const bool isControllerConnected = ControllerStatus::IsControllerConnected(0);
+	//	const bool isThreadRunning = mouser->IsRunning() && keyer->IsRunning();
+	//	const bool doConnectStart = !isThreadRunning && isControllerConnected;
+	//	const bool doConnectStop = isThreadRunning && !isControllerConnected;
+	//	if (doConnectStart)
+	//	{
+	//		ss << "Controller reported as: Connected. Starting mapping objects." << std::endl;
+	//		keyer->Start();
+	//		mouser->Start();
+	//		ss.emit();
+	//	}
+	//	if (doConnectStop)
+	//	{
+	//		ss << "Controller reported as: Disconnected. Stopping mapping objects." << std::endl;
+	//		keyer->Stop();
+	//		mouser->Stop();
+	//		ss.emit();
+	//	}
+	//	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	//} while (!getter());
+	//return 0;
 }
 
-void AddTestKeyMappings(sds::KeyboardMapper<>& mapper, std::osyncstream &ss)
-{
-	using namespace sds;
-	const auto buttons =
-	{
-		//https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
-		ControllerButtonToActionMap{VK_PAD_LTRIGGER, VK_RBUTTON, false}, // right click
-		ControllerButtonToActionMap{VK_PAD_RTRIGGER, VK_LBUTTON, false}, // left click
-		ControllerButtonToActionMap{VK_PAD_LTHUMB_UP, 0x57, true}, // 'w'
-		ControllerButtonToActionMap{VK_PAD_LTHUMB_LEFT, 0x41, true}, // 'a'
-		ControllerButtonToActionMap{VK_PAD_LTHUMB_DOWN, 0x53, true}, // 's'
-		ControllerButtonToActionMap{VK_PAD_LTHUMB_RIGHT, 0x44, true}, // 'd'
-		ControllerButtonToActionMap{VK_PAD_DPAD_DOWN, VK_DOWN, true}, // 'downarrow'
-		ControllerButtonToActionMap{VK_PAD_DPAD_UP, VK_UP, true}, // 'uparrow'
-		ControllerButtonToActionMap{VK_PAD_DPAD_LEFT, VK_LEFT, true}, // 'leftarrow'
-		ControllerButtonToActionMap{VK_PAD_DPAD_RIGHT, VK_RIGHT, true}, // 'rightarrow'
-		ControllerButtonToActionMap{VK_PAD_LTHUMB_UPLEFT, 0x57, true}, // 'w'
-		ControllerButtonToActionMap{VK_PAD_LTHUMB_UPLEFT, 0x41, true}, // 'a'
-		ControllerButtonToActionMap{VK_PAD_LTHUMB_UPRIGHT, 0x57, true}, // 'w'
-		ControllerButtonToActionMap{VK_PAD_LTHUMB_UPRIGHT, 0x44, true}, // 'd'
-		ControllerButtonToActionMap{VK_PAD_LTHUMB_DOWNLEFT, 0x53, true}, // 's'
-		ControllerButtonToActionMap{VK_PAD_LTHUMB_DOWNLEFT, 0x41, true}, // 'a'
-		ControllerButtonToActionMap{VK_PAD_LTHUMB_DOWNRIGHT, 0x53, true}, // 's'
-		ControllerButtonToActionMap{VK_PAD_LTHUMB_DOWNRIGHT, 0x44, true}, // 'd'
-		ControllerButtonToActionMap{VK_PAD_A, VK_SPACE, false}, // ' '
-		ControllerButtonToActionMap{VK_PAD_B, 0x45, false}, // 'e'
-		ControllerButtonToActionMap{VK_PAD_X, 0x52, false} // 'r'
-	};
-	std::string errorCondition;
-	ranges::for_each(buttons, [&mapper, &errorCondition](const ControllerButtonToActionMap<>& m)
-		{
-			if (errorCondition.empty())
-			{
-				errorCondition = mapper.AddMap(m);
-			}
-		});
-	if (!errorCondition.empty())
-		ss << "Added buttons until error: " << errorCondition << endl;
-	else
-		ss << "Added: " << buttons.size() << " key mappings." << endl;
-	ss.emit();
-}
+//void AddTestKeyMappings(sds::KeyboardMapper<>& mapper, std::osyncstream &ss)
+//{
+//	using namespace sds;
+//	const auto buttons =
+//	{
+//		//https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
+//		ControllerButtonToActionMap{VK_PAD_LTRIGGER, VK_RBUTTON, false}, // right click
+//		ControllerButtonToActionMap{VK_PAD_RTRIGGER, VK_LBUTTON, false}, // left click
+//		ControllerButtonToActionMap{VK_PAD_LTHUMB_UP, 0x57, true}, // 'w'
+//		ControllerButtonToActionMap{VK_PAD_LTHUMB_LEFT, 0x41, true}, // 'a'
+//		ControllerButtonToActionMap{VK_PAD_LTHUMB_DOWN, 0x53, true}, // 's'
+//		ControllerButtonToActionMap{VK_PAD_LTHUMB_RIGHT, 0x44, true}, // 'd'
+//		ControllerButtonToActionMap{VK_PAD_DPAD_DOWN, VK_DOWN, true}, // 'downarrow'
+//		ControllerButtonToActionMap{VK_PAD_DPAD_UP, VK_UP, true}, // 'uparrow'
+//		ControllerButtonToActionMap{VK_PAD_DPAD_LEFT, VK_LEFT, true}, // 'leftarrow'
+//		ControllerButtonToActionMap{VK_PAD_DPAD_RIGHT, VK_RIGHT, true}, // 'rightarrow'
+//		ControllerButtonToActionMap{VK_PAD_LTHUMB_UPLEFT, 0x57, true}, // 'w'
+//		ControllerButtonToActionMap{VK_PAD_LTHUMB_UPLEFT, 0x41, true}, // 'a'
+//		ControllerButtonToActionMap{VK_PAD_LTHUMB_UPRIGHT, 0x57, true}, // 'w'
+//		ControllerButtonToActionMap{VK_PAD_LTHUMB_UPRIGHT, 0x44, true}, // 'd'
+//		ControllerButtonToActionMap{VK_PAD_LTHUMB_DOWNLEFT, 0x53, true}, // 's'
+//		ControllerButtonToActionMap{VK_PAD_LTHUMB_DOWNLEFT, 0x41, true}, // 'a'
+//		ControllerButtonToActionMap{VK_PAD_LTHUMB_DOWNRIGHT, 0x53, true}, // 's'
+//		ControllerButtonToActionMap{VK_PAD_LTHUMB_DOWNRIGHT, 0x44, true}, // 'd'
+//		ControllerButtonToActionMap{VK_PAD_A, VK_SPACE, false}, // ' '
+//		ControllerButtonToActionMap{VK_PAD_B, 0x45, false}, // 'e'
+//		ControllerButtonToActionMap{VK_PAD_X, 0x52, false} // 'r'
+//	};
+//	std::string errorCondition;
+//	ranges::for_each(buttons, [&mapper, &errorCondition](const ControllerButtonToActionMap<>& m)
+//		{
+//			if (errorCondition.empty())
+//			{
+//				errorCondition = mapper.AddMap(m);
+//			}
+//		});
+//	if (!errorCondition.empty())
+//		ss << "Added buttons until error: " << errorCondition << endl;
+//	else
+//		ss << "Added: " << buttons.size() << " key mappings." << endl;
+//	ss.emit();
+//}

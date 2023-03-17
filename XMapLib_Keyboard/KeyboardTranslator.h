@@ -27,7 +27,8 @@ namespace sds
 	template<typename T>
 	concept MappingRange_c = requires (T & t)
 	{
-		{ std::ranges::range<T> };
+		{ t.begin() };
+		{ t.end() };
 		{ std::same_as<typename T::value_type, CBActionMap> };
 	};
 
@@ -230,6 +231,7 @@ namespace sds
 	}
 
 	//TODO function for cleaning up in-progress events.
+
 	/**
 	 * \brief This translator is responsible for managing the state regarding
 	 * 1. exclusivity groupings,
@@ -237,7 +239,8 @@ namespace sds
 	 * 3. the decision to do a repeat if the mapping has enabled repeat behavior,
 	 * 4. the key-repeat and key-update timer loops
 	 *
-	 * To perform these tasks, it needs an internal working copy of every mapping in use.
+	 * To perform these tasks, it needs an internal working copy of every mapping in use,
+	 * it encapsulates the mapping array.
 	 */
 	class CBActionTranslator
 	{
@@ -259,12 +262,11 @@ namespace sds
 			for(const CBActionMap& elem: mappingsList)
 			{
 				// Add to internal vector, possibly with custom repeat delay.
-				LastAction_t lastStateM{};
-				if (elem.CustomRepeatDelay)
-					lastStateM.LastSentTime.Reset(elem.CustomRepeatDelay.value());
 				m_mappings.emplace_back(elem);
 				// If has an exclusivity grouping, add to map
 				auto& tempBack = m_mappings.back();
+				if (tempBack.CustomRepeatDelay)
+					tempBack.LastAction.LastSentTime.Reset(tempBack.CustomRepeatDelay.value());
 				if (tempBack.ExclusivityGrouping)
 				{
 					// Build map with pointers to elements of internal buffer.
@@ -280,13 +282,12 @@ namespace sds
 			m_mappings.reserve(std::size(mappingsList));
 			for (CBActionMap& elem : mappingsList)
 			{
-				// Move to internal vector, possibly with custom repeat delay.
-				LastAction_t lastStateM{};
-				if (elem.CustomRepeatDelay)
-					lastStateM.LastSentTime.Reset(elem.CustomRepeatDelay.value());
+				// Add to internal vector, possibly with custom repeat delay.
 				m_mappings.emplace_back(std::move(elem));
 				// If has an exclusivity grouping, add to map
 				auto& tempBack = m_mappings.back();
+				if (tempBack.CustomRepeatDelay)
+					tempBack.LastAction.LastSentTime.Reset(tempBack.CustomRepeatDelay.value());
 				if (tempBack.ExclusivityGrouping)
 				{
 					// Build map with pointers to elements of internal buffer.
@@ -315,7 +316,7 @@ namespace sds
 			return results;
 		}
 
-		auto ProcessState(const ControllerStateWrapper& state, MappingRange_c auto& mappingsList)
+		auto ProcessState(const ControllerStateWrapper& state)
 		-> std::vector<TranslationResult>
 		{
 			using std::ranges::find_if;

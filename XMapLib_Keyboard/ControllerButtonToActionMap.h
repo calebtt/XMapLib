@@ -57,14 +57,14 @@ namespace sds
 
 	/**
 	 * \brief The exclusivity grouping member is intended to allow the user to add different groups of mappings
-	 * that require another mapping from the same group to be "overtaken" or key-up sent before the "over-taking" new mapping
+	 * that require another mapping from the same group to be "overtaken" or key-up sent before the "overtaking" new mapping
 	 * can perform the key-down.
 	 */
 	struct CBActionMap
 	{
 		using Fn_t = std::function<void()>;
 		using OptFn_t = std::optional<Fn_t>;
-		using Delay_t = std::chrono::microseconds;
+		using Delay_t = std::chrono::nanoseconds;
 		using OptDelay_t = std::optional<Delay_t>;
 		using GrpVal_t = int;
 		using OptGrp_t = std::optional<GrpVal_t>;
@@ -76,5 +76,6 @@ namespace sds
 		OptFn_t OnRepeat;
 		OptDelay_t CustomRepeatDelay; // optional custom delay between key-repeats
 		MappingStateManager LastAction; // Last action performed, with get/set methods.
+		// TODO this might need a variant holding a callable that will perform the post-action state update.
 	};
 }
