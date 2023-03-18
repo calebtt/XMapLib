@@ -13,15 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\Keyboard">
-      <UniqueIdentifier>{30035b3e-a651-4eb0-a45c-c6f9c1e7cd53}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Keyboard\SettingsAndConfig">
-      <UniqueIdentifier>{1bed7456-95b8-4364-8fd9-fbca1b2543cd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Keyboard\KeyInfoWrappers">
-      <UniqueIdentifier>{b10fb71e-8161-4c60-94e7-db754fb603eb}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="XMapLib.cpp">

@@ -14,55 +14,45 @@ namespace sds
 		{ t.GetUpdatedState(0) };
 		{ t.GetUpdatedState(0) } -> std::convertible_to<ControllerStateWrapper>;
 	};
-	template<typename T>
-	concept IsRv = requires(T & t)
-	{
-		{ !std::is_lvalue_reference_v<T> };
-	};
-
-
 
 	/**
-	 * \brief Main class for use, for mapping controller input to <b>keyboard</b> input.
-	 * Construction requires an instance of a <b>Thread Unit</b> type, managing infinite tasks running on a single thread.
+	 * \brief Top-level object, callable object, returns a vector of TranslationResult.
+	 * Construction requires a shared_ptr to InputPoller type--the source for controller state info.
+	 * Construction also requires a pre-constructed Translator type--
 	 * Copyable, movable. Shallow copy of shared_ptr to polling and translation.
-	 * \tparam InputPoller_t Type used for polling for controller updates.
+	 * \tparam InputPoller_t Type used for polling for controller updates. Class for polling on other platforms can be substituted here.
+	 * \tparam Translator_t Type for the state change interpretation logic, might be upgraded someday and is thus a template param.
 	 */
-	template<typename ThreadUnit_t = imp::ThreadUnitFP,
-		IsInputPoller InputPoller_t = KeyboardPoller>
+	template<IsInputPoller InputPoller_t = KeyboardPoller, typename Translator_t = CBActionTranslator>
 	class KeyboardMapper
 	{
 	private:
-		// Thread task pool class, our work functors get added to here and called in succession on a separate thread for performance reasons.
-		SharedPtrType<ThreadUnit_t> m_statRunner;
 		SharedPtrType<InputPoller_t> m_poller;
-		CBActionTranslator m_translator;
-		std::atomic<bool> m_stopReq{ false };
+		//SharedPtrType<Translator_t> m_translator;
+	public:
+		/**
+		 * \brief Public data member, encapsulates the maps.
+		 */
+		Translator_t Translator;
 	public:
 		/**
 		 * \brief 
-		 * \param statRunner The thread to run it all on.
 		 * \param poller The source for updated controller state information.
 		 * \param translator std::move'd in, The object that produces updates wrt the mappings.
 		 */
 		KeyboardMapper( 
-			const SharedPtrType<ThreadUnit_t>& statRunner,
 			const SharedPtrType<InputPoller_t>& poller,
 			CBActionTranslator&& translator)
-		:
-		m_statRunner(statRunner),
-		m_poller(poller),
-		m_translator(std::move(translator))
+		: m_poller(poller), Translator(std::move(translator))
 		{
-			assert(m_statRunner != nullptr);
 			assert(m_poller != nullptr);
-			// Add task to the container.
-			auto taskContainer = m_statRunner->GetTaskSource();
-			taskContainer.PushInfiniteTaskBack([this]()
-			{
-				threadFunc();
-			});
-			m_statRunner->SetTaskSource(taskContainer);
+			//// Add task to the container.
+			//auto taskContainer = m_statRunner->GetTaskSource();
+			//taskContainer.PushInfiniteTaskBack([this]()
+			//{
+			//	threadFunc();
+			//});
+			//m_statRunner->SetTaskSource(taskContainer);
 		}
 		// Other constructors/destructors
 		KeyboardMapper(const KeyboardMapper& other) = default;
@@ -72,53 +62,27 @@ namespace sds
 		~KeyboardMapper() = default;
 	public:
 		/**
-		 * \brief Used in synchronous mode.
+		 * \brief Runs synchronously.
 		 * \return Returns vector of translation results.
 		 */
 		auto GetUpdate()
 		{
-			const auto state = m_poller->GetUpdatedState();
-			return m_translator.ProcessState(state);
+			return Translator.ProcessState(m_poller->GetUpdatedState());
 		}
 
-		[[nodiscard]]
-		auto IsControllerConnected() const -> bool
+		/**
+		 * \brief Runs synchronously.
+		 * \return Returns accumulated vector of translation results from an array of many polled states.
+		 */
+		auto GetChunkUpdates()
 		{
-			return ControllerStatus::IsControllerConnected(m_keySettingsPack.playerInfo.player_id);
-		}
-
-		void Start() noexcept
-		{
-			m_stopReq = false;
-		}
-
-		void Stop() noexcept
-		{
-			m_stopReq = true;
-		}
-	public:
-		//[[nodiscard]]
-		//auto GetMaps() const noexcept -> KeyboardMapSource
-		//{
-		//	return *m_mappings;
-		//}
-		// Call with no arg to clear the key maps.
-		//void SetMaps(const KeyboardMapSource &keys = {}) const noexcept
-		//{
-		//	m_mappings->ClearMaps();
-		//	*m_mappings = keys;
-		//}
-	private:
-		auto threadFunc() 
-		{
-			if (!m_stopReq.load(std::memory_order_relaxed))
+			std::vector<TranslationResult> actions;
+			const auto stateList = m_poller->GetUpdatedStateQueue();
+			for(const auto& elem: stateList)
 			{
-				const auto stateQueue = m_poller->GetUpdatedStateQueue();
-				for(const auto& state: stateQueue)
-				{
-					auto translatedResults = m_translator.ProcessState(state);
-				}
+				actions.append_range(Translator.ProcessState(elem));
 			}
+			return actions;
 		}
 	};
 }

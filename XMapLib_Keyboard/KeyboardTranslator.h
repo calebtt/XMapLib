@@ -9,6 +9,7 @@
 #include <iterator>
 #include <tuple>
 #include <ranges>
+#include <type_traits>
 
 namespace sds
 {
@@ -98,19 +99,18 @@ namespace sds
 
 	// Returns a vec of pointers, not iterators because we don't want to iterate at all.
 	inline
-	auto GetMappingsMatchingVk(const int vk, MappingRange_c auto& mappingsList)
-	-> std::vector<typename decltype(mappingsList)::value_type*>
+	auto GetMappingsMatchingVk(const int vk, std::vector<CBActionMap>& mappingsList)
 	{
-		using MappingsList_t = decltype(mappingsList);
-		using MappingsListIterator_t = typename MappingsList_t::iterator;
-		using MappingsListPointer_t = typename MappingsList_t::value_type*;
-		using std::ranges::begin, std::ranges::end, std::ranges::for_each, std::ranges::cbegin, std::ranges::cend;
+		// TODO a function that makes translation results from the ret val
+		using MappingsListPointer_t = CBActionMap*;
+		using std::ranges::for_each;
 
 		// Create vec of pointers and add elements matching the VK
 		std::vector<MappingsListPointer_t> buf;
-		for_each(mappingsList, [vk, &buf](auto& elem) { if (elem.first.Vk == vk) buf.emplace_back(&elem); });
+		for_each(mappingsList, [vk, &buf](auto& elem) { if (elem.Vk == vk) buf.emplace_back(&elem); });
 		return buf;
 	}
+
 	/**
 	 * \brief If enough time has passed, the key requests to be rest for use again; provided it uses the key-repeat behavior--
 	 * otherwise it requests to be reset immediately.
@@ -319,7 +319,6 @@ namespace sds
 		auto ProcessState(const ControllerStateWrapper& state)
 		-> std::vector<TranslationResult>
 		{
-			using std::ranges::find_if;
 			std::vector<TranslationResult> results;
 			// Adds maps being reset
 			results.append_range(GetMappingsForUpdate(m_mappings));
@@ -327,12 +326,14 @@ namespace sds
 			results.append_range(GetMappingsForRepeat(m_mappings));
 			// Adds maps being overtaken and sent a key-up
 			auto matchingMappings = GetMappingsMatchingVk(state.VirtualKey, m_mappings);
-			for(const auto &elem : matchingMappings)
+			for(const auto elem : matchingMappings)
 			{
-				results.append_range(GetExGroupOvertaken(elem));
+				results.append_range(GetExGroupOvertaken(*elem));
 			}
 			// Adds maps doing key-down for matching the controller button
-			results.append_range(matchingMappings);
+			//results.append_range(matchingMappings);
+			//TODO make translationresults from pointers here.
+
 			return results;
 		}
 	};

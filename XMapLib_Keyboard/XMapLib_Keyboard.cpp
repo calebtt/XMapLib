@@ -28,19 +28,46 @@ auto GetThreadUnit()
 }
 
 inline
+auto GetMappings()
+{
+    using namespace sds;
+    std::vector<sds::CBActionMap> mappings;
+    CBActionMap tm{
+        .Vk = VK_PAD_A,
+        .UsesRepeat = true,
+        .ExclusivityGrouping = {},
+        .OnDown = []() {std::cout << "Down "; },
+        .OnUp = []() { std::cout << "Up "; },
+        .OnRepeat = []() { std::cout << "Repeat "; },
+        .CustomRepeatDelay = {},
+        .LastAction = {}
+    };
+    mappings.emplace_back(tm);
+    return mappings;
+}
+
+inline
 auto GetMapperType()
 {
-    return sds::KeyboardMapper<>{GetThreadUnit()};
+    std::shared_ptr<sds::KeyboardPoller> keyPoller = std::make_shared<sds::KeyboardPoller>(0);
+    sds::CBActionTranslator tra(GetMappings());
+
+    return sds::KeyboardMapper{ keyPoller, std::move(tra) };
 }
+
+
 
 int main()
 {
-    using namespace std::chrono_literals;
-    using std::cout;
+    using namespace sds;
+    using namespace sds::Utilities;
 
-    auto mp = GetMapperType();
+	// Construct the thread upon which the polling, translation, and mapping will occur.
+    auto threadUnit = std::make_shared<imp::ThreadUnitFP>();
+    auto keyMapper = GetMapperType();
 
-    MainLoop();
 
-    mp.Stop();
+    const auto updates = keyMapper.GetUpdate();
+    std::cout << "Update size: " << updates.size() << '\n';
+
 }
