@@ -62,5 +62,8 @@
     <ClInclude Include="LibIncludes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="KeyboardSendFuncs.h">
+      <Filter>Header Files\Keyboard</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

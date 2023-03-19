@@ -2,6 +2,8 @@
 //
 #include "LibIncludes.h"
 #include <iostream>
+#include <string>
+#include <format>
 
 #include "KeyboardMapper.h"
 
@@ -47,27 +49,39 @@ auto GetMappings()
 }
 
 inline
-auto GetMapperType()
+auto GetTestControllerState()
 {
-    std::shared_ptr<sds::KeyboardPoller> keyPoller = std::make_shared<sds::KeyboardPoller>(0);
-    sds::CBActionTranslator tra(GetMappings());
-
-    return sds::KeyboardMapper{ keyPoller, std::move(tra) };
+    static std::size_t currentIndex{};
+    const std::array stateList =
+    {
+        sds::ControllerStateWrapper{ VK_PAD_A, true, false, false },
+        sds::ControllerStateWrapper{ VK_PAD_A, false, false, true },
+        sds::ControllerStateWrapper{ VK_PAD_A, false, true, false }
+    };
+    currentIndex++;
+    if (currentIndex > stateList.size())
+        return sds::ControllerStateWrapper{};
+    return stateList[currentIndex - 1];
 }
-
-
 
 int main()
 {
     using namespace sds;
     using namespace sds::Utilities;
+    using std::ranges::for_each;
+    constexpr std::size_t TestCount{ 3 };
 
-	// Construct the thread upon which the polling, translation, and mapping will occur.
     auto threadUnit = std::make_shared<imp::ThreadUnitFP>();
-    auto keyMapper = GetMapperType();
-
-
-    const auto updates = keyMapper.GetUpdate();
-    std::cout << "Update size: " << updates.size() << '\n';
-
+    KeyboardPoller keyPoller{ 0 };
+    CBActionTranslator tra{ GetMappings() };
+    // The call to the translator closure type, passed the poller's output.
+    const auto updates = tra(keyPoller());
+    for (std::size_t i{}; i < TestCount; ++i)
+    {
+        // It seems as though if all you are doing is feeding the output of one object to another object, they don't need
+        // to be dependent on one another at all. This design also makes testing the functionality quite simple, just change
+        // the source of input to the translator component to a source for test data.
+        const auto testUpdate = tra(GetTestControllerState());
+        for_each(testUpdate, [&](const sds::TranslationResult& e) { std::cout << e << '\n'; });
+    }
 }

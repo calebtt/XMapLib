@@ -19,6 +19,11 @@ namespace sds
 	public:
 		KeyboardPoller() = default;
 		KeyboardPoller(const int pid) : m_playerId(pid) { }
+	public:
+		auto operator()() -> ControllerStateWrapper
+		{
+			return GetUpdatedState();
+		}
 
 		/**
 		 * \brief Returns an updated ControllerStateWrapper containing information gathered about a controller keypress.
@@ -49,19 +54,7 @@ namespace sds
 		[[nodiscard]]
 		auto GetUpdatedState() noexcept -> ControllerStateWrapper
 		{
-			// zero controller state struct
-			m_tempState = {};
-			// get updated controller state information
-			const DWORD error = XInputGetKeystroke(m_playerId, 0, &m_tempState);
-			if (error == ERROR_SUCCESS || error == ERROR_EMPTY)
-			{
-				const bool isDown = m_tempState.Flags & XINPUT_KEYSTROKE_KEYDOWN;
-				const bool isUp = m_tempState.Flags & XINPUT_KEYSTROKE_KEYUP;
-				const bool isRepeat = m_tempState.Flags & XINPUT_KEYSTROKE_REPEAT;
-				return ControllerStateWrapper{ .VirtualKey = m_tempState.VirtualKey, .KeyDown = isDown, .KeyUp = isUp, .KeyRepeat = isRepeat };
-			}
-			assert(error != ERROR_BAD_ARGUMENTS);
-			return {};
+			return GetUpdatedState(m_playerId);
 		}
 
 		/**
@@ -96,22 +89,7 @@ namespace sds
 		[[nodiscard]]
 		auto GetUpdatedStateQueue() noexcept -> std::array<ControllerStateWrapper, StateQueueSize>
 		{
-			m_stateQueue = {};
-			// get updated controller state information
-			for (auto& it : m_stateQueue)
-			{
-				m_tempState = {};
-				const DWORD error = XInputGetKeystroke(m_playerId, 0, &m_tempState);
-				if (error == ERROR_SUCCESS || error == ERROR_EMPTY)
-				{
-					const bool isDown = m_tempState.Flags & XINPUT_KEYSTROKE_KEYDOWN;
-					const bool isUp = m_tempState.Flags & XINPUT_KEYSTROKE_KEYUP;
-					const bool isRepeat = m_tempState.Flags & XINPUT_KEYSTROKE_REPEAT;
-					it = ControllerStateWrapper{ .VirtualKey = m_tempState.VirtualKey, .KeyDown = isDown, .KeyUp = isUp, .KeyRepeat = isRepeat };
-				}
-				assert(error != ERROR_BAD_ARGUMENTS);
-			}
-			return m_stateQueue;
+			return GetUpdatedStateQueue(m_playerId);
 		}
 	};
 }

@@ -151,6 +151,7 @@
     <ClInclude Include="KeyboardMapper.h" />
     <ClInclude Include="KeyboardMapSource.h" />
     <ClInclude Include="KeyboardPoller.h" />
+    <ClInclude Include="KeyboardSendFuncs.h" />
     <ClInclude Include="KeyboardSettingsPack.h" />
     <ClInclude Include="KeyboardTranslator.h" />
     <ClInclude Include="KeyStateMachine.h" />

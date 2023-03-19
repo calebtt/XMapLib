@@ -7,15 +7,13 @@
 #include <optional>
 #include <vector>
 #include <iterator>
+#include <ostream>
 #include <tuple>
 #include <ranges>
 #include <type_traits>
 
 namespace sds
 {
-	// TODO utilize this, for to a real pipeline make
-	// It will be the return value of a call to the Translator's "process" function, and will be returned back up
-	// to the top-level to be passed to another object for performing the action based on it.
 	struct TranslationResult
 	{
 		bool DoDown{ false };
@@ -23,6 +21,16 @@ namespace sds
 		bool DoRepeat{ false };
 		bool DoReset{ false };
 		CBActionMap* ButtonMapping{};
+		// Debugging purposes
+		friend auto operator<<(std::ostream& os, const TranslationResult& obj) -> std::ostream&
+		{
+			return os
+				<< "DoDown: " << obj.DoDown
+				<< " DoUp: " << obj.DoUp
+				<< " DoRepeat: " << obj.DoRepeat
+				<< " DoReset: " << obj.DoReset
+				<< " ButtonMapping: " << obj.ButtonMapping;
+		}
 	};
 
 	template<typename T>
@@ -112,7 +120,7 @@ namespace sds
 	}
 
 	/**
-	 * \brief If enough time has passed, the key requests to be rest for use again; provided it uses the key-repeat behavior--
+	 * \brief If enough time has passed, the key requests to be reset for use again; provided it uses the key-repeat behavior--
 	 * otherwise it requests to be reset immediately.
 	 */
 	inline
@@ -132,6 +140,7 @@ namespace sds
 		}
 		return resetBuffer;
 	}
+
 	inline
 	auto GetMappingsForRepeat(MappingRange_c auto& mappingsList) -> std::vector<TranslationResult>
 	{
@@ -154,82 +163,6 @@ namespace sds
 		}
 		return repeatBuffer;
 	}
-
-	//TODO do something else with these send functions.
-	inline
-	auto DoKeyUpForMatchingExclusivityGroupMappings(CBActionMap mapping, MappingRange_c auto& mappingsList)
-	{
-		// Handle exclusivity grouping members, they get sent key-up if they match this key-down's ex. group
-		if (mapping.ExclusivityGrouping.has_value())
-		{
-			// Get a view to the elements matching the same exclusivity grouping.
-			const auto rv = GetMatchingExclusivityGroupMappings(mapping, mappingsList);
-			// Send key-up for the matching ex. group members.
-			for (auto& et : rv)
-			{
-				if (et->second.IsDown() || et->second.IsRepeating())
-				{
-					// Send the up
-					if (et->first.OnUp)
-						et->first.OnUp.value()();
-					// Update last sent time
-					et->second.LastSentTime.Reset();
-					// Update the last state
-					et->second.SetUp();
-				}
-			}
-		}
-	}
-	/**
-	 * \brief DOES NOT CHECK THE STATE or the TIMER before sending, merely does the send & update logic.
-	 *  NOTE that here, sending the key-ups for all the overtaken mappings in the same exclusivity grouping counts as "UPDATE"
-	 */
-	inline
-	auto SendAndUpdateKeyDown(std::pair<CBActionMap, MappingStateManager>& mapping, MappingRange_c auto& mappingsList)
-	{
-		DoKeyUpForMatchingExclusivityGroupMappings(mapping.first, mappingsList);
-
-		// test for handler
-		if (mapping.first.OnDown)
-			mapping.first.OnDown.value()();
-		// Update the last state
-		mapping.second.SetDown();
-		// Update last sent time
-		mapping.second.LastSentTime.Reset();
-	}
-	/**
-	 * \brief DOES NOT CHECK THE STATE or the TIMER before sending, merely does the send & update logic.
-	 */
-	inline
-	auto SendAndUpdateKeyRepeat(CBActionMap& mapping)
-	{
-		// note, it should not be possible for a repeat to trigger an exclusivity grouping overtaking action afaik
-		// test for handler
-		if (mapping.OnRepeat)
-			mapping.OnRepeat.value()();
-
-		// Update the last state
-		mapping.LastAction.SetRepeat();
-
-		// Update last sent time
-		mapping.LastAction.LastSentTime.Reset();
-	}
-	/**
-	 * \brief DOES NOT CHECK THE STATE or the TIMER before sending, merely does the send & update logic.
-	 */
-	inline
-	auto SendAndUpdateKeyUp(CBActionMap& mapping)
-	{
-		// test for handler
-		if (mapping.OnUp)
-			mapping.OnUp.value()();
-
-		mapping.LastAction.SetUp();
-
-		// Update last sent time
-		mapping.LastAction.LastSentTime.Reset();
-	}
-
 	//TODO function for cleaning up in-progress events.
 
 	/**
@@ -241,6 +174,7 @@ namespace sds
 	 *
 	 * To perform these tasks, it needs an internal working copy of every mapping in use,
 	 * it encapsulates the mapping array.
+	 * \remarks Construct a new instance to encapsulate a new or altered set of mappings.
 	 */
 	class CBActionTranslator
 	{
@@ -295,32 +229,31 @@ namespace sds
 				}
 			}
 		}
-
-		auto GetExGroupOvertaken(const CBActionMap& currentMapping) -> std::vector<TranslationResult>
+		~CBActionTranslator()
 		{
-			std::vector<TranslationResult> results;
-			// Iterate through each matching mapping and find ones with an exclusivity grouping, and then add the rest of the grouping to the results with key-up
-			if(currentMapping.ExclusivityGrouping)
-			{
-				auto& tempVec = m_exGroupMap[*currentMapping.ExclusivityGrouping];
-				for (CBActionMap* p : tempVec)
-				{
-					if (p != &currentMapping)
-					{
-						if (p->LastAction.IsDown() || p->LastAction.IsRepeating())
-							results.emplace_back(TranslationResult{ false, true, false, false, p });
-					}
-				}
-			}
-			
-			return results;
+			// TODO clean up in-progress events here.
+		}
+	public:
+		auto operator()(const ControllerStateWrapper& state) -> std::vector<TranslationResult>
+		{
+			return ProcessState(state);
 		}
 
+		/**
+		 * \brief The returned translationresult updates are in-order,
+		 * 1. Mappings being reset
+		 * 2. Mappings being key-repeat'd
+		 * 3. Mappings being overtaken by the next key-down
+		 * 4. Mappings being sent a (initial) key-down
+		 * 5. Mappings being sent a key-up
+		 * 6. todo
+		 */
 		auto ProcessState(const ControllerStateWrapper& state)
 		-> std::vector<TranslationResult>
 		{
+			using std::ranges::find_if;
 			std::vector<TranslationResult> results;
-			// Adds maps being reset
+			// Adds maps with timer being reset
 			results.append_range(GetMappingsForUpdate(m_mappings));
 			// Adds maps being key-repeat'd
 			results.append_range(GetMappingsForRepeat(m_mappings));
@@ -330,9 +263,36 @@ namespace sds
 			{
 				results.append_range(GetExGroupOvertaken(*elem));
 			}
-			// Adds maps doing key-down for matching the controller button
-			//results.append_range(matchingMappings);
-			//TODO make translationresults from pointers here.
+			for(const auto elem : matchingMappings)
+			{
+				// TODO make all of this simpler, storing which mappings have been sent may be the best idea.
+				// or duplicating the mapping into another array
+				const auto alreadySent = find_if(results, [&](const auto& curResult) { return curResult.ButtonMapping == elem; });
+				// TODO this doesn't distinguish between up/down/etc. either
+				results.emplace_back(TranslationResult{ true, false, false, false, elem });
+			}
+
+			return results;
+		}
+	private:
+		auto GetExGroupOvertaken(const CBActionMap& currentMapping) -> std::vector<TranslationResult>
+		{
+			// TODO this might add duplicates of the same action, will need tested.
+			using std::ranges::find_if;
+			std::vector<TranslationResult> results;
+			// Iterate through each matching mapping and find ones with an exclusivity grouping, and then add the rest of the grouping to the results with key-up
+			if (currentMapping.ExclusivityGrouping)
+			{
+				auto& exGroupVecForCurrent = m_exGroupMap[*currentMapping.ExclusivityGrouping];
+				for (CBActionMap* p : exGroupVecForCurrent)
+				{
+					if (p != &currentMapping)
+					{
+						if (p->LastAction.IsDown() || p->LastAction.IsRepeating())
+							results.emplace_back(TranslationResult{ false, true, false, false, p });
+					}
+				}
+			}
 
 			return results;
 		}

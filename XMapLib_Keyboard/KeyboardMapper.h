@@ -40,20 +40,7 @@ namespace sds
 		 * \param poller The source for updated controller state information.
 		 * \param translator std::move'd in, The object that produces updates wrt the mappings.
 		 */
-		KeyboardMapper( 
-			const SharedPtrType<InputPoller_t>& poller,
-			CBActionTranslator&& translator)
-		: m_poller(poller), Translator(std::move(translator))
-		{
-			assert(m_poller != nullptr);
-			//// Add task to the container.
-			//auto taskContainer = m_statRunner->GetTaskSource();
-			//taskContainer.PushInfiniteTaskBack([this]()
-			//{
-			//	threadFunc();
-			//});
-			//m_statRunner->SetTaskSource(taskContainer);
-		}
+		KeyboardMapper( CBActionTranslator&& translator) : Translator(std::move(translator)) { }
 		// Other constructors/destructors
 		KeyboardMapper(const KeyboardMapper& other) = default;
 		KeyboardMapper(KeyboardMapper&& other) = default;
@@ -65,9 +52,9 @@ namespace sds
 		 * \brief Runs synchronously.
 		 * \return Returns vector of translation results.
 		 */
-		auto GetUpdate()
+		auto GetUpdate(auto& poller)
 		{
-			return Translator.ProcessState(m_poller->GetUpdatedState());
+			return Translator.ProcessState(poller());
 		}
 
 		/**
