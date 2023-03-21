@@ -8,6 +8,7 @@
 #include <type_traits>
 #include <concepts>
 
+// TODO might be used
 namespace sds
 {
 	// Concept for keymap info type, provides things like GetLastAction() and IsExclusivityBlocked()

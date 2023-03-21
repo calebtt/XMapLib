@@ -25,8 +25,8 @@ protected:
 	}
 	void workThread()
 	{
-		std::cin.get(); // block and wait for enter key
-		std::cin.clear();
+		std::string buf;
+		std::getline(std::cin, buf); // block and wait for enter key
 		m_exitState = true;
 	}
 };

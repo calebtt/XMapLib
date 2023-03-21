@@ -1,7 +1,6 @@
 #pragma once
 #include "LibIncludes.h"
-// TODO, perhaps not in this iteration, but eventually the "mapping" will just be a callback function.
-// It would just be more flexible for whatever one might want to do with the code. Lambdas are cheap these days!
+
 namespace sds
 {
 	/**

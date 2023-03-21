@@ -176,7 +176,7 @@ namespace sds
 	 * it encapsulates the mapping array.
 	 * \remarks Construct a new instance to encapsulate a new or altered set of mappings.
 	 */
-	class CBActionTranslator
+	class KeyboardActionTranslator
 	{
 	private:
 		std::vector<CBActionMap> m_mappings;
@@ -188,7 +188,7 @@ namespace sds
 		 * \param mappingsList STL container/range of CBActionMap controller button to action mappings.
 		 * \throws std::invalid_argument exception
 		 */
-		CBActionTranslator(const MappingRange_c auto& mappingsList)
+		KeyboardActionTranslator(const MappingRange_c auto& mappingsList)
 		{
 			if (!AreExclusivityGroupsUnique(mappingsList))
 				throw std::invalid_argument("Mapping list contained multiple exclusivity groupings for a single controller button.");
@@ -209,7 +209,7 @@ namespace sds
 			}
 		}
 		// Move-ctor for mappings list.
-		CBActionTranslator(MappingRange_c auto&& mappingsList)
+		KeyboardActionTranslator(MappingRange_c auto&& mappingsList)
 		{
 			if (!AreExclusivityGroupsUnique(mappingsList))
 				throw std::invalid_argument("Mapping list contained multiple exclusivity groupings for a single controller button.");
@@ -229,14 +229,11 @@ namespace sds
 				}
 			}
 		}
-		~CBActionTranslator()
-		{
-			// TODO clean up in-progress events here.
-		}
 	public:
+		// Gets state update actions, typical usage of the type.
 		auto operator()(const ControllerStateWrapper& state) -> std::vector<TranslationResult>
 		{
-			return ProcessState(state);
+			return GetStateUpdateActions(state);
 		}
 
 		/**
@@ -248,7 +245,7 @@ namespace sds
 		 * 5. Mappings being sent a key-up
 		 * 6. todo
 		 */
-		auto ProcessState(const ControllerStateWrapper& state)
+		auto GetStateUpdateActions(const ControllerStateWrapper& state)
 		-> std::vector<TranslationResult>
 		{
 			using std::ranges::find_if;
@@ -272,6 +269,22 @@ namespace sds
 				results.emplace_back(TranslationResult{ true, false, false, false, elem });
 			}
 
+			return results;
+		}
+
+		/**
+		 * \brief Intended to provide an array of key-up actions necessary to return the mappings back to an initial state.
+		 */
+		auto GetCleanupActions() -> std::vector<TranslationResult>
+		{
+			std::vector<TranslationResult> results;
+			for(auto& elem: m_mappings)
+			{
+				if(elem.LastAction.IsDown() || elem.LastAction.IsRepeating())
+				{
+					results.emplace_back(TranslationResult{ .DoDown = false, .DoUp = true, .DoRepeat = false, .DoReset = false, .ButtonMapping = &elem });
+				}
+			}
 			return results;
 		}
 	private:

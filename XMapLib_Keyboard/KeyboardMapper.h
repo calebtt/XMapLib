@@ -2,9 +2,8 @@
 #include "LibIncludes.h"
 #include <atomic>
 #include "ControllerButtonToActionMap.h"
-#include "KeyboardMapSource.h"
 #include "KeyboardPoller.h"
-#include "KeyboardTranslator.h"
+#include "KeyboardActionTranslator.h"
 
 namespace sds
 {
@@ -15,6 +14,7 @@ namespace sds
 		{ t.GetUpdatedState(0) } -> std::convertible_to<ControllerStateWrapper>;
 	};
 
+	// TODO this either won't be used or will just be a facade holding the top-level objects actually in-use.
 	/**
 	 * \brief Top-level object, callable object, returns a vector of TranslationResult.
 	 * Construction requires a shared_ptr to InputPoller type--the source for controller state info.
@@ -23,7 +23,7 @@ namespace sds
 	 * \tparam InputPoller_t Type used for polling for controller updates. Class for polling on other platforms can be substituted here.
 	 * \tparam Translator_t Type for the state change interpretation logic, might be upgraded someday and is thus a template param.
 	 */
-	template<IsInputPoller InputPoller_t = KeyboardPoller, typename Translator_t = CBActionTranslator>
+	template<IsInputPoller InputPoller_t = KeyboardPoller, typename Translator_t = KeyboardActionTranslator>
 	class KeyboardMapper
 	{
 	private:
@@ -36,11 +36,10 @@ namespace sds
 		Translator_t Translator;
 	public:
 		/**
-		 * \brief 
-		 * \param poller The source for updated controller state information.
+		 * \brief Requires a translator object which encapsulates some mappings.
 		 * \param translator std::move'd in, The object that produces updates wrt the mappings.
 		 */
-		KeyboardMapper( CBActionTranslator&& translator) : Translator(std::move(translator)) { }
+		KeyboardMapper( KeyboardActionTranslator&& translator) : Translator(std::move(translator)) { }
 		// Other constructors/destructors
 		KeyboardMapper(const KeyboardMapper& other) = default;
 		KeyboardMapper(KeyboardMapper&& other) = default;

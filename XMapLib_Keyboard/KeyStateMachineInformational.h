@@ -1,11 +1,11 @@
 #pragma once
 #include "LibIncludes.h"
 #include "KeyboardPoller.h"
-#include "ControllerSideDetails.h"
 #include <iostream>
 #include <chrono>
 #include <optional>
 
+// TODO might be used
 namespace sds
 {
 	/**

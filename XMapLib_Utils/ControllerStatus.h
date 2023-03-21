@@ -6,7 +6,9 @@ namespace sds
 	/// <summary> Object with static method for returning the controller connected status. </summary>
 	struct ControllerStatus
 	{
-		[[nodiscard]] static bool IsControllerConnected(const int pid) noexcept
+		[[nodiscard]]
+		static
+		bool IsControllerConnected(const int pid) noexcept
 		{
 			XINPUT_KEYSTROKE keystrokeObj{};
 			XINPUT_STATE stateObj{};

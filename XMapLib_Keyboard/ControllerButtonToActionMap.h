@@ -2,31 +2,11 @@
 #include "LibIncludes.h"
 #include <syncstream>
 #include <typeindex>
-#include "ControllerSideDetails.h"
+#include "KeyboardSettingsPack.h"
 #include "KeyStateMachineInformational.h"
 
 namespace sds
 {
-	/**
-	 * \brief Takes a range of pause-able tasks and returns a single std::function that calls them in succession.
-	 * \remarks The range of functions is copied into the lambda.
-	 * \param taskList an iterable range of std::function tasks.
-	 * \return returns the newly created singular std::function that calls all of the tasks in succession.
-	 */
-	template<class FnRange_t>
-	auto make_async_runnable_package(const FnRange_t& taskList)	-> std::function<void()>
-	{
-		return std::function<void()>
-		{[taskList]()
-			{
-				for (const auto& elem : taskList)
-				{
-					elem();
-				}
-			}
-		};
-	}
-
 	/**
 	 * \brief Wrapper for key mapping state enum, the least I can do is make sure state modifications occur through a managing class,
 	 * and that there exists only one 'current' state, and that it can only be a finite set of possibilities.
@@ -43,7 +23,7 @@ namespace sds
 		ActionState m_currentValue{ ActionState::INIT };
 		KeyboardSettings m_keyDefaults{};
 	public:
-		DelayManagement::DelayManager<std::chrono::microseconds> LastSentTime{ m_keyDefaults.MICROSECONDS_DELAY_KEYREPEAT };
+		DelayManagement::DelayManager LastSentTime{ std::chrono::microseconds{m_keyDefaults.MICROSECONDS_DELAY_KEYREPEAT} };
 	public:
 		[[nodiscard]] constexpr bool IsRepeating() const noexcept { return m_currentValue == ActionState::KEYREPEAT; }
 		[[nodiscard]] constexpr bool IsDown() const noexcept { return m_currentValue == ActionState::KEYDOWN; }

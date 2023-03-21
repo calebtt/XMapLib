@@ -32,13 +32,7 @@
     <ClInclude Include="ControllerButtonToActionMap.h">
       <Filter>Header Files\Keyboard\KeyInfoWrappers</Filter>
     </ClInclude>
-    <ClInclude Include="ControllerSideDetails.h">
-      <Filter>Header Files\Keyboard\KeyInfoWrappers</Filter>
-    </ClInclude>
     <ClInclude Include="ControllerStateWrapper.h">
-      <Filter>Header Files\Keyboard\KeyInfoWrappers</Filter>
-    </ClInclude>
-    <ClInclude Include="KeyboardMapSource.h">
       <Filter>Header Files\Keyboard\KeyInfoWrappers</Filter>
     </ClInclude>
     <ClInclude Include="KeyboardSettingsPack.h">
@@ -50,7 +44,7 @@
     <ClInclude Include="KeyboardPoller.h">
       <Filter>Header Files\Keyboard</Filter>
     </ClInclude>
-    <ClInclude Include="KeyboardTranslator.h">
+    <ClInclude Include="KeyboardActionTranslator.h">
       <Filter>Header Files\Keyboard</Filter>
     </ClInclude>
     <ClInclude Include="KeyStateMachine.h">

@@ -5,6 +5,7 @@
 #include <string>
 #include <format>
 
+#include "KeyboardActionTranslator.h"
 #include "KeyboardMapper.h"
 
 inline
@@ -23,7 +24,7 @@ auto MainLoop()
 inline
 auto GetThreadUnit()
 {
-    using TUnit_t = imp::ThreadUnitFP;
+    using TUnit_t = imp::ThreadUnitPlusPlus;
     using SharedTUnit_t = std::shared_ptr<TUnit_t>;
     SharedTUnit_t threadUnit = std::make_shared<TUnit_t>();
     return threadUnit;
@@ -55,8 +56,8 @@ auto GetTestControllerState()
     const std::array stateList =
     {
         sds::ControllerStateWrapper{ VK_PAD_A, true, false, false },
-        sds::ControllerStateWrapper{ VK_PAD_A, false, false, true },
-        sds::ControllerStateWrapper{ VK_PAD_A, false, true, false }
+        sds::ControllerStateWrapper{ VK_PAD_A, false, false, true }
+    	//,sds::ControllerStateWrapper{ VK_PAD_A, false, true, false }
     };
     currentIndex++;
     if (currentIndex > stateList.size())
@@ -68,12 +69,12 @@ int main()
 {
     using namespace sds;
     using namespace sds::Utilities;
-    using std::ranges::for_each;
+    using std::ranges::for_each, std::cout;
     constexpr std::size_t TestCount{ 3 };
 
-    auto threadUnit = std::make_shared<imp::ThreadUnitFP>();
+    auto threadUnit = std::make_shared<imp::ThreadUnitPlusPlus>();
     KeyboardPoller keyPoller{ 0 };
-    CBActionTranslator tra{ GetMappings() };
+    KeyboardActionTranslator tra{ GetMappings() };
     // The call to the translator closure type, passed the poller's output.
     const auto updates = tra(keyPoller());
     for (std::size_t i{}; i < TestCount; ++i)
@@ -82,6 +83,9 @@ int main()
         // to be dependent on one another at all. This design also makes testing the functionality quite simple, just change
         // the source of input to the translator component to a source for test data.
         const auto testUpdate = tra(GetTestControllerState());
-        for_each(testUpdate, [&](const sds::TranslationResult& e) { std::cout << e << '\n'; });
+        for_each(testUpdate, [&](const sds::TranslationResult& e) { cout << e << '\n'; });
     }
+    cout << "Cleanup actions: ";
+    const auto cleanupActions = tra.GetCleanupActions();
+    for_each(cleanupActions, [&](const sds::TranslationResult& e) { cout << e << '\n'; });
 }
