@@ -13,7 +13,7 @@ namespace sds
 	/// setting the sensitivity as well as setting which thumbstick to use. </summary>
 	///	<remarks>If a <code>std::shared_ptr{STRunner}</code> is not passed into the constructor,
 	///	one will NOT be created for use. </remarks>
-	template<typename ThreadUnit_t = imp::ThreadUnitFP>
+	template<typename ThreadUnit_t = imp::ThreadUnitPlusPlus>
 	class MouseMapper
 	{
 		// Thread task pool class, our work functors get added to here and called in succession on a separate thread

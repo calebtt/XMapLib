@@ -1,6 +1,5 @@
 #pragma once
 #include "ControllerButtonToActionMap.h"
-#include "KeyboardTranslator.h"
 
 namespace sds
 {

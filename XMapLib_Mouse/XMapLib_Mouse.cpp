@@ -21,7 +21,7 @@ auto MainLoop()
 inline
 auto GetThreadUnit()
 {
-    using TUnit_t = imp::ThreadUnitFP;
+    using TUnit_t = imp::ThreadUnitPlusPlus;
     using SharedTUnit_t = std::shared_ptr<TUnit_t>;
     SharedTUnit_t threadUnit = std::make_shared<TUnit_t>();
     return threadUnit;

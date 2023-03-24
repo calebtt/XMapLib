@@ -8,15 +8,15 @@
 namespace sds::Utilities
 {
 	/**
-	 * \brief One member function calls SendInput with the eventual built INPUT struct.
+	 * \brief One function calls SendInput with the eventual built INPUT struct.
 	 * This is useful for debugging or re-routing the output for logging/testing of a real-time system.
 	 * \param inp Pointer to first element of INPUT array.
 	 * \param numSent Number of elements in the array to send.
 	 * \return Returns number of input structures sent.
 	 */
 	inline
-	auto CallSendInput(INPUT* inp, std::size_t numSent) noexcept
-		-> UINT
+	auto CallSendInput(INPUT* inp, std::uint32_t numSent) noexcept
+	-> UINT
 	{
 		return SendInput(static_cast<UINT>(numSent), inp, sizeof(INPUT));
 	}
@@ -29,7 +29,7 @@ namespace sds::Utilities
 	 * \param sendDown Send key-down event?
 	 * \return Returns number of events sent.
 	 */
-	static
+	inline
 	UINT SendVirtualKey(const auto vk, const bool isKeyboard, const bool sendDown) noexcept
 	{
 		INPUT inp{};
@@ -73,7 +73,7 @@ namespace sds::Utilities
 	 */
 	inline
 	auto UnsetNumlockAsync() noexcept
-		-> std::optional<std::shared_future<std::string>>
+	-> std::optional<std::shared_future<std::string>>
 	{
 		// Endian-ness of machine it's being compiled on.
 		static constexpr bool IsLittlEnd{ std::endian::native == std::endian::little };
@@ -162,10 +162,9 @@ namespace sds::Utilities
 		ScanMapType m_scancode_store{};
 		InputStructMapType m_input_store{};
 	public:
-		/// <summary>Default Constructor</summary>
 		SendKeyInput() = default;
 		//Turn auto disable numlock on or off
-		explicit SendKeyInput(const bool autoDisable) : m_autoDisableNumlock(autoDisable) { }
+		explicit SendKeyInput(const bool autoDisableNumLock) : m_autoDisableNumlock(autoDisableNumLock) { }
 		SendKeyInput(const SendKeyInput& other) = default;
 		SendKeyInput(SendKeyInput&& other) = default;
 		SendKeyInput& operator=(const SendKeyInput& other) = default;

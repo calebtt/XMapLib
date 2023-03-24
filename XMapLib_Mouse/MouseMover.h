@@ -14,8 +14,8 @@ namespace sds
 		using Us_t = std::chrono::microseconds;
 		MouseSettingsPack m_msp;
 		Utilities::SendMouseInput m_keySend{};
-		DelayManagement::DelayManager<Us_t> xTime;
-		DelayManagement::DelayManager<Us_t> yTime;
+		DelayManagement::DelayManager xTime;
+		DelayManagement::DelayManager yTime;
 	public:
 		explicit MouseMover(const MouseSettingsPack msp = {})
 		:
@@ -50,13 +50,13 @@ namespace sds
 				if (isXPast && m_isXM)
 				{
 					xVal = (isXPos ? m_msp.settings.PIXELS_MAGNITUDE : (-m_msp.settings.PIXELS_MAGNITUDE));
-					xTime.Reset(xDelay);
+					xTime.Reset(Us_t{ xDelay });
 				}
 				if (isYPast && m_isYM)
 				{
 					//Y is inverted for conversion to screen coordinate plane, which has 0,0 at the top-left corner.
 					yVal = (isYPos ? -m_msp.settings.PIXELS_MAGNITUDE : (m_msp.settings.PIXELS_MAGNITUDE)); // y is inverted
-					yTime.Reset(yDelay);
+					yTime.Reset(Us_t{ yDelay });
 				}
 				m_keySend.SendMouseMove(xVal, yVal);
 			}

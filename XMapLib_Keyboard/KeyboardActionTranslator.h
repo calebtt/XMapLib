@@ -41,10 +41,6 @@ namespace sds
 		{ std::same_as<typename T::value_type, CBActionMap> };
 	};
 
-	/*
-	 *	Free functions.
-	 */
-
 	/**
 	 * \brief Checks a list of mappings for having multiple exclusivity groupings mapped to a single controller button.
 	 * \param mappingsList List of controller button to action mappings.
@@ -72,8 +68,7 @@ namespace sds
 	}
 
 	// Note, only returns ex. group matches that don't map to the same controller button.
-	inline
-	auto GetMatchingExclusivityGroupMappings(CBActionMap& mapping, MappingRange_c auto& mappingsList)
+	inline auto GetMatchingExclusivityGroupMappings(CBActionMap& mapping, auto& mappingsList)
 	{
 		using MappingsList_t = decltype(mappingsList);
 		using MappingsListIterator_t = typename MappingsList_t::iterator;
@@ -104,66 +99,25 @@ namespace sds
 		});
 		return iterBuffer;
 	}
-
-	// Returns a vec of pointers, not iterators because we don't want to iterate at all.
-	inline
-	auto GetMappingsMatchingVk(const int vk, std::vector<CBActionMap>& mappingsList)
-	{
-		// TODO a function that makes translation results from the ret val
-		using MappingsListPointer_t = CBActionMap*;
-		using std::ranges::for_each;
-
-		// Create vec of pointers and add elements matching the VK
-		std::vector<MappingsListPointer_t> buf;
-		for_each(mappingsList, [vk, &buf](auto& elem) { if (elem.Vk == vk) buf.emplace_back(&elem); });
-		return buf;
-	}
+	inline auto GetMappingsMatchingVk(const int vk, std::vector<CBActionMap>& mappingsList) -> std::vector<CBActionMap*>;
 
 	/**
-	 * \brief If enough time has passed, the key requests to be reset for use again; provided it uses the key-repeat behavior--
-	 * otherwise it requests to be reset immediately.
+	 * \brief Applies a callable "getTranslationFn" to each of the range of indices and returns a vector of the callable's return type.
 	 */
+	template<typename Elem_t, typename TrFn_t>
 	inline
-	auto GetMappingsForUpdate(MappingRange_c auto& mappingsList) -> std::vector<TranslationResult>
+	auto GetTranslationsVec(TrFn_t getTranslationFn, const std::vector<Elem_t>& indices) -> std::vector<std::invoke_result_t<TrFn_t, Elem_t>>
 	{
-		using std::ranges::begin, std::ranges::end;
-		std::vector<TranslationResult> resetBuffer;
-		for (auto elemIt = begin(mappingsList); elemIt != end(mappingsList); ++elemIt)
+		std::vector<std::invoke_result_t<TrFn_t, Elem_t>> updateBuffer;
+		for (const auto ind : indices)
 		{
-			auto& elem = *elemIt;
-			const bool DoUpdate = (elem.LastAction.IsUp() && elem.LastAction.LastSentTime.IsElapsed()) && elem.UsesRepeat;
-			const bool DoImmediate = elem.LastAction.IsUp() && !elem.UsesRepeat;
-			if (DoUpdate || DoImmediate)
-			{
-				resetBuffer.emplace_back(TranslationResult{ false, false, false, true, &elem });
-			}
+			updateBuffer.emplace_back(getTranslationFn(ind));
 		}
-		return resetBuffer;
+		return updateBuffer;
 	}
-
-	inline
-	auto GetMappingsForRepeat(MappingRange_c auto& mappingsList) -> std::vector<TranslationResult>
-	{
-		using std::ranges::begin, std::ranges::end;
-		std::vector<TranslationResult> repeatBuffer;
-		for (auto elemIt = begin(mappingsList); elemIt != end(mappingsList); ++elemIt)
-		{
-			auto& w = *elemIt;
-			const bool doesRepeat = w.UsesRepeat;
-			const bool isDown = w.LastAction.IsDown();
-			const bool isRepeating = w.LastAction.IsRepeating();
-			const bool downOrRepeat = isDown || isRepeating;
-			if (doesRepeat && downOrRepeat)
-			{
-				if (w.LastAction.LastSentTime.IsElapsed())
-				{
-					repeatBuffer.emplace_back(TranslationResult{ false, false, true, false, &w });
-				}
-			}
-		}
-		return repeatBuffer;
-	}
-	//TODO function for cleaning up in-progress events.
+	inline auto GetUpdateIndices(const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>;
+	inline auto GetRepeatIndices(const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>;
+	inline auto GetVkMatchIndices(const int vk, const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>;
 
 	/**
 	 * \brief This translator is responsible for managing the state regarding
@@ -248,26 +202,43 @@ namespace sds
 		auto GetStateUpdateActions(const ControllerStateWrapper& state)
 		-> std::vector<TranslationResult>
 		{
-			using std::ranges::find_if;
+			using std::ranges::find_if, std::erase_if, std::ranges::begin, std::ranges::end, std::ranges::cbegin, std::ranges::cend;
+			using std::ranges::find;
 			std::vector<TranslationResult> results;
-			// Adds maps with timer being reset
-			results.append_range(GetMappingsForUpdate(m_mappings));
+			// Get indices lists
+			auto updateIndices = GetUpdateIndices(m_mappings);
+			auto repeatIndices = GetRepeatIndices(m_mappings);
+			auto matchingIndices = GetVkMatchIndices(state.VirtualKey, m_mappings);
+			// Remove duplicates from matching indices list.
+			erase_if(matchingIndices, [&updateIndices, &repeatIndices](const auto e)
+				{
+					const auto updRes = find(updateIndices, e);
+					const auto repRes = find(repeatIndices, e);
+					const bool isInUpdateList = updRes != cend(updateIndices);
+					const bool isInRepeatList = repRes != cend(repeatIndices);
+					return isInUpdateList || isInRepeatList;
+				});
+			// Adds maps with timer being reset (updated)
+			results.append_range(GetTranslationsVec([this](const auto n) { return GetUpdateTranslationResultAt(n); }, updateIndices));
 			// Adds maps being key-repeat'd
-			results.append_range(GetMappingsForRepeat(m_mappings));
+			results.append_range(GetTranslationsVec([this](const auto n) { return GetRepeatTranslationResultAt(n); }, repeatIndices));
+
 			// Adds maps being overtaken and sent a key-up
-			auto matchingMappings = GetMappingsMatchingVk(state.VirtualKey, m_mappings);
-			for(const auto elem : matchingMappings)
-			{
-				results.append_range(GetExGroupOvertaken(*elem));
-			}
-			for(const auto elem : matchingMappings)
-			{
-				// TODO make all of this simpler, storing which mappings have been sent may be the best idea.
-				// or duplicating the mapping into another array
-				const auto alreadySent = find_if(results, [&](const auto& curResult) { return curResult.ButtonMapping == elem; });
-				// TODO this doesn't distinguish between up/down/etc. either
-				results.emplace_back(TranslationResult{ true, false, false, false, elem });
-			}
+			// TODO use matchingIndices and build a key-down list, then find exclusivity grouping mappings being overtaken.
+
+			//auto matchingMappings = GetMappingsMatchingVk(state.VirtualKey, m_mappings);
+			//for(const auto elem : matchingMappings)
+			//{
+			//	results.append_range(GetExGroupOvertaken(*elem));
+			//}
+			//for(const auto elem : matchingMappings)
+			//{
+			//	// TODO make all of this simpler, storing which mappings have been sent may be the best idea.
+			//	// or duplicating the mapping into another array
+			//	const auto alreadySent = find_if(results, [&](const auto& curResult) { return curResult.ButtonMapping == elem; });
+			//	// TODO this doesn't distinguish between up/down/etc. either
+			//	results.emplace_back(TranslationResult{ true, false, false, false, elem });
+			//}
 
 			return results;
 		}
@@ -288,6 +259,14 @@ namespace sds
 			return results;
 		}
 	private:
+		auto GetUpdateTranslationResultAt(const std::unsigned_integral auto ind) -> TranslationResult
+		{
+			return TranslationResult{ false, false, false, true, &m_mappings[ind] };
+		}
+		auto GetRepeatTranslationResultAt(const std::unsigned_integral auto ind)  -> TranslationResult
+		{
+			return TranslationResult{ false, false, true, false, &m_mappings[ind] };
+		}
 		auto GetExGroupOvertaken(const CBActionMap& currentMapping) -> std::vector<TranslationResult>
 		{
 			// TODO this might add duplicates of the same action, will need tested.
@@ -310,4 +289,94 @@ namespace sds
 			return results;
 		}
 	};
+
+	/**
+	 * \brief Returns mappings for the controller button VK given.
+	 * \param vk Controller button Virtual Keycode.
+	 * \param mappingsList List of controller button to action mappings.
+	 */
+	inline
+	auto GetMappingsMatchingVk(const int vk, std::vector<CBActionMap>& mappingsList) -> std::vector<CBActionMap*>
+	{
+		// TODO a function that makes translation results from the ret val
+		using MappingsListPointer_t = CBActionMap*;
+		using std::ranges::for_each;
+
+		// Create vec of pointers and add elements matching the VK
+		std::vector<MappingsListPointer_t> buf;
+		for_each(mappingsList, [vk, &buf](auto& elem) { if (elem.Vk == vk) buf.emplace_back(&elem); });
+		return buf;
+	}
+
+	/**
+	 * \brief By returning the index, we can avoid issues with iterator/pointer invalidation.
+	 * Uses unsigned int because size_t is just a waste of space here.
+	 * \param vk Controller Button Virtual Keycode
+	 * \param mappingsList List of controller button to action mappings.
+	 * \return Vector of indices at which mappings which map to the controller button VK can be located.
+	 */
+	inline
+	auto GetVkMatchIndices(const int vk, const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>
+	{
+		using std::ranges::for_each;
+
+		std::uint32_t currentLocation{};
+		std::vector<std::uint32_t> buf;
+		for_each(mappingsList, [vk, &buf, &currentLocation](const auto& elem)
+		{
+			if (elem.Vk == vk) 
+				buf.emplace_back(currentLocation);
+			++currentLocation;
+		});
+		return buf;
+	}
+
+	/**
+	 * \brief If enough time has passed, the key requests to be reset for use again; provided it uses the key-repeat behavior--
+	 * otherwise it requests to be reset immediately.
+	 */
+	inline
+	auto GetUpdateIndices(const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>
+	{
+		using std::ranges::begin, std::ranges::end, std::ranges::for_each;
+		std::uint32_t currentLocation{};
+		std::vector<std::uint32_t> resetBuffer;
+		for_each(mappingsList, [&resetBuffer, &currentLocation](const auto& elem)
+			{
+				const bool DoUpdate = (elem.LastAction.IsUp() && elem.LastAction.LastSentTime.IsElapsed()) && elem.UsesRepeat;
+				const bool DoImmediate = elem.LastAction.IsUp() && !elem.UsesRepeat;
+				if (DoUpdate || DoImmediate)
+				{
+					resetBuffer.emplace_back(currentLocation);
+				}
+				++currentLocation;
+			});
+		return resetBuffer;
+	}
+
+	/**
+	 * \brief Returns vec of index to mappings that require a key-repeat (timer has elapsed, key is doing key-repeat).
+	 */
+	inline
+	auto GetRepeatIndices(const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>
+	{
+		using std::ranges::for_each;
+
+		std::uint32_t currentLocation{};
+		std::vector<std::uint32_t> buf;
+		for_each(mappingsList, [&buf, &currentLocation](const auto& elem)
+			{
+				const bool doesRepeat = elem.UsesRepeat;
+				const bool isDown = elem.LastAction.IsDown();
+				const bool isRepeating = elem.LastAction.IsRepeating();
+				const bool downOrRepeat = isDown || isRepeating;
+				const bool isElapsed = elem.LastAction.LastSentTime.IsElapsed();
+				if (doesRepeat && downOrRepeat && isElapsed)
+				{
+					buf.emplace_back(currentLocation);
+				}
+				++currentLocation;
+			});
+		return buf;
+	}
 }
