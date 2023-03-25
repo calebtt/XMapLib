@@ -57,7 +57,7 @@ auto GetTestControllerState()
     {
         sds::ControllerStateWrapper{ VK_PAD_A, true, false, false },
         sds::ControllerStateWrapper{ VK_PAD_A, false, false, true }
-    	//,sds::ControllerStateWrapper{ VK_PAD_A, false, true, false }
+    	,sds::ControllerStateWrapper{ VK_PAD_A, false, true, false }
     };
     currentIndex++;
     if (currentIndex > stateList.size())

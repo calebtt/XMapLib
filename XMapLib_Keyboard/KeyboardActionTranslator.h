@@ -10,6 +10,7 @@
 #include <ostream>
 #include <tuple>
 #include <ranges>
+#include <set>
 #include <type_traits>
 
 namespace sds
@@ -66,72 +67,39 @@ namespace sds
 		}
 		return true;
 	}
-
-	// Note, only returns ex. group matches that don't map to the same controller button.
-	inline auto GetMatchingExclusivityGroupMappings(CBActionMap& mapping, auto& mappingsList)
-	{
-		using MappingsList_t = decltype(mappingsList);
-		using MappingsListIterator_t = typename MappingsList_t::iterator;
-		using GrpVal_t = typename decltype(mapping)::ExclusivityGrouping::value_type;
-		// A requirement as we compare -1 and 0 in event of (somehow) empty optional, fix if necessary.
-		static_assert(std::is_same_v<GrpVal_t, int>());
-		using std::ranges::begin, std::ranges::end, std::ranges::for_each, std::ranges::cbegin, std::ranges::cend;
-
-		// Create vec of pointers and add elements matching the VK
-		std::vector<MappingsListIterator_t> iterBuffer;
-		for_each(mappingsList, [&](MappingsListIterator_t elem)
-		{
-			const auto& [fst, snd] = *elem;
-			const auto& mappingGroup = mapping.ExclusivityGrouping;
-			const auto& currentElemGroup = fst.ExclusivityGrouping;
-			if (mappingGroup && currentElemGroup)
-			{
-				// If both have same ex. grouping
-				if(mappingGroup.value_or(-1) == currentElemGroup.value_or(0))
-				{
-					// And if they aren't the same controller button (supports multiple maps per cb)
-					if(mapping.Vk != fst.Vk)
-					{
-						iterBuffer.emplace_back(elem);
-					}
-				}
-			}
-		});
-		return iterBuffer;
-	}
 	inline auto GetMappingsMatchingVk(const int vk, std::vector<CBActionMap>& mappingsList) -> std::vector<CBActionMap*>;
 
-	/**
-	 * \brief Applies a callable "getTranslationFn" to each of the range of indices and returns a vector of the callable's return type.
-	 */
-	template<typename Elem_t, typename TrFn_t>
-	inline
-	auto GetTranslationsVec(TrFn_t getTranslationFn, const std::vector<Elem_t>& indices) -> std::vector<std::invoke_result_t<TrFn_t, Elem_t>>
-	{
-		std::vector<std::invoke_result_t<TrFn_t, Elem_t>> updateBuffer;
-		for (const auto ind : indices)
-		{
-			updateBuffer.emplace_back(getTranslationFn(ind));
-		}
-		return updateBuffer;
-	}
 	inline auto GetUpdateIndices(const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>;
 	inline auto GetRepeatIndices(const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>;
 	inline auto GetVkMatchIndices(const int vk, const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>;
+	inline auto GetUniqueMatches(const std::vector<std::uint32_t> existing, const std::vector<std::uint32_t> toAdd) -> std::vector<std::uint32_t>;
 
 	/**
-	 * \brief This translator is responsible for managing the state regarding
+	 * \brief This translator is responsible for providing info regarding the state of
 	 * 1. exclusivity groupings,
 	 * 2. the last action of the mapping,
 	 * 3. the decision to do a repeat if the mapping has enabled repeat behavior,
 	 * 4. the key-repeat and key-update timer loops
+	 * 5. *Note that this translator doesn't make the updates to the mapping, only notifies when they should occur.
 	 *
 	 * To perform these tasks, it needs an internal working copy of every mapping in use,
 	 * it encapsulates the mapping array.
 	 * \remarks Construct a new instance to encapsulate a new or altered set of mappings.
+	 * Key mappings only traverse states in these paths, note they begin at "initial":
+	 * 1. initial -> down -> repeat -> up
+	 * 2. initial -> down -> up
 	 */
 	class KeyboardActionTranslator
 	{
+		//// Hard coded maximum extent of 128 mappings, this will enable us to use
+		//// a plain old array with iterators and pointers that don't get invalidated.
+		//inline static constexpr std::size_t MapBufSize{ 128 };
+		//// (or a fancy std::array container)
+		//std::array<CBActionMap, MapBufSize> m_mapBuf;
+		////TODO use compile time sized arrays as buffers and constexpr "fill" functions that fill the bufs
+		///// and return the count filled into the arrays. Doing that may enable a lot of code to be eliminated
+		///// if used with pre-programmed mappings.
+		//TODO for now the code typically uses the convention of returning a range, changing it will require some extensive work.
 	private:
 		std::vector<CBActionMap> m_mappings;
 		std::map<int, std::vector<CBActionMap*>> m_exGroupMap;
@@ -199,29 +167,55 @@ namespace sds
 		 * 5. Mappings being sent a key-up
 		 * 6. todo
 		 */
-		auto GetStateUpdateActions(const ControllerStateWrapper& state)
+		auto GetStateUpdateActions(const ControllerStateWrapper& buttonInfo)
 		-> std::vector<TranslationResult>
 		{
 			using std::ranges::find_if, std::erase_if, std::ranges::begin, std::ranges::end, std::ranges::cbegin, std::ranges::cend;
 			using std::ranges::find;
 			std::vector<TranslationResult> results;
 			// Get indices lists
-			auto updateIndices = GetUpdateIndices(m_mappings);
-			auto repeatIndices = GetRepeatIndices(m_mappings);
-			auto matchingIndices = GetVkMatchIndices(state.VirtualKey, m_mappings);
-			// Remove duplicates from matching indices list.
-			erase_if(matchingIndices, [&updateIndices, &repeatIndices](const auto e)
-				{
-					const auto updRes = find(updateIndices, e);
-					const auto repRes = find(repeatIndices, e);
-					const bool isInUpdateList = updRes != cend(updateIndices);
-					const bool isInRepeatList = repRes != cend(repeatIndices);
-					return isInUpdateList || isInRepeatList;
-				});
+			const auto updateIndices = GetUpdateIndices(m_mappings);
+			const auto repeatIndices = GetRepeatIndices(m_mappings);
+			const auto matchingIndices = GetVkMatchIndices(buttonInfo.VirtualKey, m_mappings);
+			//auto jv = std::views::join(std::array{ std::span(repeatIndices), std::span(repeatIndices) });
+			const auto uniqueMatches = GetUniqueMatches(repeatIndices, matchingIndices);
+
 			// Adds maps with timer being reset (updated)
-			results.append_range(GetTranslationsVec([this](const auto n) { return GetUpdateTranslationResultAt(n); }, updateIndices));
+			std::transform(cbegin(updateIndices), cend(updateIndices), std::back_inserter(results), [&](const auto n)
+				{
+					return GetUpdateTranslationResultAt(n);
+				});
 			// Adds maps being key-repeat'd
-			results.append_range(GetTranslationsVec([this](const auto n) { return GetRepeatTranslationResultAt(n); }, repeatIndices));
+			std::transform(cbegin(repeatIndices), cend(repeatIndices), std::back_inserter(results), [&](const auto n)
+				{
+					return GetRepeatTranslationResultAt(n);
+				});
+			for(const auto matchInd : uniqueMatches)
+			{
+				auto& currentMapping = m_mappings[matchInd];
+				const bool isMapInit = currentMapping.LastAction.IsInitialState();
+				const bool isMapUp = currentMapping.LastAction.IsUp();
+				const bool isMapDown = currentMapping.LastAction.IsDown();
+				const bool isMapRepeat = currentMapping.LastAction.IsRepeating();
+				const bool isButtonDown = buttonInfo.KeyDown;
+				const bool isButtonUp = buttonInfo.KeyUp;
+				const bool isButtonRepeat = buttonInfo.KeyRepeat;
+				// Initial key-down case
+				if(isButtonDown && isMapInit)
+				{
+					results.emplace_back(TranslationResult{ true, false, false, false, &currentMapping });
+				}
+				// Key-up case
+				if(isButtonUp && isMapDown || isMapRepeat)
+				{
+					results.emplace_back(TranslationResult{ false, true, false, false, &currentMapping });
+				}
+				// special repeat case
+				if(isButtonRepeat && isMapRepeat)
+				{
+					results.emplace_back(TranslationResult{ false, false, true, false, &currentMapping });
+				}
+			}
 
 			// Adds maps being overtaken and sent a key-up
 			// TODO use matchingIndices and build a key-down list, then find exclusivity grouping mappings being overtaken.
@@ -261,11 +255,11 @@ namespace sds
 	private:
 		auto GetUpdateTranslationResultAt(const std::unsigned_integral auto ind) -> TranslationResult
 		{
-			return TranslationResult{ false, false, false, true, &m_mappings[ind] };
+			return TranslationResult{ false, false, false, true, &m_mappings.at(ind) };
 		}
 		auto GetRepeatTranslationResultAt(const std::unsigned_integral auto ind)  -> TranslationResult
 		{
-			return TranslationResult{ false, false, true, false, &m_mappings[ind] };
+			return TranslationResult{ false, false, true, false, &m_mappings.at(ind) };
 		}
 		auto GetExGroupOvertaken(const CBActionMap& currentMapping) -> std::vector<TranslationResult>
 		{
@@ -338,7 +332,7 @@ namespace sds
 	inline
 	auto GetUpdateIndices(const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>
 	{
-		using std::ranges::begin, std::ranges::end, std::ranges::for_each;
+		using std::ranges::for_each;
 		std::uint32_t currentLocation{};
 		std::vector<std::uint32_t> resetBuffer;
 		for_each(mappingsList, [&resetBuffer, &currentLocation](const auto& elem)
@@ -378,5 +372,19 @@ namespace sds
 				++currentLocation;
 			});
 		return buf;
+	}
+
+	inline
+	auto GetUniqueMatches(const std::vector<std::uint32_t> existing, const std::vector<std::uint32_t> toAdd) -> std::vector<std::uint32_t>
+	{
+		using std::ranges::find, std::ranges::end, std::ranges::begin, std::ranges::transform;
+		std::vector<std::uint32_t> uniqueMatchResult;
+		// Don't add existing indices to a set or anything, cpu arch will speed up iterating an array 1-100x iterating a r-b tree.
+		//const std::set tempSet(std::ranges::begin(existingIndices), std::ranges::end(existingIndices));
+		transform(toAdd, std::back_inserter(uniqueMatchResult), [&](const auto e)
+			{
+				return find(existing, e) != end(existing);
+			});
+		return uniqueMatchResult;
 	}
 }
