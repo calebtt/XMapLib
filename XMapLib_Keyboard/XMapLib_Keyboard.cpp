@@ -39,9 +39,10 @@ auto GetMappings()
         .Vk = VK_PAD_A,
         .UsesRepeat = true,
         .ExclusivityGrouping = {},
-        .OnDown = []() {std::cout << "Down "; },
-        .OnUp = []() { std::cout << "Up "; },
-        .OnRepeat = []() { std::cout << "Repeat "; },
+        .OnDown = []() { std::cout << "Action:[Down]\n"; },
+        .OnUp = []() { std::cout << "Action:[Up]\n"; },
+        .OnRepeat = []() { std::cout << "Action:[Repeat]\n"; },
+        .OnReset = []() { std::cout << "Action:[Reset]\n"; },
         .CustomRepeatDelay = {},
         .LastAction = {}
     };
@@ -65,27 +66,81 @@ auto GetTestControllerState()
     return stateList[currentIndex - 1];
 }
 
-int main()
+inline
+auto RunTestWithDriverStates()
 {
     using namespace sds;
-    using namespace sds::Utilities;
+    using namespace std::chrono_literals;
     using std::ranges::for_each, std::cout;
     constexpr std::size_t TestCount{ 3 };
 
-    auto threadUnit = std::make_shared<imp::ThreadUnitPlusPlus>();
-    KeyboardPoller keyPoller{ 0 };
-    KeyboardActionTranslator tra{ GetMappings() };
-    // The call to the translator closure type, passed the poller's output.
-    const auto updates = tra(keyPoller());
-    for (std::size_t i{}; i < TestCount; ++i)
+    auto PerformIf = [&](CBActionMap& mp, const bool down, const bool up, const bool repeat, const bool initial)
     {
-        // It seems as though if all you are doing is feeding the output of one object to another object, they don't need
-        // to be dependent on one another at all. This design also makes testing the functionality quite simple, just change
-        // the source of input to the translator component to a source for test data.
-        const auto testUpdate = tra(GetTestControllerState());
-        for_each(testUpdate, [&](const sds::TranslationResult& e) { cout << e << '\n'; });
-    }
-    cout << "Cleanup actions: ";
+        auto DoIf = [&](const bool theCond, auto& theFnOpt, std::function<void()> updateFn){
+            if(theCond)
+                updateFn();
+            if(theCond && theFnOpt){
+                (*theFnOpt)();
+            }
+        };
+        DoIf(down, mp.OnDown, [&]() { mp.LastAction.SetDown(); });
+        DoIf(up, mp.OnUp, [&]() { mp.LastAction.SetUp(); });
+        DoIf(repeat, mp.OnRepeat, [&]() { mp.LastAction.SetRepeat(); });
+        DoIf(initial, mp.OnReset, [&]() { mp.LastAction.SetInitial(); });
+    };
+
+	KeyboardActionTranslator tra{ GetMappings() };
+    
+    // It seems as though if all you are doing is feeding the output of one object to another object, they don't need
+    // to be dependent on one another at all. This design also makes testing the functionality quite simple, just change
+    // the source of input to the translator component to a source for test data.
+    // For the test, we will just manually modify the state for now (no mapper obj).
+    auto t1 = tra(GetTestControllerState());
+    auto& t1m = t1.at(0);
+    PerformIf(*t1m.ButtonMapping, t1m.DoDown, t1m.DoUp, t1m.DoRepeat, t1m.DoReset);
+    auto t2 = tra(GetTestControllerState());
+    auto& t2m = t2.at(0);
+    PerformIf(*t2m.ButtonMapping, t2m.DoDown, t2m.DoUp, t2m.DoRepeat, t2m.DoReset);
+    auto t3 = tra(GetTestControllerState());
+    auto& t3m = t3.at(0);
+    PerformIf(*t3m.ButtonMapping, t3m.DoDown, t3m.DoUp, t3m.DoRepeat, t3m.DoReset);
+    // Sleep delay in case of repeat delay
+    std::this_thread::sleep_for(500ms);
+    auto t4 = tra(GetTestControllerState());
+    auto& t4m = t4.at(0);
+    PerformIf(*t4m.ButtonMapping, t4m.DoDown, t4m.DoUp, t4m.DoRepeat, t4m.DoReset);
+
+    cout << "Dumping intermediate translation result buffers...\n";
+    const auto jv = std::views::join(std::array{ std::span(t1), std::span(t2), std::span(t3), std::span(t4) });
+    for_each(jv, [&](const sds::TranslationResult& e) { cout << e << '\n'; });
+    
+    cout << "Dumping cleanup actions buffer: ";
     const auto cleanupActions = tra.GetCleanupActions();
     for_each(cleanupActions, [&](const sds::TranslationResult& e) { cout << e << '\n'; });
+}
+
+int main()
+{
+    RunTestWithDriverStates();
+    //using namespace sds;
+    //using namespace sds::Utilities;
+    //using std::ranges::for_each, std::cout;
+    //constexpr std::size_t TestCount{ 3 };
+
+    //auto threadUnit = std::make_shared<imp::ThreadUnitPlusPlus>();
+    //KeyboardPoller keyPoller{ 0 };
+    //KeyboardActionTranslator tra{ GetMappings() };
+    //// The call to the translator closure type, passed the poller's output.
+    //const auto updates = tra(keyPoller());
+    //for (std::size_t i{}; i < TestCount; ++i)
+    //{
+    //    // It seems as though if all you are doing is feeding the output of one object to another object, they don't need
+    //    // to be dependent on one another at all. This design also makes testing the functionality quite simple, just change
+    //    // the source of input to the translator component to a source for test data.
+    //    const auto testUpdate = tra(GetTestControllerState());
+    //    for_each(testUpdate, [&](const sds::TranslationResult& e) { cout << e << '\n'; });
+    //}
+    //cout << "Cleanup actions: ";
+    //const auto cleanupActions = tra.GetCleanupActions();
+    //for_each(cleanupActions, [&](const sds::TranslationResult& e) { cout << e << '\n'; });
 }

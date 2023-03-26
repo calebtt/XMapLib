@@ -27,9 +27,9 @@ namespace sds
 		{
 			return os
 				<< "DoDown: " << obj.DoDown
-				<< " DoUp: " << obj.DoUp
 				<< " DoRepeat: " << obj.DoRepeat
 				<< " DoReset: " << obj.DoReset
+				<< " DoUp: " << obj.DoUp
 				<< " ButtonMapping: " << obj.ButtonMapping;
 		}
 	};
@@ -179,7 +179,6 @@ namespace sds
 			const auto matchingIndices = GetVkMatchIndices(buttonInfo.VirtualKey, m_mappings);
 			//auto jv = std::views::join(std::array{ std::span(repeatIndices), std::span(repeatIndices) });
 			const auto uniqueMatches = GetUniqueMatches(repeatIndices, matchingIndices);
-
 			// Adds maps with timer being reset (updated)
 			std::transform(cbegin(updateIndices), cend(updateIndices), std::back_inserter(results), [&](const auto n)
 				{
@@ -205,6 +204,10 @@ namespace sds
 				{
 					results.emplace_back(TranslationResult{ true, false, false, false, &currentMapping });
 				}
+				if((isButtonDown || isButtonRepeat) && isMapDown)
+				{
+					results.emplace_back(TranslationResult{ false, false, true, false, &currentMapping });
+				}
 				// Key-up case
 				if(isButtonUp && isMapDown || isMapRepeat)
 				{
@@ -216,24 +219,6 @@ namespace sds
 					results.emplace_back(TranslationResult{ false, false, true, false, &currentMapping });
 				}
 			}
-
-			// Adds maps being overtaken and sent a key-up
-			// TODO use matchingIndices and build a key-down list, then find exclusivity grouping mappings being overtaken.
-
-			//auto matchingMappings = GetMappingsMatchingVk(state.VirtualKey, m_mappings);
-			//for(const auto elem : matchingMappings)
-			//{
-			//	results.append_range(GetExGroupOvertaken(*elem));
-			//}
-			//for(const auto elem : matchingMappings)
-			//{
-			//	// TODO make all of this simpler, storing which mappings have been sent may be the best idea.
-			//	// or duplicating the mapping into another array
-			//	const auto alreadySent = find_if(results, [&](const auto& curResult) { return curResult.ButtonMapping == elem; });
-			//	// TODO this doesn't distinguish between up/down/etc. either
-			//	results.emplace_back(TranslationResult{ true, false, false, false, elem });
-			//}
-
 			return results;
 		}
 

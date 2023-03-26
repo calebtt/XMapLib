@@ -54,6 +54,7 @@ namespace sds
 		OptFn_t OnDown;
 		OptFn_t OnUp;
 		OptFn_t OnRepeat;
+		OptFn_t OnReset;
 		OptDelay_t CustomRepeatDelay; // optional custom delay between key-repeats
 		MappingStateManager LastAction; // Last action performed, with get/set methods.
 		// TODO this might need a variant holding a callable that will perform the post-action state update.
