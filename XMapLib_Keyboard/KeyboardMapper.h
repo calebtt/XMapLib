@@ -14,6 +14,29 @@ namespace sds
 		{ t.GetUpdatedState(0) } -> std::convertible_to<ControllerStateWrapper>;
 	};
 
+	/**
+	 * \brief Function used to "perform" the action suggested by the TranslationResult and then update the
+	 * pointer-to mapping object's "LastState" member.
+	 * \remarks Calls the OnEvent function matching the TranslationResult state bool(s), if present, and then updates the
+	 * state machine.
+	 * \param tr The object upon which to perform the action.
+	 */
+	inline
+	auto CallAndUpdateTranslationResult(TranslationResult& tr)
+	{
+		auto DoIf = [&](const bool theCond, auto& theFnOpt, std::function<void()> updateFn) {
+			if (theCond)
+				updateFn();
+			if (theCond && theFnOpt) {
+				(*theFnOpt)();
+			}
+		};
+		DoIf(tr.DoDown, tr.ButtonMapping->OnDown, [&]() { tr.ButtonMapping->LastAction.SetDown(); });
+		DoIf(tr.DoRepeat, tr.ButtonMapping->OnRepeat, [&]() { tr.ButtonMapping->LastAction.SetRepeat(); });
+		DoIf(tr.DoUp, tr.ButtonMapping->OnUp, [&]() { tr.ButtonMapping->LastAction.SetUp(); });
+		DoIf(tr.DoReset, tr.ButtonMapping->OnReset, [&]() { tr.ButtonMapping->LastAction.SetInitial(); });
+	}
+
 	// TODO this either won't be used or will just be a facade holding the top-level objects actually in-use.
 	/**
 	 * \brief Top-level object, callable object, returns a vector of TranslationResult.
@@ -23,52 +46,52 @@ namespace sds
 	 * \tparam InputPoller_t Type used for polling for controller updates. Class for polling on other platforms can be substituted here.
 	 * \tparam Translator_t Type for the state change interpretation logic, might be upgraded someday and is thus a template param.
 	 */
-	template<IsInputPoller InputPoller_t = KeyboardPoller, typename Translator_t = KeyboardActionTranslator>
-	class KeyboardMapper
-	{
-	private:
-		SharedPtrType<InputPoller_t> m_poller;
-		//SharedPtrType<Translator_t> m_translator;
-	public:
-		/**
-		 * \brief Public data member, encapsulates the maps.
-		 */
-		Translator_t Translator;
-	public:
-		/**
-		 * \brief Requires a translator object which encapsulates some mappings.
-		 * \param translator std::move'd in, The object that produces updates wrt the mappings.
-		 */
-		KeyboardMapper( KeyboardActionTranslator&& translator) : Translator(std::move(translator)) { }
-		// Other constructors/destructors
-		KeyboardMapper(const KeyboardMapper& other) = default;
-		KeyboardMapper(KeyboardMapper&& other) = default;
-		KeyboardMapper& operator=(const KeyboardMapper& other) = default;
-		KeyboardMapper& operator=(KeyboardMapper&& other) = default;
-		~KeyboardMapper() = default;
-	public:
-		/**
-		 * \brief Runs synchronously.
-		 * \return Returns vector of translation results.
-		 */
-		auto GetUpdate(auto& poller)
-		{
-			return Translator.ProcessState(poller());
-		}
+	//template<IsInputPoller InputPoller_t = KeyboardPoller, typename Translator_t = KeyboardActionTranslator>
+	//class KeyboardMapper
+	//{
+	//private:
+	//	SharedPtrType<InputPoller_t> m_poller;
+	//	//SharedPtrType<Translator_t> m_translator;
+	//public:
+	//	/**
+	//	 * \brief Public data member, encapsulates the maps.
+	//	 */
+	//	Translator_t Translator;
+	//public:
+	//	/**
+	//	 * \brief Requires a translator object which encapsulates some mappings.
+	//	 * \param translator std::move'd in, The object that produces updates wrt the mappings.
+	//	 */
+	//	KeyboardMapper( KeyboardActionTranslator&& translator) : Translator(std::move(translator)) { }
+	//	// Other constructors/destructors
+	//	KeyboardMapper(const KeyboardMapper& other) = default;
+	//	KeyboardMapper(KeyboardMapper&& other) = default;
+	//	KeyboardMapper& operator=(const KeyboardMapper& other) = default;
+	//	KeyboardMapper& operator=(KeyboardMapper&& other) = default;
+	//	~KeyboardMapper() = default;
+	//public:
+	//	/**
+	//	 * \brief Runs synchronously.
+	//	 * \return Returns vector of translation results.
+	//	 */
+	//	auto GetUpdate(auto& poller)
+	//	{
+	//		return Translator.ProcessState(poller());
+	//	}
 
-		/**
-		 * \brief Runs synchronously.
-		 * \return Returns accumulated vector of translation results from an array of many polled states.
-		 */
-		auto GetChunkUpdates()
-		{
-			std::vector<TranslationResult> actions;
-			const auto stateList = m_poller->GetUpdatedStateQueue();
-			for(const auto& elem: stateList)
-			{
-				actions.append_range(Translator.ProcessState(elem));
-			}
-			return actions;
-		}
-	};
+	//	/**
+	//	 * \brief Runs synchronously.
+	//	 * \return Returns accumulated vector of translation results from an array of many polled states.
+	//	 */
+	//	auto GetChunkUpdates()
+	//	{
+	//		std::vector<TranslationResult> actions;
+	//		const auto stateList = m_poller->GetUpdatedStateQueue();
+	//		for(const auto& elem: stateList)
+	//		{
+	//			actions.append_range(Translator.ProcessState(elem));
+	//		}
+	//		return actions;
+	//	}
+	//};
 }

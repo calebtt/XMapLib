@@ -97,18 +97,18 @@ auto RunTestWithDriverStates()
     // For the test, we will just manually modify the state for now (no mapper obj).
     auto t1 = tra(GetTestControllerState());
     auto& t1m = t1.at(0);
-    PerformIf(*t1m.ButtonMapping, t1m.DoDown, t1m.DoUp, t1m.DoRepeat, t1m.DoReset);
+    CallAndUpdateTranslationResult(t1m);
     auto t2 = tra(GetTestControllerState());
     auto& t2m = t2.at(0);
-    PerformIf(*t2m.ButtonMapping, t2m.DoDown, t2m.DoUp, t2m.DoRepeat, t2m.DoReset);
+    CallAndUpdateTranslationResult(t2m);
     auto t3 = tra(GetTestControllerState());
     auto& t3m = t3.at(0);
-    PerformIf(*t3m.ButtonMapping, t3m.DoDown, t3m.DoUp, t3m.DoRepeat, t3m.DoReset);
+    CallAndUpdateTranslationResult(t3m);
     // Sleep delay in case of repeat delay
     std::this_thread::sleep_for(500ms);
     auto t4 = tra(GetTestControllerState());
     auto& t4m = t4.at(0);
-    PerformIf(*t4m.ButtonMapping, t4m.DoDown, t4m.DoUp, t4m.DoRepeat, t4m.DoReset);
+    CallAndUpdateTranslationResult(t4m);
 
     cout << "Dumping intermediate translation result buffers...\n";
     const auto jv = std::views::join(std::array{ std::span(t1), std::span(t2), std::span(t3), std::span(t4) });
