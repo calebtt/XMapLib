@@ -37,7 +37,7 @@ auto GetMappings()
     std::vector<sds::CBActionMap> mappings;
     CBActionMap tm{
         .Vk = VK_PAD_A,
-        .UsesRepeat = true,
+        .UsesRepeat = false,
         .ExclusivityGrouping = {},
         .OnDown = []() { std::cout << "Action:[Down]\n"; },
         .OnUp = []() { std::cout << "Action:[Up]\n"; },
@@ -67,6 +67,13 @@ auto GetTestControllerState()
 }
 
 inline
+auto TestCaller(sds::TranslationResult& tr)
+{
+    CallAndUpdateTranslationResult(tr);
+    return std::array{tr};
+}
+
+inline
 auto RunTestWithDriverStates()
 {
     using namespace sds;
@@ -79,25 +86,15 @@ auto RunTestWithDriverStates()
     // to be dependent on one another at all. This design also makes testing the functionality quite simple, just change
     // the source of input to the translator component to a source for test data.
     // For the test, we will just manually modify the state for now (no mapper obj).
-    auto t1 = tra(GetTestControllerState());
-    auto& t1m = t1.at(0);
-    CallAndUpdateTranslationResult(t1m);
-    auto t2 = tra(GetTestControllerState());
-    auto& t2m = t2.at(0);
-    CallAndUpdateTranslationResult(t2m);
-    auto t3 = tra(GetTestControllerState());
-    auto& t3m = t3.at(0);
-    CallAndUpdateTranslationResult(t3m);
-    // Sleep delay in case of repeat delay
-    std::this_thread::sleep_for(500ms);
-    auto t4 = tra(GetTestControllerState());
-    auto& t4m = t4.at(0);
-    CallAndUpdateTranslationResult(t4m);
-
+    auto jvt = std::views::join(
+        std::array{
+        	TestCaller(tra(GetTestControllerState()).at(0)),
+            TestCaller(tra(GetTestControllerState()).at(0)),
+            TestCaller(tra(GetTestControllerState()).at(0)),
+            TestCaller(tra(GetTestControllerState()).at(0))
+        });
     cout << "Dumping intermediate translation result buffers...\n";
-    const auto jv = std::views::join(std::array{ std::span(t1), std::span(t2), std::span(t3), std::span(t4) });
-    for_each(jv, [&](const sds::TranslationResult& e) { cout << e << '\n'; });
-    
+    for_each(jvt, [&](const sds::TranslationResult& e) { cout << e << '\n'; });
     cout << "Dumping cleanup actions buffer: ";
     const auto cleanupActions = tra.GetCleanupActions();
     for_each(cleanupActions, [&](const sds::TranslationResult& e) { cout << e << '\n'; });
@@ -106,25 +103,4 @@ auto RunTestWithDriverStates()
 int main()
 {
     RunTestWithDriverStates();
-    //using namespace sds;
-    //using namespace sds::Utilities;
-    //using std::ranges::for_each, std::cout;
-    //constexpr std::size_t TestCount{ 3 };
-
-    //auto threadUnit = std::make_shared<imp::ThreadUnitPlusPlus>();
-    //KeyboardPoller keyPoller{ 0 };
-    //KeyboardActionTranslator tra{ GetMappings() };
-    //// The call to the translator closure type, passed the poller's output.
-    //const auto updates = tra(keyPoller());
-    //for (std::size_t i{}; i < TestCount; ++i)
-    //{
-    //    // It seems as though if all you are doing is feeding the output of one object to another object, they don't need
-    //    // to be dependent on one another at all. This design also makes testing the functionality quite simple, just change
-    //    // the source of input to the translator component to a source for test data.
-    //    const auto testUpdate = tra(GetTestControllerState());
-    //    for_each(testUpdate, [&](const sds::TranslationResult& e) { cout << e << '\n'; });
-    //}
-    //cout << "Cleanup actions: ";
-    //const auto cleanupActions = tra.GetCleanupActions();
-    //for_each(cleanupActions, [&](const sds::TranslationResult& e) { cout << e << '\n'; });
 }
