@@ -74,23 +74,7 @@ auto RunTestWithDriverStates()
     using std::ranges::for_each, std::cout;
     constexpr std::size_t TestCount{ 3 };
 
-    auto PerformIf = [&](CBActionMap& mp, const bool down, const bool up, const bool repeat, const bool initial)
-    {
-        auto DoIf = [&](const bool theCond, auto& theFnOpt, std::function<void()> updateFn){
-            if(theCond)
-                updateFn();
-            if(theCond && theFnOpt){
-                (*theFnOpt)();
-            }
-        };
-        DoIf(down, mp.OnDown, [&]() { mp.LastAction.SetDown(); });
-        DoIf(up, mp.OnUp, [&]() { mp.LastAction.SetUp(); });
-        DoIf(repeat, mp.OnRepeat, [&]() { mp.LastAction.SetRepeat(); });
-        DoIf(initial, mp.OnReset, [&]() { mp.LastAction.SetInitial(); });
-    };
-
 	KeyboardActionTranslator tra{ GetMappings() };
-    
     // It seems as though if all you are doing is feeding the output of one object to another object, they don't need
     // to be dependent on one another at all. This design also makes testing the functionality quite simple, just change
     // the source of input to the translator component to a source for test data.
