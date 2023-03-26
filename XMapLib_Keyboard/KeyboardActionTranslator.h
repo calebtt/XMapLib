@@ -28,8 +28,8 @@ namespace sds
 			return os
 				<< "DoDown: " << obj.DoDown
 				<< " DoRepeat: " << obj.DoRepeat
-				<< " DoReset: " << obj.DoReset
 				<< " DoUp: " << obj.DoUp
+				<< " DoReset: " << obj.DoReset
 				<< " ButtonMapping: " << obj.ButtonMapping;
 		}
 	};
@@ -193,7 +193,6 @@ namespace sds
 			{
 				auto& currentMapping = m_mappings[matchInd];
 				const bool isMapInit = currentMapping.LastAction.IsInitialState();
-				const bool isMapUp = currentMapping.LastAction.IsUp();
 				const bool isMapDown = currentMapping.LastAction.IsDown();
 				const bool isMapRepeat = currentMapping.LastAction.IsRepeating();
 				const bool isButtonDown = buttonInfo.KeyDown;
