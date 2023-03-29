@@ -155,6 +155,8 @@
     <ClInclude Include="KeyStateMachine.h" />
     <ClInclude Include="KeyStateMachineInformational.h" />
     <ClInclude Include="LibIncludes.h" />
+    <ClInclude Include="TestMappingProvider.h" />
+    <ClInclude Include="TestPollProvider.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

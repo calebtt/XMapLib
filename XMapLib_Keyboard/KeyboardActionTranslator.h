@@ -157,7 +157,6 @@ namespace sds
 		{
 			return GetStateUpdateActions(state);
 		}
-
 		/**
 		 * \brief The returned translationresult updates are in-order,
 		 * 1. Mappings being reset
@@ -171,56 +170,39 @@ namespace sds
 		-> std::vector<TranslationResult>
 		{
 			using std::ranges::find_if, std::erase_if, std::ranges::begin, std::ranges::end, std::ranges::cbegin, std::ranges::cend;
-			using std::ranges::find;
+			using std::ranges::find, std::ranges::transform;
 			std::vector<TranslationResult> results;
 			// Get indices lists
 			const auto updateIndices = GetUpdateIndices(m_mappings);
 			const auto repeatIndices = GetRepeatIndices(m_mappings);
 			const auto matchingIndices = GetVkMatchIndices(buttonInfo.VirtualKey, m_mappings);
+			//TODO see if overtaking needs done here
 			//auto jv = std::views::join(std::array{ std::span(repeatIndices), std::span(repeatIndices) });
 			const auto uniqueMatches = GetUniqueMatches(repeatIndices, matchingIndices);
+			// Get exclusivity group overtaken
+			for(const auto cur : uniqueMatches)
+			{
+				results.append_range(GetOvertakenTranslationResultsFor(cur));
+			}
+
 			// Adds maps with timer being reset (updated)
-			std::transform(cbegin(updateIndices), cend(updateIndices), std::back_inserter(results), [&](const auto n)
-				{
-					return GetUpdateTranslationResultAt(n);
-				});
+			transform(updateIndices, std::back_inserter(results), [&](const auto n)
+			{
+				return GetUpdateTranslationResultAt(n);
+			});
 			// Adds maps being key-repeat'd
-			std::transform(cbegin(repeatIndices), cend(repeatIndices), std::back_inserter(results), [&](const auto n)
-				{
-					return GetRepeatTranslationResultAt(n);
-				});
+			transform(repeatIndices, std::back_inserter(results), [&](const auto n)
+			{
+				return GetRepeatTranslationResultAt(n);
+			});
+			// Add direct translations for each unique
 			for(const auto matchInd : uniqueMatches)
 			{
-				auto& currentMapping = m_mappings[matchInd];
-				const bool isMapInit = currentMapping.LastAction.IsInitialState();
-				const bool isMapDown = currentMapping.LastAction.IsDown();
-				const bool isMapRepeat = currentMapping.LastAction.IsRepeating();
-				const bool isButtonDown = buttonInfo.KeyDown;
-				const bool isButtonUp = buttonInfo.KeyUp;
-				const bool isButtonRepeat = buttonInfo.KeyRepeat;
-				// Initial key-down case
-				if(isButtonDown && isMapInit)
-				{
-					results.emplace_back(TranslationResult{ true, false, false, false, &currentMapping });
-				}
-				if((isButtonDown || isButtonRepeat) && isMapDown)
-				{
-					results.emplace_back(TranslationResult{ false, false, true, false, &currentMapping });
-				}
-				// Key-up case
-				if(isButtonUp && isMapDown || isMapRepeat)
-				{
-					results.emplace_back(TranslationResult{ false, true, false, false, &currentMapping });
-				}
-				// special repeat case
-				if(isButtonRepeat && isMapRepeat)
-				{
-					results.emplace_back(TranslationResult{ false, false, true, false, &currentMapping });
-				}
+				GetDirectTranslations(buttonInfo, results, matchInd);
 			}
+
 			return results;
 		}
-
 		/**
 		 * \brief Intended to provide an array of key-up actions necessary to return the mappings back to an initial state.
 		 */
@@ -245,6 +227,28 @@ namespace sds
 		{
 			return TranslationResult{ false, false, true, false, &m_mappings.at(ind) };
 		}
+		auto GetOvertakenTranslationResultsFor(const std::uint32_t currentIndex) -> std::vector<TranslationResult>
+		{
+			// TODO this might add duplicates of the same action, will need tested.
+			using std::ranges::find_if;
+			std::vector<TranslationResult> results;
+			// Iterate through each matching mapping and find ones with an exclusivity grouping, and then add the rest of the grouping to the results with key-up
+			const auto& currentMap = m_mappings[currentIndex];
+			if (currentMap.ExclusivityGrouping)
+			{
+				auto& exGroupVecForCurrent = m_exGroupMap[*currentMap.ExclusivityGrouping];
+				for (CBActionMap* p : exGroupVecForCurrent)
+				{
+					if (p != &currentMap)
+					{
+						if (p->LastAction.IsDown() || p->LastAction.IsRepeating())
+							results.emplace_back(TranslationResult{ .DoDown = false, .DoUp = true, .DoRepeat = false, .DoReset = false, .ButtonMapping = p });
+					}
+				}
+			}
+
+			return results;
+		}
 		auto GetExGroupOvertaken(const CBActionMap& currentMapping) -> std::vector<TranslationResult>
 		{
 			// TODO this might add duplicates of the same action, will need tested.
@@ -259,12 +263,44 @@ namespace sds
 					if (p != &currentMapping)
 					{
 						if (p->LastAction.IsDown() || p->LastAction.IsRepeating())
-							results.emplace_back(TranslationResult{ false, true, false, false, p });
+							results.emplace_back(TranslationResult{ .DoDown = false, .DoUp = true, .DoRepeat = false, .DoReset = false, .ButtonMapping = p });
 					}
 				}
 			}
 
 			return results;
+		}
+		void GetDirectTranslations(
+			const ControllerStateWrapper& buttonInfo, 
+			std::vector<TranslationResult>& results, 
+			const std::uint32_t matchInd)
+		{
+			auto& currentMapping = m_mappings[matchInd];
+			const bool isMapInit = currentMapping.LastAction.IsInitialState();
+			const bool isMapDown = currentMapping.LastAction.IsDown();
+			const bool isMapRepeat = currentMapping.LastAction.IsRepeating();
+			const bool isButtonDown = buttonInfo.KeyDown;
+			const bool isButtonUp = buttonInfo.KeyUp;
+			const bool isButtonRepeat = buttonInfo.KeyRepeat;
+			// Initial key-down case
+			if (isButtonDown && isMapInit)
+			{
+				results.emplace_back(TranslationResult{ true, false, false, false, &currentMapping });
+			}
+			if ((isButtonDown || isButtonRepeat) && isMapDown)
+			{
+				results.emplace_back(TranslationResult{ false, false, true, false, &currentMapping });
+			}
+			// Key-up case
+			if (isButtonUp && isMapDown || isMapRepeat)
+			{
+				results.emplace_back(TranslationResult{ false, true, false, false, &currentMapping });
+			}
+			// special repeat case
+			if (isButtonRepeat && isMapRepeat)
+			{
+				results.emplace_back(TranslationResult{ false, false, true, false, &currentMapping });
+			}
 		}
 	};
 

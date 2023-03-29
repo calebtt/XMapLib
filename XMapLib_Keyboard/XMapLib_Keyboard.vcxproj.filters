@@ -22,6 +22,9 @@
     <Filter Include="Header Files\Keyboard\SettingsAndConfig">
       <UniqueIdentifier>{c4b2771a-42ff-42ae-ac75-d8ef12a48cfb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\TestFiles">
+      <UniqueIdentifier>{8c20aeeb-844e-4571-88d1-c83794b8d2a6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="XMapLib_Keyboard.cpp">
@@ -58,6 +61,12 @@
     </ClInclude>
     <ClInclude Include="KeyboardSendFuncs.h">
       <Filter>Header Files\Keyboard</Filter>
+    </ClInclude>
+    <ClInclude Include="TestPollProvider.h">
+      <Filter>Header Files\TestFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="TestMappingProvider.h">
+      <Filter>Header Files\TestFiles</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
