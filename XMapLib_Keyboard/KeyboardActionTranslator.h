@@ -2,6 +2,9 @@
 #include "LibIncludes.h"
 #include "ControllerButtonToActionMap.h"
 #include "KeyboardPoller.h"
+#include "PriorityMgr.h"
+#include "ButtonStateMgr.h"
+
 #include <iostream>
 #include <chrono>
 #include <optional>
@@ -15,25 +18,6 @@
 
 namespace sds
 {
-	struct TranslationResult
-	{
-		bool DoDown{ false };
-		bool DoUp{ false };
-		bool DoRepeat{ false };
-		bool DoReset{ false };
-		CBActionMap* ButtonMapping{};
-		// Debugging purposes
-		friend auto operator<<(std::ostream& os, const TranslationResult& obj) -> std::ostream&
-		{
-			return os
-				<< "DoDown: " << obj.DoDown
-				<< " DoRepeat: " << obj.DoRepeat
-				<< " DoUp: " << obj.DoUp
-				<< " DoReset: " << obj.DoReset
-				<< " ButtonMapping: " << obj.ButtonMapping;
-		}
-	};
-
 	template<typename T>
 	concept MappingRange_c = requires (T & t)
 	{
@@ -41,38 +25,32 @@ namespace sds
 		{ t.end() };
 		{ std::same_as<typename T::value_type, CBActionMap> };
 	};
-
-	/**
-	 * \brief Checks a list of mappings for having multiple exclusivity groupings mapped to a single controller button.
-	 * \param mappingsList List of controller button to action mappings.
-	 * \return true if good mapping list, false if there is a problem.
-	 */
-	[[nodiscard]]
-	inline
-	bool AreExclusivityGroupsUnique(const std::vector<CBActionMap>& mappingsList)
+	struct TranslationResult
 	{
-		std::map<int, std::optional<int>> groupMap;
-		for (const auto& e : mappingsList)
+		// Action to perform
+		ButtonStateMgr DoState;
+		// Mapping associated with translation result
+		CBActionMap* ButtonMapping{};
+		// Priority type for action
+		PriorityMgr Priority;
+		// Debugging purposes
+		friend auto operator<<(std::ostream& os, const TranslationResult& obj) -> std::ostream&
 		{
-			// If an exclusivity group is set, we must verify no duplicate ex groups are set to the same vk
-			const auto& vk = e.Vk;
-			const auto& currentMappingGroupOpt = e.ExclusivityGrouping;
-			const auto& existingGroupOpt = groupMap[vk];
-			if (currentMappingGroupOpt.has_value() && existingGroupOpt.has_value())
-			{
-				if (existingGroupOpt.value() != currentMappingGroupOpt.value())
-					return false;
-			}
-			groupMap[vk] = currentMappingGroupOpt;
+			return os
+				<< "DoDown: " << obj.DoState.IsDown()
+				<< " DoRepeat: " << obj.DoState.IsRepeating()
+				<< " DoUp: " << obj.DoState.IsUp()
+				<< " DoReset: " << obj.DoState.IsInitialState()
+				<< " ButtonMapping: " << obj.ButtonMapping;
 		}
-		return true;
-	}
-	inline auto GetMappingsMatchingVk(const int vk, std::vector<CBActionMap>& mappingsList) -> std::vector<CBActionMap*>;
+	};
 
-	inline auto GetUpdateIndices(const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>;
-	inline auto GetRepeatIndices(const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>;
-	inline auto GetVkMatchIndices(const int vk, const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>;
-	inline auto GetUniqueMatches(const std::vector<std::uint32_t> existing, const std::vector<std::uint32_t> toAdd) -> std::vector<std::uint32_t>;
+	[[nodiscard]] inline bool AreExclusivityGroupsUnique(const std::vector<CBActionMap>& mappingsList);
+	[[nodiscard]] inline auto GetMappingsMatchingVk(const int vk, std::vector<CBActionMap>& mappingsList) -> std::vector<CBActionMap*>;
+	[[nodiscard]] inline auto GetUpdateIndices(const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>;
+	[[nodiscard]] inline auto GetRepeatIndices(const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>;
+	[[nodiscard]] inline auto GetVkMatchIndices(const int vk, const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>;
+	[[nodiscard]] inline auto GetUniqueMatches(const std::vector<std::uint32_t> existing, const std::vector<std::uint32_t> toAdd) -> std::vector<std::uint32_t>;
 
 	/**
 	 * \brief This translator is responsible for providing info regarding the state of
@@ -172,7 +150,7 @@ namespace sds
 			using std::ranges::find_if, std::erase_if, std::ranges::begin, std::ranges::end, std::ranges::cbegin, std::ranges::cend;
 			using std::ranges::find, std::ranges::transform;
 			std::vector<TranslationResult> results;
-			// Get indices lists
+			// Get update, repeat, direct match, etc. indices lists
 			const auto updateIndices = GetUpdateIndices(m_mappings);
 			const auto repeatIndices = GetRepeatIndices(m_mappings);
 			const auto matchingIndices = GetVkMatchIndices(buttonInfo.VirtualKey, m_mappings);
@@ -184,7 +162,6 @@ namespace sds
 			{
 				results.append_range(GetOvertakenTranslationResultsFor(cur));
 			}
-
 			// Adds maps with timer being reset (updated)
 			transform(updateIndices, std::back_inserter(results), [&](const auto n)
 			{
@@ -213,19 +190,29 @@ namespace sds
 			{
 				if(elem.LastAction.IsDown() || elem.LastAction.IsRepeating())
 				{
-					results.emplace_back(TranslationResult{ .DoDown = false, .DoUp = true, .DoRepeat = false, .DoReset = false, .ButtonMapping = &elem });
+					results.emplace_back(TranslationResult{ .DoState = ButtonStateMgr::ActionState::KEYUP, .ButtonMapping = &elem, .Priority = PriorityMgr::PriorityState::NEXT_STATE });
 				}
 			}
 			return results;
 		}
 	private:
-		auto GetUpdateTranslationResultAt(const std::unsigned_integral auto ind) -> TranslationResult
+		auto GetUpdateTranslationResultAt(const std::uint32_t ind) -> TranslationResult
 		{
-			return TranslationResult{ false, false, false, true, &m_mappings.at(ind) };
+			return TranslationResult
+			{
+				.DoState = ButtonStateMgr::ActionState::INIT,
+				.ButtonMapping = &m_mappings.at(ind),
+				.Priority = PriorityMgr::PriorityState::UPDATE
+			};
 		}
-		auto GetRepeatTranslationResultAt(const std::unsigned_integral auto ind)  -> TranslationResult
+		auto GetRepeatTranslationResultAt(const std::uint32_t ind)  -> TranslationResult
 		{
-			return TranslationResult{ false, false, true, false, &m_mappings.at(ind) };
+			return TranslationResult
+			{
+				.DoState = ButtonStateMgr::ActionState::KEYREPEAT,
+				.ButtonMapping = &m_mappings.at(ind),
+				.Priority = PriorityMgr::PriorityState::REPEAT
+			};
 		}
 		auto GetOvertakenTranslationResultsFor(const std::uint32_t currentIndex) -> std::vector<TranslationResult>
 		{
@@ -242,34 +229,39 @@ namespace sds
 					if (p != &currentMap)
 					{
 						if (p->LastAction.IsDown() || p->LastAction.IsRepeating())
-							results.emplace_back(TranslationResult{ .DoDown = false, .DoUp = true, .DoRepeat = false, .DoReset = false, .ButtonMapping = p });
+						{
+							results.emplace_back(TranslationResult
+								{
+									ButtonStateMgr::ActionState::KEYUP,
+									p,
+									PriorityMgr::PriorityState::EX_OVERTAKING
+								});
+						}
 					}
 				}
 			}
-
 			return results;
 		}
-		auto GetExGroupOvertaken(const CBActionMap& currentMapping) -> std::vector<TranslationResult>
-		{
-			// TODO this might add duplicates of the same action, will need tested.
-			using std::ranges::find_if;
-			std::vector<TranslationResult> results;
-			// Iterate through each matching mapping and find ones with an exclusivity grouping, and then add the rest of the grouping to the results with key-up
-			if (currentMapping.ExclusivityGrouping)
-			{
-				auto& exGroupVecForCurrent = m_exGroupMap[*currentMapping.ExclusivityGrouping];
-				for (CBActionMap* p : exGroupVecForCurrent)
-				{
-					if (p != &currentMapping)
-					{
-						if (p->LastAction.IsDown() || p->LastAction.IsRepeating())
-							results.emplace_back(TranslationResult{ .DoDown = false, .DoUp = true, .DoRepeat = false, .DoReset = false, .ButtonMapping = p });
-					}
-				}
-			}
-
-			return results;
-		}
+		//auto GetExGroupOvertaken(const CBActionMap& currentMapping) -> std::vector<TranslationResult>
+		//{
+		//	// TODO this might add duplicates of the same action, will need tested.
+		//	using std::ranges::find_if;
+		//	std::vector<TranslationResult> results;
+		//	// Iterate through each matching mapping and find ones with an exclusivity grouping, and then add the rest of the grouping to the results with key-up
+		//	if (currentMapping.ExclusivityGrouping)
+		//	{
+		//		auto& exGroupVecForCurrent = m_exGroupMap[*currentMapping.ExclusivityGrouping];
+		//		for (CBActionMap* p : exGroupVecForCurrent)
+		//		{
+		//			if (p != &currentMapping)
+		//			{
+		//				if (p->LastAction.IsDown() || p->LastAction.IsRepeating())
+		//					results.emplace_back(TranslationResult{ .DoDown = false, .DoUp = true, .DoRepeat = false, .DoReset = false, .ButtonMapping = p });
+		//			}
+		//		}
+		//	}
+		//	return results;
+		//}
 		void GetDirectTranslations(
 			const ControllerStateWrapper& buttonInfo, 
 			std::vector<TranslationResult>& results, 
@@ -285,24 +277,70 @@ namespace sds
 			// Initial key-down case
 			if (isButtonDown && isMapInit)
 			{
-				results.emplace_back(TranslationResult{ true, false, false, false, &currentMapping });
+				results.emplace_back(TranslationResult
+					{
+						.DoState = ButtonStateMgr::ActionState::KEYDOWN,
+						.ButtonMapping = &currentMapping,
+						.Priority = PriorityMgr::PriorityState::NEXT_STATE
+					});
 			}
 			if ((isButtonDown || isButtonRepeat) && isMapDown)
 			{
-				results.emplace_back(TranslationResult{ false, false, true, false, &currentMapping });
+				results.emplace_back(TranslationResult
+					{
+						.DoState = ButtonStateMgr::ActionState::KEYREPEAT,
+						.ButtonMapping = &currentMapping,
+						.Priority = PriorityMgr::PriorityState::NEXT_STATE
+					});
 			}
 			// Key-up case
 			if (isButtonUp && isMapDown || isMapRepeat)
 			{
-				results.emplace_back(TranslationResult{ false, true, false, false, &currentMapping });
+				results.emplace_back(TranslationResult
+					{
+						.DoState = ButtonStateMgr::ActionState::KEYUP,
+						.ButtonMapping = &currentMapping,
+						.Priority = PriorityMgr::PriorityState::NEXT_STATE
+					});
 			}
 			// special repeat case
-			if (isButtonRepeat && isMapRepeat)
-			{
-				results.emplace_back(TranslationResult{ false, false, true, false, &currentMapping });
-			}
+			//if (isButtonRepeat && isMapRepeat)
+			//{
+			//	results.emplace_back(TranslationResult
+			//		{
+			//			.DoState = ButtonStateMgr::ActionState::KEYREPEAT,
+			//			.ButtonMapping = &currentMapping,
+			//			.Priority = PriorityMgr::PriorityState::REPEAT
+			//		});
+			//}
 		}
 	};
+
+	/**
+	 * \brief Checks a list of mappings for having multiple exclusivity groupings mapped to a single controller button.
+	 * \param mappingsList List of controller button to action mappings.
+	 * \return true if good mapping list, false if there is a problem.
+	 */
+	[[nodiscard]]
+	inline
+	bool AreExclusivityGroupsUnique(const std::vector<CBActionMap>& mappingsList)
+	{
+		std::map<int, std::optional<int>> groupMap;
+		for (const auto& e : mappingsList)
+		{
+			// If an exclusivity group is set, we must verify no duplicate ex groups are set to the same vk
+			const auto& vk = e.Vk;
+			const auto& currentMappingGroupOpt = e.ExclusivityGrouping;
+			const auto& existingGroupOpt = groupMap[vk];
+			if (currentMappingGroupOpt.has_value() && existingGroupOpt.has_value())
+			{
+				if (existingGroupOpt.value() != currentMappingGroupOpt.value())
+					return false;
+			}
+			groupMap[vk] = currentMappingGroupOpt;
+		}
+		return true;
+	}
 
 	/**
 	 * \brief Returns mappings for the controller button VK given.

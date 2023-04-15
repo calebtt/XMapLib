@@ -101,6 +101,11 @@ auto RunOvertakingTest()
     using std::ranges::for_each, std::cout;
     TestMappingProvider testMaps{ VirtKey };
     TestPollProvider testPoll{ VirtKey };
+
+    auto testMappings = testMaps.GetMappings();
+    testMappings.front().ExclusivityGrouping = 100;
+    testMappings.back().ExclusivityGrouping = 100;
+
     KeyboardActionTranslator translator{ testMaps.GetMappings() };
     // It seems as though if all you are doing is feeding the output of one object to another object, they don't need
     // to be dependent on one another at all. This design also makes testing the functionality quite simple, just change
