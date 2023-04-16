@@ -11,6 +11,10 @@ namespace TestKeyboard
 		{
 			return sds::ControllerStateWrapper{ .VirtualKey = Vk, .KeyDown = true, .KeyUp = false, .KeyRepeat = false };
 		}
+		auto GetDownState(const unsigned short newVk) const noexcept
+		{
+			return sds::ControllerStateWrapper{ .VirtualKey = newVk, .KeyDown = true, .KeyUp = false, .KeyRepeat = false };
+		}
 		auto GetUpState() const noexcept
 		{
 			return sds::ControllerStateWrapper{ .VirtualKey = Vk, .KeyDown = false, .KeyUp = true, .KeyRepeat = false };
