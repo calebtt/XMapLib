@@ -7,25 +7,37 @@ namespace TestKeyboard
 	{
 		unsigned short Vk{};
 
-		auto GetDownState() const noexcept
+		auto GetDownState() -> sds::ControllerStateWrapper
 		{
-			return sds::ControllerStateWrapper{ .VirtualKey = Vk, .KeyDown = true, .KeyUp = false, .KeyRepeat = false };
+			return GetDownState(Vk);
 		}
-		auto GetDownState(const unsigned short newVk) const noexcept
+		auto GetDownState(const unsigned short newVk) -> sds::ControllerStateWrapper
 		{
 			return sds::ControllerStateWrapper{ .VirtualKey = newVk, .KeyDown = true, .KeyUp = false, .KeyRepeat = false };
 		}
-		auto GetUpState() const noexcept
+		auto GetUpState() -> sds::ControllerStateWrapper
 		{
-			return sds::ControllerStateWrapper{ .VirtualKey = Vk, .KeyDown = false, .KeyUp = true, .KeyRepeat = false };
+			return GetUpState(Vk);
 		}
-		auto GetRepeatState() const noexcept
+		auto GetUpState(const unsigned short newVk) -> sds::ControllerStateWrapper
 		{
-			return sds::ControllerStateWrapper{ .VirtualKey = Vk, .KeyDown = false, .KeyUp = false, .KeyRepeat = true };
+			return sds::ControllerStateWrapper{ .VirtualKey = newVk, .KeyDown = false, .KeyUp = true, .KeyRepeat = false };
 		}
-		auto GetNoState() const noexcept
+		auto GetRepeatState() -> sds::ControllerStateWrapper
 		{
-			return sds::ControllerStateWrapper{ .VirtualKey = Vk, .KeyDown = false, .KeyUp = false, .KeyRepeat = false };
+			return GetRepeatState(Vk);
+		}
+		auto GetRepeatState(const unsigned short newVk) -> sds::ControllerStateWrapper
+		{
+			return sds::ControllerStateWrapper{ .VirtualKey = newVk, .KeyDown = false, .KeyUp = false, .KeyRepeat = true };
+		}
+		auto GetNoState() -> sds::ControllerStateWrapper
+		{
+			return GetNoState(Vk);
+		}
+		auto GetNoState(const unsigned short newVk) -> sds::ControllerStateWrapper
+		{
+			return sds::ControllerStateWrapper{ .VirtualKey = newVk, .KeyDown = false, .KeyUp = false, .KeyRepeat = false };
 		}
 	};
 }

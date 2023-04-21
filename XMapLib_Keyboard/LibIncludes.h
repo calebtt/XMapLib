@@ -60,4 +60,4 @@
 
 #include "../impcool_sol/immutable_thread_pool/ThreadUnitPlusPlus.h"
 
-#include <magic_enum.hpp>
+#include "CustomTypes.h"

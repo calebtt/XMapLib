@@ -148,6 +148,7 @@
     <ClInclude Include="ButtonStateMgr.h" />
     <ClInclude Include="ControllerButtonToActionMap.h" />
     <ClInclude Include="ControllerStateWrapper.h" />
+    <ClInclude Include="CustomTypes.h" />
     <ClInclude Include="KeyboardMapper.h" />
     <ClInclude Include="KeyboardPoller.h" />
     <ClInclude Include="KeyboardSendFuncs.h" />

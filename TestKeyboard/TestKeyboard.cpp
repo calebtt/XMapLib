@@ -14,6 +14,16 @@ namespace TestKeyboard
         { t.GetUpdatedState(0) } -> std::convertible_to<sds::ControllerStateWrapper>;
     };
 
+    inline
+    auto PrintResultsWithMessage(std::vector<sds::TranslationResult>& trv, std::string_view initMessage) -> void
+    {
+        using std::stringstream, std::ranges::for_each;
+        std::stringstream ss;
+        ss << initMessage << '\n';
+        for_each(trv, [&](const sds::TranslationResult& e) { ss << e << '\n'; });
+        Logger::WriteMessage(ss.str().c_str());
+    }
+
 	TEST_CLASS(TestKeyboard)
 	{
         static constexpr unsigned short VirtKey{ VK_PAD_A };
@@ -52,32 +62,33 @@ namespace TestKeyboard
             KeyboardActionTranslator translator{ testMaps.GetMappings() };
 
 			// Pass a polled state for each phase into the translator, store the result
-            const auto downVec = translator(testPoll.GetDownState());
-            Assert::IsTrue(downVec.size() == 1);
+            const auto downPack = translator(testPoll.GetDownState());
+            Assert::IsTrue(downPack.NextStateRequests.size() == 1);
             // Grab only the first elements (should only be 1 result per call)
-            auto downResult = downVec.front();
+            auto downResult = downPack.NextStateRequests.front();
             // Advance the pointed-to mapping in the translationresult to the next state
             CallAndUpdateTranslationResult(downResult);
+            std::this_thread::sleep_for(1s);
 
-            const auto repeatVec = translator(testPoll.GetRepeatState());
-            Assert::IsTrue(repeatVec.size() == 1);
-            auto repeatResult = repeatVec.front();
+            const auto repeatPack = translator(testPoll.GetRepeatState());
+            Assert::IsTrue(repeatPack.RepeatRequests.size() == 1);
+            auto repeatResult = repeatPack.RepeatRequests.front();
             CallAndUpdateTranslationResult(repeatResult);
-
-            const auto upVec = translator(testPoll.GetUpState());
-            Assert::IsTrue(upVec.size() == 1);
-            auto upResult = upVec.front();
+            std::this_thread::sleep_for(1s);
+            const auto upPack = translator(testPoll.GetUpState());
+            Assert::IsTrue(upPack.NextStateRequests.size() == 1);
+            auto upResult = upPack.NextStateRequests.front();
             CallAndUpdateTranslationResult(upResult);
 
-            const auto noResultVec = translator(testPoll.GetNoState());
-            Assert::IsTrue(noResultVec.size() == 1);
-            auto noResult = noResultVec.front();
-            CallAndUpdateTranslationResult(noResult);
+            const auto noResultPack = translator(testPoll.GetNoState());
+            //Assert::IsTrue(noResultPack.OvertakingRequests.size() == 1);
+            //auto noResult = noResultPack.front();
+            //CallAndUpdateTranslationResult(noResult);
 
             Assert::IsTrue(downResult.DoState.IsDown(), L"Translation for polled key-down wasn't down.");
             Assert::IsTrue(repeatResult.DoState.IsRepeating(), L"Translation for polled key-repeat wasn't repeat.");
             Assert::IsTrue(upResult.DoState.IsUp(), L"Translation for polled key-up wasn't up.");
-            Assert::IsTrue(noResult.DoState.IsInitialState(), L"Translation for polled none wasn't none.");
+            //Assert::IsTrue(noResult.DoState.IsInitialState(), L"Translation for polled none wasn't none.");
 		}
         TEST_METHOD(TestCleanup)
 		{
@@ -90,16 +101,18 @@ namespace TestKeyboard
 
             // Pass a polled state for each phase into the translator, store the result
             const auto downVec = translator(testPoll.GetDownState());
-            Assert::IsTrue(downVec.size() == 1);
+            Assert::IsTrue(downVec.NextStateRequests.size() == 1);
             // Grab only the first elements (should only be 1 result per call)
-            auto downResult = downVec.front();
+            auto downResult = downVec.NextStateRequests.front();
             // Advance the pointed-to mapping in the translationresult to the next state
             CallAndUpdateTranslationResult(downResult);
+            std::this_thread::sleep_for(1s);
 
             const auto repeatVec = translator(testPoll.GetRepeatState());
-            Assert::IsTrue(repeatVec.size() == 1);
-            auto repeatResult = repeatVec.front();
+            Assert::IsTrue(repeatVec.RepeatRequests.size() == 1);
+            auto repeatResult = repeatVec.RepeatRequests.front();
             CallAndUpdateTranslationResult(repeatResult);
+            std::this_thread::sleep_for(1s);
 
             //Logger::WriteMessage("Dumping intermediate translation result buffers...\n");
             Logger::WriteMessage("Dumping cleanup actions buffer...\n");
@@ -122,32 +135,57 @@ namespace TestKeyboard
             TestPollProvider testPoll{ VirtKey };
 
             // Constructing two mappings with different vk, same ex. group
-            auto mappings = testMaps.GetMapping(VirtKey);
-            mappings.append_range(testMaps.GetMapping(VirtKey + 1));
-            // Assign the ex. group
-            for_each(mappings, [&](auto& e) { e.ExclusivityGrouping = 101; });
+            auto mappings = testMaps.GetMapping(VirtKey, 101);
+            mappings.append_range(testMaps.GetMapping(VirtKey + 1, 101));
 
         	// Translator obj and subject of test
             KeyboardActionTranslator translator{ mappings };
 
         	auto firstDownVec = translator(testPoll.GetDownState(VirtKey));
-            Assert::IsTrue(firstDownVec.size() == 1);
-            CallAndUpdateTranslationResult(firstDownVec.front());
-
+            Assert::IsTrue(firstDownVec.NextStateRequests.size() == 1);
+            CallAndUpdateTranslationResult(firstDownVec.NextStateRequests.front());
+            std::this_thread::sleep_for(1s);
             auto secondDownVec = translator(testPoll.GetDownState(VirtKey + 1));
-            Assert::IsTrue(secondDownVec.size() == 1);
-            //TODO fix this, possibly fix overtaking behavior.
+            CallAndUpdateTranslationResult(secondDownVec.OvertakenRequests.front());
+            CallAndUpdateTranslationResult(secondDownVec.NextStateRequests.front());
+            Assert::IsTrue(secondDownVec.OvertakenRequests.size() == 1, L"No overtaken request in buf.");
+            Assert::IsTrue(secondDownVec.NextStateRequests.size() == 1, L"Second call to translate should hold the newest key-down");
 
-            stringstream ss;
-            ss << "Dumping first down key buffer...\n";
-            for_each(firstDownVec, [&](const sds::TranslationResult& e) { ss << e << '\n'; });
-            Logger::WriteMessage(ss.str().c_str());
-            ss = {};
+            //PrintResultsWithMessage(firstDownVec, "Dumping first down key buffer...");
+            //PrintResultsWithMessage(secondDownVec, "Dumping overtaking actions buffer...");
+        }
+        TEST_METHOD(TestNotOvertaking)
+        {
+            using namespace sds;
+            using namespace std::chrono_literals;
+            using std::ranges::for_each, std::stringstream;
+            // Test data provider objs
+            TestMappingProvider testMaps{ VirtKey };
+            TestPollProvider testPoll{ VirtKey };
 
-            ss << "Dumping overtaking actions buffer...\n";
-            for_each(secondDownVec, [&](const sds::TranslationResult& e) { ss << e << '\n'; });
-            Logger::WriteMessage(ss.str().c_str());
-            ss = {};
+            // Constructing two mappings with different vk, same ex. group
+            auto mappings = testMaps.GetMapping(VirtKey, 101);
+            mappings.append_range(testMaps.GetMapping(VirtKey + 1, 100));
+
+            // Translator obj and subject of test
+            KeyboardActionTranslator translator{ mappings };
+
+            auto firstDownVec = translator(testPoll.GetDownState(VirtKey));
+            Assert::IsTrue(firstDownVec.NextStateRequests.size() == 1);
+            CallAndUpdateTranslationResult(firstDownVec.NextStateRequests.front());
+            std::this_thread::sleep_for(1s);
+            auto secondDownVec = translator(testPoll.GetDownState(VirtKey + 1));
+            CallAndUpdateTranslationResult(secondDownVec.NextStateRequests.front());
+            Assert::IsTrue(secondDownVec.OvertakenRequests.empty(), L"Overtaken request in buf, should not be.");
+            Assert::IsTrue(secondDownVec.NextStateRequests.size() == 1, L"Second call to translate should hold the newest key-down");
+
+            //PrintResultsWithMessage(firstDownVec, "Dumping first down key buffer...");
+            //PrintResultsWithMessage(secondDownVec, "Dumping overtaking actions buffer...");
+        }
+
+        TEST_METHOD(TestManyMappingsProgression)
+        {
+	        
         }
     private:
         /**

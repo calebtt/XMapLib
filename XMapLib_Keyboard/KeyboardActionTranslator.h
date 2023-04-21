@@ -33,6 +33,14 @@ namespace sds
 		CBActionMap* ButtonMapping{};
 		// Priority type for action
 		PriorityMgr Priority;
+
+		//TODO extract info relevant to operation from ptr to mapping, send only that instead
+		//TODO maybe...
+		//// Virtual keycode of controller button being activated
+		//int ControllerVk{};
+		//// Operation being requested to be performed
+		//detail::OptFn_t OpRequested;
+
 		// Debugging purposes
 		friend auto operator<<(std::ostream& os, const TranslationResult& obj) -> std::ostream&
 		{
@@ -45,11 +53,19 @@ namespace sds
 		}
 	};
 
+	struct TranslationPack
+	{
+		std::vector<TranslationResult> UpdateRequests;
+		std::vector<TranslationResult> RepeatRequests;
+		std::vector<TranslationResult> OvertakenRequests;
+		std::vector<TranslationResult> NextStateRequests;
+	};
+
 	[[nodiscard]] inline bool AreExclusivityGroupsUnique(const std::vector<CBActionMap>& mappingsList);
 	[[nodiscard]] inline auto GetMappingsMatchingVk(const int vk, std::vector<CBActionMap>& mappingsList) -> std::vector<CBActionMap*>;
 	[[nodiscard]] inline auto GetUpdateIndices(const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>;
 	[[nodiscard]] inline auto GetRepeatIndices(const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>;
-	[[nodiscard]] inline auto GetVkMatchIndices(const int vk, const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>;
+	[[nodiscard]] constexpr auto GetVkMatchIndices(const int vk, const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>;
 	[[nodiscard]] inline auto GetUniqueMatches(const std::vector<std::uint32_t> existing, const std::vector<std::uint32_t> toAdd) -> std::vector<std::uint32_t>;
 
 	/**
@@ -131,7 +147,7 @@ namespace sds
 		}
 	public:
 		// Gets state update actions, typical usage of the type.
-		auto operator()(const ControllerStateWrapper& state) -> std::vector<TranslationResult>
+		auto operator()(const ControllerStateWrapper& state) -> TranslationPack
 		{
 			return GetStateUpdateActions(state);
 		}
@@ -145,40 +161,52 @@ namespace sds
 		 * 6. todo
 		 */
 		auto GetStateUpdateActions(const ControllerStateWrapper& buttonInfo)
-		-> std::vector<TranslationResult>
+		-> TranslationPack
 		{
 			using std::ranges::find_if, std::erase_if, std::ranges::begin, std::ranges::end, std::ranges::cbegin, std::ranges::cend;
 			using std::ranges::find, std::ranges::transform;
-			std::vector<TranslationResult> results;
+
+			TranslationPack tPack;
+
 			// Get update, repeat, direct match, etc. indices lists
-			const auto updateIndices = GetUpdateIndices(m_mappings);
-			const auto repeatIndices = GetRepeatIndices(m_mappings);
-			const auto matchingIndices = GetVkMatchIndices(buttonInfo.VirtualKey, m_mappings);
-			//TODO see if overtaking needs done here
-			//auto jv = std::views::join(std::array{ std::span(repeatIndices), std::span(repeatIndices) });
-			const auto uniqueMatches = GetUniqueMatches(repeatIndices, matchingIndices);
+			const auto matchingIndices = GetVkMatchIndices(buttonInfo.VirtualKey, m_mappings); // Gets all indices matching VK
+			
+			const auto updateIndices = GetUpdateIndices(m_mappings); // Gets update/reset indices
+			auto repeatIndices = GetRepeatIndices(m_mappings); // Gets key-repeat indices
+			// Remove from the repeat indices all of the ones matching the VK when buttonInfo is key-up (progression)
+			if (buttonInfo.KeyUp)
+			{
+				erase_if(repeatIndices, [&](const auto e)
+				{
+					return m_mappings[e].Vk == buttonInfo.VirtualKey;
+				});
+			}
+
+			const auto uniqueMatches = GetUniqueMatches(repeatIndices, matchingIndices); // Filters out the key-repeat indices
+			//TODO bug here somewhere, see tests.
+
 			// Get exclusivity group overtaken
 			for(const auto cur : uniqueMatches)
 			{
-				results.append_range(GetOvertakenTranslationResultsFor(cur));
+				tPack.OvertakenRequests.append_range(GetOvertakenTranslationResultsFor(cur));
 			}
 			// Adds maps with timer being reset (updated)
-			transform(updateIndices, std::back_inserter(results), [&](const auto n)
+			transform(updateIndices, std::back_inserter(tPack.UpdateRequests), [&](const auto n)
 			{
 				return GetUpdateTranslationResultAt(n);
 			});
 			// Adds maps being key-repeat'd
-			transform(repeatIndices, std::back_inserter(results), [&](const auto n)
+			transform(repeatIndices, std::back_inserter(tPack.RepeatRequests), [&](const auto n)
 			{
 				return GetRepeatTranslationResultAt(n);
 			});
 			// Add direct translations for each unique
 			for(const auto matchInd : uniqueMatches)
 			{
-				GetDirectTranslations(buttonInfo, results, matchInd);
+				GetDirectTranslations(buttonInfo, tPack.NextStateRequests, matchInd);
 			}
 
-			return results;
+			return tPack;
 		}
 		/**
 		 * \brief Intended to provide an array of key-up actions necessary to return the mappings back to an initial state.
@@ -196,6 +224,11 @@ namespace sds
 			return results;
 		}
 	private:
+		constexpr
+		auto MappingAt(const std::uint32_t index) noexcept -> CBActionMap&
+		{
+			return m_mappings.at(index);
+		}
 		auto GetUpdateTranslationResultAt(const std::uint32_t ind) -> TranslationResult
 		{
 			return TranslationResult
@@ -218,11 +251,11 @@ namespace sds
 		{
 			// TODO this might add duplicates of the same action, will need tested.
 			using std::ranges::find_if;
-			std::vector<TranslationResult> results;
 			// Iterate through each matching mapping and find ones with an exclusivity grouping, and then add the rest of the grouping to the results with key-up
 			const auto& currentMap = m_mappings[currentIndex];
 			if (currentMap.ExclusivityGrouping)
 			{
+				std::vector<TranslationResult> results;
 				auto& exGroupVecForCurrent = m_exGroupMap[*currentMap.ExclusivityGrouping];
 				for (CBActionMap* p : exGroupVecForCurrent)
 				{
@@ -239,8 +272,9 @@ namespace sds
 						}
 					}
 				}
+				return results;
 			}
-			return results;
+			return {};
 		}
 		//auto GetExGroupOvertaken(const CBActionMap& currentMapping) -> std::vector<TranslationResult>
 		//{
@@ -294,7 +328,7 @@ namespace sds
 					});
 			}
 			// Key-up case
-			if (isButtonUp && isMapDown || isMapRepeat)
+			if (isButtonUp && (isMapDown || isMapRepeat))
 			{
 				results.emplace_back(TranslationResult
 					{
@@ -367,19 +401,18 @@ namespace sds
 	 * \param mappingsList List of controller button to action mappings.
 	 * \return Vector of indices at which mappings which map to the controller button VK can be located.
 	 */
-	inline
+	constexpr
 	auto GetVkMatchIndices(const int vk, const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>
 	{
 		using std::ranges::for_each;
 
-		std::uint32_t currentLocation{};
 		std::vector<std::uint32_t> buf;
-		for_each(mappingsList, [vk, &buf, &currentLocation](const auto& elem)
+		for(std::uint32_t i{}; i < mappingsList.size(); ++i)
 		{
-			if (elem.Vk == vk) 
-				buf.emplace_back(currentLocation);
-			++currentLocation;
-		});
+			const auto& elem = mappingsList[i];
+			if (elem.Vk == vk)
+				buf.emplace_back(i);
+		}
 		return buf;
 	}
 
@@ -414,21 +447,20 @@ namespace sds
 	{
 		using std::ranges::for_each;
 
-		std::uint32_t currentLocation{};
 		std::vector<std::uint32_t> buf;
-		for_each(mappingsList, [&buf, &currentLocation](const auto& elem)
+		for(std::uint32_t i{}; i < mappingsList.size(); ++i)
+		{
+			const auto& elem = mappingsList[i];
+			const bool doesRepeat = elem.UsesRepeat;
+			const bool isDown = elem.LastAction.IsDown();
+			const bool isRepeating = elem.LastAction.IsRepeating();
+			const bool downOrRepeat = isDown || isRepeating;
+			const bool isElapsed = elem.LastAction.LastSentTime.IsElapsed();
+			if (doesRepeat && downOrRepeat && isElapsed)
 			{
-				const bool doesRepeat = elem.UsesRepeat;
-				const bool isDown = elem.LastAction.IsDown();
-				const bool isRepeating = elem.LastAction.IsRepeating();
-				const bool downOrRepeat = isDown || isRepeating;
-				const bool isElapsed = elem.LastAction.LastSentTime.IsElapsed();
-				if (doesRepeat && downOrRepeat && isElapsed)
-				{
-					buf.emplace_back(currentLocation);
-				}
-				++currentLocation;
-			});
+				buf.emplace_back(i);
+			}
+		}
 		return buf;
 	}
 
@@ -436,13 +468,36 @@ namespace sds
 	auto GetUniqueMatches(const std::vector<std::uint32_t> existing, const std::vector<std::uint32_t> toAdd) -> std::vector<std::uint32_t>
 	{
 		using std::ranges::find, std::ranges::end, std::ranges::begin, std::ranges::transform;
+		// TODO use some of the algo header funcs, possibly set_intersection or merge or similar
 		std::vector<std::uint32_t> uniqueMatchResult;
 		// Don't add existing indices to a set or anything, cpu arch will speed up iterating an array 1-100x iterating a r-b tree.
 		//const std::set tempSet(std::ranges::begin(existingIndices), std::ranges::end(existingIndices));
-		transform(toAdd, std::back_inserter(uniqueMatchResult), [&](const auto e)
+		for (std::uint32_t i{}; i < toAdd.size(); ++i)
+		{
+			const auto e = toAdd[i];
+			if (find(existing, e) == end(existing))
 			{
-				return find(existing, e) != end(existing);
-			});
+				uniqueMatchResult.emplace_back(e);
+			}
+		}
 		return uniqueMatchResult;
 	}
+
+	//inline
+	//auto GetUniqueMatches(const std::vector<std::uint32_t> existing, const std::vector<std::uint32_t> toAdd) -> std::vector<std::uint32_t>
+	//{
+	//	using std::ranges::find, std::ranges::end, std::ranges::begin, std::ranges::transform;
+	//	std::vector<std::uint32_t> uniqueMatchResult;
+	//	// Don't add existing indices to a set or anything, cpu arch will speed up iterating an array 1-100x iterating a r-b tree.
+	//	//const std::set tempSet(std::ranges::begin(existingIndices), std::ranges::end(existingIndices));
+	//	for(std::uint32_t i{}; i < toAdd.size(); ++i)
+	//	{
+	//		const auto e = toAdd[i];
+	//		if(find(existing, e) == end(existing))
+	//		{
+	//			uniqueMatchResult.emplace_back(e);
+	//		}
+	//	}
+	//	return uniqueMatchResult;
+	//}
 }
