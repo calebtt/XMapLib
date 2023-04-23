@@ -11,33 +11,55 @@ namespace TestKeyboard
         auto GetMappings() const
         {
             using namespace sds;
+            const std::string vkString = "Vk:[" + std::to_string(Vk) + "]\n";
+            const std::string downMessage = "Action:[Down] " + vkString;
+            const std::string upMessage = "Action:[Up] " + vkString;
+            const std::string repeatMessage = "Action:[Repeat] " + vkString;
+            const std::string resetMessage = "Action:[Reset] " + vkString;
             std::vector<CBActionMap> mappings;
             CBActionMap tm{
                 .Vk = Vk,
                 .UsesRepeat = true,
                 .ExclusivityGrouping = {},
-                .OnDown = []() { Logger::WriteMessage("Action:[Down]\n"); },
-                .OnUp = []() { Logger::WriteMessage("Action:[Up]\n"); },
-                .OnRepeat = []() { Logger::WriteMessage("Action:[Repeat]\n"); },
-                .OnReset = []() { Logger::WriteMessage("Action:[Reset]\n"); },
+                .OnDown = [=]() { Logger::WriteMessage(downMessage.c_str()); },
+                .OnUp = [=]() { Logger::WriteMessage(upMessage.c_str()); },
+                .OnRepeat = [=]() { Logger::WriteMessage(repeatMessage.c_str()); },
+                .OnReset = [=]() { Logger::WriteMessage(resetMessage.c_str()); },
                 .CustomRepeatDelay = {},
                 .LastAction = {}
             };
+            //CBActionMap tm{
+            //    .Vk = Vk,
+            //    .UsesRepeat = true,
+            //    .ExclusivityGrouping = {},
+            //    .OnDown = []() { Logger::WriteMessage("Action:[Down]\n"); },
+            //    .OnUp = []() { Logger::WriteMessage("Action:[Up]\n"); },
+            //    .OnRepeat = []() { Logger::WriteMessage("Action:[Repeat]\n"); },
+            //    .OnReset = []() { Logger::WriteMessage("Action:[Reset]\n"); },
+            //    .CustomRepeatDelay = {},
+            //    .LastAction = {}
+            //};
             mappings.emplace_back(tm);
             return mappings;
         }
         auto GetMapping(const unsigned short newVk, std::optional<int> exGroup = {}) const
         {
             using namespace sds;
+            const std::string vkString = "Vk:[" + std::to_string(newVk) + "]\n";
+            const std::string downMessage = "Action:[Down] " + vkString;
+            const std::string upMessage = "Action:[Up] " + vkString;
+            const std::string repeatMessage = "Action:[Repeat] " + vkString;
+            const std::string resetMessage = "Action:[Reset] " + vkString;
+
             std::vector<CBActionMap> mappings;
             CBActionMap tm{
                 .Vk = newVk,
                 .UsesRepeat = true,
                 .ExclusivityGrouping = exGroup,
-                .OnDown = [newVk](){ Logger::WriteMessage("Action:[Down]\n"); },
-                .OnUp = []() { Logger::WriteMessage("Action:[Up]\n"); },
-                .OnRepeat = []() { Logger::WriteMessage("Action:[Repeat]\n"); },
-                .OnReset = []() { Logger::WriteMessage("Action:[Reset]\n"); },
+                .OnDown = [=](){ Logger::WriteMessage(downMessage.c_str()); },
+                .OnUp = [=]() { Logger::WriteMessage(upMessage.c_str()); },
+                .OnRepeat = [=]() { Logger::WriteMessage(repeatMessage.c_str()); },
+                .OnReset = [=]() { Logger::WriteMessage(resetMessage.c_str()); },
                 .CustomRepeatDelay = {},
                 .LastAction = {}
             };

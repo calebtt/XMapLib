@@ -32,7 +32,7 @@ namespace sds
 		// Mapping associated with translation result
 		CBActionMap* ButtonMapping{};
 		// Priority type for action
-		PriorityMgr Priority;
+		PriorityMgr Priority; //TODO might remove this, don't think I need it.
 
 		//TODO extract info relevant to operation from ptr to mapping, send only that instead
 		//TODO maybe...
@@ -40,6 +40,7 @@ namespace sds
 		//int ControllerVk{};
 		//// Operation being requested to be performed
 		//detail::OptFn_t OpRequested;
+		
 
 		// Debugging purposes
 		friend auto operator<<(std::ostream& os, const TranslationResult& obj) -> std::ostream&
