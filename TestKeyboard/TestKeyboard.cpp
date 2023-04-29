@@ -188,15 +188,16 @@ namespace TestKeyboard
         {
             using namespace sds;
             using namespace std::chrono_literals;
+            constexpr auto SleepDelay = 500ms;
             // Test data provider objs
             TestMappingProvider testMaps{ VirtKey };
             TestPollProvider testPoll{ VirtKey };
 
             std::vector<CBActionMap> mappings;
             mappings.append_range(testMaps.GetMapping(VirtKey));
-            mappings.append_range(testMaps.GetMapping(VirtKey+1));
-            mappings.append_range(testMaps.GetMapping(VirtKey+2));
-            mappings.append_range(testMaps.GetMapping(VirtKey+3));
+            mappings.append_range(testMaps.GetMapping(VirtKey + 1));
+            mappings.append_range(testMaps.GetMapping(VirtKey + 2));
+            mappings.append_range(testMaps.GetMapping(VirtKey + 3));
             mappings.append_range(testMaps.GetMapping(VirtKey + 4, 101));
             mappings.append_range(testMaps.GetMapping(VirtKey + 5, 101));
             mappings.append_range(testMaps.GetMapping(VirtKey + 6, 101));
@@ -212,53 +213,49 @@ namespace TestKeyboard
             Assert::IsTrue(vkDownResult.Priority.IsNextState());
             CallAndUpdateTranslationResult(vkDownResult);
 
+            std::this_thread::sleep_for(SleepDelay);
+
             auto vk1Down = translator(testPoll.GetDownState(VirtKey + 1));
-            AssertTranslationPackSizes(vk1Down, 0, 0, 0, 1);
+            AssertTranslationPackSizes(vk1Down, 0, 1, 0, 1);
             auto& vk1DownResult = vk1Down.NextStateRequests.front();
             Assert::IsTrue(vk1DownResult.DoState.IsDown());
             Assert::IsTrue(vk1DownResult.Priority.IsNextState());
             CallAndUpdateTranslationResult(vk1DownResult);
             
-        	std::this_thread::sleep_for(1s);
+        	std::this_thread::sleep_for(SleepDelay);
+
             // Make sure there are 2 repeat requests for both keys down.
             auto repeatTestPack = translator(testPoll.GetNoState(VirtKey));
             AssertTranslationPackSizes(repeatTestPack, 0, 2, 0, 0);
 
-        	std::this_thread::sleep_for(1s);
+        	std::this_thread::sleep_for(SleepDelay);
 
+            // Send vk+1 up
         	auto vk1Up = translator(testPoll.GetUpState(VirtKey + 1));
             // There is also a repeat request because VirtKey is still "down" and we waited an entire second
-            // but only 1 repeat request, as this key-down request should remove the repeat for this key-down.
+            // but only 1 repeat request, as this key-up request should remove the repeat for this down key.
             AssertTranslationPackSizes(vk1Up, 0, 1, 0, 1);
             auto& vk1UpResult = vk1Up.NextStateRequests.front();
             Assert::IsTrue(vk1UpResult.DoState.IsUp());
             Assert::IsTrue(vk1UpResult.Priority.IsNextState());
+            CallAndUpdateTranslationResult(vk1UpResult);
 
-         //   Assert::IsTrue(vkDown.NextStateRequests.size() == 1);
-         //   // Grab only the first elements (should only be 1 result per call)
-         //   auto downResult = vkDown.NextStateRequests.front();
-         //   // Advance the pointed-to mapping in the translationresult to the next state
-         //   CallAndUpdateTranslationResult(downResult);
-         //   std::this_thread::sleep_for(1s);
+            std::this_thread::sleep_for(SleepDelay);
 
-         //   const auto repeatPack = translator(testPoll.GetRepeatState());
-         //   Assert::IsTrue(repeatPack.RepeatRequests.size() == 1);
-         //   auto repeatResult = repeatPack.RepeatRequests.front();
-         //   CallAndUpdateTranslationResult(repeatResult);
-         //   std::this_thread::sleep_for(1s);
-         //   const auto upPack = translator(testPoll.GetUpState());
-         //   Assert::IsTrue(upPack.NextStateRequests.size() == 1);
-         //   auto upResult = upPack.NextStateRequests.front();
-         //   CallAndUpdateTranslationResult(upResult);
+            // Send vk+4 down (ex. grp. 101)
+            // should still be vk+0 down/repeating, a reset for the previous vk+1 up, and a new vk+4 down
+            auto vk4Down = translator(testPoll.GetDownState(VirtKey + 4));
+            AssertTranslationPackSizes(vk4Down, 1, 1, 0, 1);
+            auto& vk4DownResult = vk4Down.NextStateRequests.front();
+            Assert::IsTrue(vk4DownResult.DoState.IsDown());
+            Assert::IsTrue(vk4DownResult.Priority.IsNextState());
+            CallAndUpdateTranslationResult(vk4DownResult);
 
-         //   const auto noResultPack = translator(testPoll.GetNoState());
-         //   //Assert::IsTrue(noResultPack.OvertakingRequests.size() == 1);
-         //   //auto noResult = noResultPack.front();
-         //   //CallAndUpdateTranslationResult(noResult);
+            std::this_thread::sleep_for(SleepDelay);
 
-         //   Assert::IsTrue(downResult.DoState.IsDown(), L"Translation for polled key-down wasn't down.");
-         //   Assert::IsTrue(repeatResult.DoState.IsRepeating(), L"Translation for polled key-repeat wasn't repeat.");
-         //   Assert::IsTrue(upResult.DoState.IsUp(), L"Translation for polled key-up wasn't up.");
+            // TODO send vk+5 down (ex. grp. 101) which overtakes vk+4 being down/repeating
+
+        	//TODO might extract exclusivity grouping code into an object used by the translator
         }
     private:
         static
@@ -269,10 +266,10 @@ namespace TestKeyboard
             const std::size_t overtakenCount,
             const std::size_t nextCount)
         {
-            Assert::IsTrue(p.UpdateRequests.size() == updateCount);
-            Assert::IsTrue(p.RepeatRequests.size() == repeatCount);
-            Assert::IsTrue(p.OvertakenRequests.size() == overtakenCount);
-            Assert::IsTrue(p.NextStateRequests.size() == nextCount);
+            Assert::IsTrue(p.UpdateRequests.size() == updateCount, L"Update req size mismatch.");
+            Assert::IsTrue(p.RepeatRequests.size() == repeatCount, L"Repeat req size mismatch.");
+            Assert::IsTrue(p.OvertakenRequests.size() == overtakenCount, L"Overtaken req size mismatch.");
+            Assert::IsTrue(p.NextStateRequests.size() == nextCount, L"Next state req size mismatch.");
         }
         /**
          * \brief Function used to "perform" the action suggested by the TranslationResult and then update the
