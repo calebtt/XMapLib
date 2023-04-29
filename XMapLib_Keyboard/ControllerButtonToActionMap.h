@@ -45,10 +45,10 @@ namespace sds
 		int Vk{};
 		bool UsesRepeat{ true };
 		detail::OptGrp_t ExclusivityGrouping;
-		detail::OptFn_t OnDown;
-		detail::OptFn_t OnUp;
-		detail::OptFn_t OnRepeat;
-		detail::OptFn_t OnReset;
+		detail::Fn_t OnDown;
+		detail::Fn_t OnUp;
+		detail::Fn_t OnRepeat;
+		detail::Fn_t OnReset;
 		detail::OptDelay_t CustomRepeatDelay; // optional custom delay between key-repeats
 		MappingStateManager LastAction; // Last action performed, with get/set methods.
 		// TODO this might need a variant holding a callable that will perform the post-action state update.

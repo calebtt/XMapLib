@@ -16,25 +16,16 @@ namespace sds
 
 	/**
 	 * \brief Function used to "perform" the action suggested by the TranslationResult and then update the
-	 * pointer-to mapping object's "LastState" member.
-	 * \remarks Calls the OnEvent function matching the TranslationResult state bool(s), if present, and then updates the
-	 * state machine.
+	 * mapping object's "LastState" member.
+	 * \remarks Calls the OnEvent function, and then updates the state machine.
 	 * \param tr The object upon which to perform the action.
 	 */
 	inline
-	auto CallAndUpdateTranslationResult(TranslationResult& tr)
+	auto CallAndUpdateTranslationResult(sds::TranslationResult& tr) -> void
 	{
-		auto DoIf = [&](const bool theCond, auto& theFnOpt, std::function<void()> updateFn) {
-			if (theCond)
-				updateFn();
-			if (theCond && theFnOpt) {
-				(*theFnOpt)();
-			}
-		};
-		DoIf(tr.DoState.IsDown(), tr.ButtonMapping->OnDown, [&]() { tr.ButtonMapping->LastAction.SetDown(); });
-		DoIf(tr.DoState.IsRepeating(), tr.ButtonMapping->OnRepeat, [&]() { tr.ButtonMapping->LastAction.SetRepeat(); });
-		DoIf(tr.DoState.IsUp(), tr.ButtonMapping->OnUp, [&]() { tr.ButtonMapping->LastAction.SetUp(); });
-		DoIf(tr.DoState.IsInitialState(), tr.ButtonMapping->OnReset, [&]() { tr.ButtonMapping->LastAction.SetInitial(); });
+		// Don't need to test for containing a function, they will--just might not do anything.
+		tr.OperationToPerform();
+		tr.AdvanceStateFn();
 	}
 
 	// TODO this either won't be used or will just be a facade holding the top-level objects actually in-use.

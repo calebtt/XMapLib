@@ -41,13 +41,13 @@ namespace TestKeyboard
         TEST_METHOD(VerifyTestMapsProvider)
 		{
             TestMappingProvider testMaps{ VirtKey };
-            const auto mapVec = testMaps.GetMappings();
-            for(const auto& e : mapVec)
+            auto mapVec = testMaps.GetMappings();
+            for(auto& e : mapVec)
             {
-                Assert::IsTrue(e.OnDown.has_value());
-                Assert::IsTrue(e.OnUp.has_value());
-                Assert::IsTrue(e.OnRepeat.has_value());
-                Assert::IsTrue(e.OnReset.has_value());
+                Assert::IsTrue(static_cast<bool>(e.OnDown));
+                Assert::IsTrue(static_cast<bool>(e.OnUp));
+                Assert::IsTrue(static_cast<bool>(e.OnRepeat));
+                Assert::IsTrue(static_cast<bool>(e.OnReset));
                 Assert::IsTrue(e.Vk == VirtKey);
             }
 		}
@@ -210,7 +210,6 @@ namespace TestKeyboard
             AssertTranslationPackSizes(vkDown, 0, 0, 0, 1);
             auto& vkDownResult = vkDown.NextStateRequests.front();
             Assert::IsTrue(vkDownResult.DoState.IsDown());
-            Assert::IsTrue(vkDownResult.Priority.IsNextState());
             CallAndUpdateTranslationResult(vkDownResult);
 
             std::this_thread::sleep_for(SleepDelay);
@@ -219,7 +218,6 @@ namespace TestKeyboard
             AssertTranslationPackSizes(vk1Down, 0, 1, 0, 1);
             auto& vk1DownResult = vk1Down.NextStateRequests.front();
             Assert::IsTrue(vk1DownResult.DoState.IsDown());
-            Assert::IsTrue(vk1DownResult.Priority.IsNextState());
             CallAndUpdateTranslationResult(vk1DownResult);
             
         	std::this_thread::sleep_for(SleepDelay);
@@ -237,7 +235,6 @@ namespace TestKeyboard
             AssertTranslationPackSizes(vk1Up, 0, 1, 0, 1);
             auto& vk1UpResult = vk1Up.NextStateRequests.front();
             Assert::IsTrue(vk1UpResult.DoState.IsUp());
-            Assert::IsTrue(vk1UpResult.Priority.IsNextState());
             CallAndUpdateTranslationResult(vk1UpResult);
 
             std::this_thread::sleep_for(SleepDelay);
@@ -248,7 +245,6 @@ namespace TestKeyboard
             AssertTranslationPackSizes(vk4Down, 1, 1, 0, 1);
             auto& vk4DownResult = vk4Down.NextStateRequests.front();
             Assert::IsTrue(vk4DownResult.DoState.IsDown());
-            Assert::IsTrue(vk4DownResult.Priority.IsNextState());
             CallAndUpdateTranslationResult(vk4DownResult);
 
             std::this_thread::sleep_for(SleepDelay);
@@ -258,13 +254,17 @@ namespace TestKeyboard
             auto& vk5DownResult = vk5Down.NextStateRequests.front();
             auto& vk5OvertakenResult = vk5Down.OvertakenRequests.front();
             Assert::IsTrue(vk5DownResult.DoState.IsDown());
-            Assert::IsTrue(vk5DownResult.Priority.IsNextState());
             Assert::IsTrue(vk5OvertakenResult.DoState.IsUp());
-            Assert::IsTrue(vk5OvertakenResult.Priority.IsOvertaking());
             CallAndUpdateTranslationResult(vk5Down.OvertakenRequests.front());
             CallAndUpdateTranslationResult(vk5DownResult);
 
-        	//TODO might extract exclusivity grouping code into an object used by the translator
+            // Cleanup actions
+            Logger::WriteMessage("Performing cleanup actions...\n");
+            auto cleanupActions = translator.GetCleanupActions();
+            for(auto& e : cleanupActions)
+            {
+                CallAndUpdateTranslationResult(e);
+            }
         }
     private:
         static
@@ -290,17 +290,12 @@ namespace TestKeyboard
         static
         auto CallAndUpdateTranslationResult(sds::TranslationResult& tr) -> void
         {
-            auto DoIf = [&](const bool theCond, auto& theFnOpt, std::function<void()> updateFn) {
-                if (theCond)
-                    updateFn();
-                if (theCond && theFnOpt) {
-                    (*theFnOpt)();
-                }
-            };
-            DoIf(tr.DoState.IsDown(), tr.ButtonMapping->OnDown, [&]() { tr.ButtonMapping->LastAction.SetDown(); });
-            DoIf(tr.DoState.IsRepeating(), tr.ButtonMapping->OnRepeat, [&]() { tr.ButtonMapping->LastAction.SetRepeat(); });
-            DoIf(tr.DoState.IsUp(), tr.ButtonMapping->OnUp, [&]() { tr.ButtonMapping->LastAction.SetUp(); });
-            DoIf(tr.DoState.IsInitialState(), tr.ButtonMapping->OnReset, [&]() { tr.ButtonMapping->LastAction.SetInitial(); });
+            // Don't need to test for containing a function, they will--just
+            // might not do anything.
+            //if (tr.OperationToPerform)
+                tr.OperationToPerform();
+            //if (tr.AdvanceStateFn)
+                tr.AdvanceStateFn();
         }
     private:
 		auto GetThreadUnit() const
