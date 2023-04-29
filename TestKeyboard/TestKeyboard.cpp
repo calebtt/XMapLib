@@ -253,7 +253,16 @@ namespace TestKeyboard
 
             std::this_thread::sleep_for(SleepDelay);
 
-            // TODO send vk+5 down (ex. grp. 101) which overtakes vk+4 being down/repeating
+            auto vk5Down = translator(testPoll.GetDownState(VirtKey + 5));
+            AssertTranslationPackSizes(vk5Down, 1, 2, 1, 1);
+            auto& vk5DownResult = vk5Down.NextStateRequests.front();
+            auto& vk5OvertakenResult = vk5Down.OvertakenRequests.front();
+            Assert::IsTrue(vk5DownResult.DoState.IsDown());
+            Assert::IsTrue(vk5DownResult.Priority.IsNextState());
+            Assert::IsTrue(vk5OvertakenResult.DoState.IsUp());
+            Assert::IsTrue(vk5OvertakenResult.Priority.IsOvertaking());
+            CallAndUpdateTranslationResult(vk5Down.OvertakenRequests.front());
+            CallAndUpdateTranslationResult(vk5DownResult);
 
         	//TODO might extract exclusivity grouping code into an object used by the translator
         }
