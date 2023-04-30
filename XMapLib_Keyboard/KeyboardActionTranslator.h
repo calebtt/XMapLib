@@ -28,13 +28,16 @@ namespace sds
 	{
 		// Action to perform
 		ButtonStateMgr DoState;
-		//// Mapping associated with translation result
-		//CBActionMap* ButtonMapping{};
-		// Operation being requested to be performed
+		// Operation being requested to be performed, callable
 		detail::Fn_t OperationToPerform;
 		// Function to advance the button mapping to the next state (after operation has been performed)
 		detail::Fn_t AdvanceStateFn;
-
+		// Call operator, calls op fn then advances the state
+		void operator()() const
+		{
+			OperationToPerform();
+			AdvanceStateFn();
+		}
 		// Debugging purposes
 		friend auto operator<<(std::ostream& os, const TranslationResult& obj) -> std::ostream&
 		{
@@ -48,30 +51,18 @@ namespace sds
 
 	struct TranslationPack
 	{
-		// TODO might wrap the vectors in a struct with a call operator to have individual call operators for range of TranslationResult.
 		void operator()() const
 		{
-			for (auto& elem : UpdateRequests)
-			{
-				elem.OperationToPerform();
-				elem.AdvanceStateFn();
-			}
-			for (auto& elem : OvertakenRequests)
-			{
-				elem.OperationToPerform();
-				elem.AdvanceStateFn();
-			}
-			for (auto& elem : RepeatRequests)
-			{
-				elem.OperationToPerform();
-				elem.AdvanceStateFn();
-			}
-			for (auto& elem : NextStateRequests)
-			{
-				elem.OperationToPerform();
-				elem.AdvanceStateFn();
-			}
+			for (const auto& elem : UpdateRequests)
+				elem();
+			for (const auto& elem : OvertakenRequests)
+				elem();
+			for (const auto& elem : RepeatRequests)
+				elem();
+			for (const auto& elem : NextStateRequests)
+				elem();
 		}
+		// TODO might wrap the vectors in a struct with a call operator to have individual call operators for range of TranslationResult.
 		std::vector<TranslationResult> UpdateRequests;
 		std::vector<TranslationResult> RepeatRequests;
 		std::vector<TranslationResult> OvertakenRequests;
@@ -230,7 +221,7 @@ namespace sds
 					results.emplace_back(
 						TranslationResult
 						{
-							.DoState = ButtonStateMgr::ActionState::KEYUP,
+							.DoState = ButtonStateMgrUp(),
 							.OperationToPerform = [&elem]()
 							{
 								if(elem.OnUp)
@@ -256,7 +247,7 @@ namespace sds
 			auto& currentMapping = m_mappings.at(ind);
 			return TranslationResult
 			{
-				.DoState = ButtonStateMgr::ActionState::INIT,
+				.DoState = ButtonStateMgrInitial(),
 				.OperationToPerform = [&currentMapping]()
 				{
 					if (currentMapping.OnReset)
@@ -273,7 +264,7 @@ namespace sds
 			auto& currentMapping = m_mappings.at(ind);
 			return TranslationResult
 			{
-				.DoState = ButtonStateMgr::ActionState::KEYREPEAT,
+				.DoState = ButtonStateMgrRepeat(),
 				.OperationToPerform = [&currentMapping]()
 				{
 					if (currentMapping.OnRepeat)
@@ -302,7 +293,7 @@ namespace sds
 						{
 							results.emplace_back(TranslationResult
 								{
-									.DoState =ButtonStateMgr::ActionState::KEYUP,
+									.DoState = ButtonStateMgrUp(),
 									.OperationToPerform = [p]()
 									{
 										if(p->OnUp)
@@ -337,7 +328,7 @@ namespace sds
 			{
 				results.emplace_back(TranslationResult
 					{
-						.DoState = ButtonStateMgr::ActionState::KEYDOWN,
+						.DoState = ButtonStateMgrDown(),
 						.OperationToPerform = [&currentMapping]()
 						{
 							if(currentMapping.OnDown)
@@ -353,7 +344,7 @@ namespace sds
 			{
 				results.emplace_back(TranslationResult
 					{
-						.DoState = ButtonStateMgr::ActionState::KEYREPEAT,
+						.DoState = ButtonStateMgrRepeat(),
 						.OperationToPerform = [&currentMapping]()
 						{
 							if (currentMapping.OnRepeat)
@@ -370,7 +361,7 @@ namespace sds
 			{
 				results.emplace_back(TranslationResult
 					{
-						.DoState = ButtonStateMgr::ActionState::KEYUP,
+						.DoState = ButtonStateMgrUp(),
 						.OperationToPerform = [&currentMapping]()
 						{
 							if (currentMapping.OnUp)
@@ -409,28 +400,6 @@ namespace sds
 			groupMap[vk] = currentMappingGroupOpt;
 		}
 		return true;
-	}
-
-	/**
-	 * \brief By returning the index, we can avoid issues with iterator/pointer invalidation.
-	 * Uses unsigned int because size_t is just a waste of space here.
-	 * \param vk Controller Button Virtual Keycode
-	 * \param mappingsList List of controller button to action mappings.
-	 * \return Vector of indices at which mappings which map to the controller button VK can be located.
-	 */
-	constexpr
-	auto GetVkMatchIndices(const int vk, const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>
-	{
-		using std::ranges::for_each;
-
-		std::vector<std::uint32_t> buf;
-		for(std::uint32_t i{}; i < mappingsList.size(); ++i)
-		{
-			const auto& elem = mappingsList[i];
-			if (elem.Vk == vk)
-				buf.emplace_back(i);
-		}
-		return buf;
 	}
 
 	/**
@@ -500,4 +469,25 @@ namespace sds
 		return uniqueMatchResult;
 	}
 
+	/**
+	 * \brief By returning the index, we can avoid issues with iterator/pointer invalidation.
+	 * Uses unsigned int because size_t is just a waste of space here.
+	 * \param vk Controller Button Virtual Keycode
+	 * \param mappingsList List of controller button to action mappings.
+	 * \return Vector of indices at which mappings which map to the controller button VK can be located.
+	 */
+	constexpr
+	auto GetVkMatchIndices(const int vk, const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>
+	{
+		using std::ranges::for_each;
+
+		std::vector<std::uint32_t> buf;
+		for (std::uint32_t i{}; i < mappingsList.size(); ++i)
+		{
+			const auto& elem = mappingsList[i];
+			if (elem.Vk == vk)
+				buf.emplace_back(i);
+		}
+		return buf;
+	}
 }

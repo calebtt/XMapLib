@@ -8,13 +8,13 @@
 #define PCH_H
 
 // add headers that you want to pre-compile here
-#include <ranges>
-#include <algorithm>
-#include <string>
 #include <iostream>
+#include <string>
+#include <array>
+#include <algorithm>
 #include <memory>
 #include <functional>
-#include <array>
+#include <ranges>
 
 #include "../XMapLib_Keyboard/KeyboardActionTranslator.h"
 #include "../XMapLib_Keyboard/ControllerButtonToActionMap.h"

@@ -10,6 +10,7 @@ namespace sds
 	/**
 	 * \brief Wrapper for key mapping state enum, the least I can do is make sure state modifications occur through a managing class,
 	 * and that there exists only one 'current' state, and that it can only be a finite set of possibilities.
+	 * Also contains last sent time and a keyboard settings pack.
 	 */
 	class MappingStateManager
 	{
@@ -29,11 +30,14 @@ namespace sds
 		[[nodiscard]] constexpr bool IsDown() const noexcept { return m_currentValue == ActionState::KEYDOWN; }
 		[[nodiscard]] constexpr bool IsUp() const noexcept { return m_currentValue == ActionState::KEYUP; }
 		[[nodiscard]] constexpr bool IsInitialState() const noexcept { return m_currentValue == ActionState::INIT; }
-		auto SetDown() noexcept { m_currentValue = ActionState::KEYDOWN; }
-		auto SetUp() noexcept { m_currentValue = ActionState::KEYUP; }
-		auto SetRepeat() noexcept { m_currentValue = ActionState::KEYREPEAT; }
-		auto SetInitial() noexcept { m_currentValue = ActionState::INIT; }
+		constexpr auto SetDown() noexcept { m_currentValue = ActionState::KEYDOWN; }
+		constexpr auto SetUp() noexcept { m_currentValue = ActionState::KEYUP; }
+		constexpr auto SetRepeat() noexcept { m_currentValue = ActionState::KEYREPEAT; }
+		constexpr auto SetInitial() noexcept { m_currentValue = ActionState::INIT; }
 	};
+
+	static_assert(std::is_copy_constructible_v<MappingStateManager>);
+	static_assert(std::is_copy_assignable_v<MappingStateManager>);
 
 	/**
 	 * \brief The exclusivity grouping member is intended to allow the user to add different groups of mappings
@@ -51,6 +55,5 @@ namespace sds
 		detail::Fn_t OnReset;
 		detail::OptDelay_t CustomRepeatDelay; // optional custom delay between key-repeats
 		MappingStateManager LastAction; // Last action performed, with get/set methods.
-		// TODO this might need a variant holding a callable that will perform the post-action state update.
 	};
 }

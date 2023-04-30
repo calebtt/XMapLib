@@ -7,13 +7,6 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace TestKeyboard
 {
-    template<typename Poller_t>
-    concept IsInputPoller = requires(Poller_t & t)
-    {
-        { t.GetUpdatedState(0) };
-        { t.GetUpdatedState(0) } -> std::convertible_to<sds::ControllerStateWrapper>;
-    };
-
     inline
     auto PrintResultsWithMessage(std::vector<sds::TranslationResult>& trv, std::string_view initMessage) -> void
     {
@@ -62,22 +55,22 @@ namespace TestKeyboard
             KeyboardActionTranslator translator{ testMaps.GetMappings() };
 
 			// Pass a polled state for each phase into the translator, store the result
-            const auto downPack = translator(testPoll.GetDownState());
+            auto downPack = translator(testPoll.GetDownState());
             Assert::IsTrue(downPack.NextStateRequests.size() == 1);
             // Grab only the first elements (should only be 1 result per call)
-            auto downResult = downPack.NextStateRequests.front();
+            auto& downResult = downPack.NextStateRequests.front();
             // Advance the pointed-to mapping in the translationresult to the next state
             CallAndUpdateTranslationResult(downResult);
             std::this_thread::sleep_for(1s);
 
-            const auto repeatPack = translator(testPoll.GetRepeatState());
+            auto repeatPack = translator(testPoll.GetRepeatState());
             Assert::IsTrue(repeatPack.RepeatRequests.size() == 1);
-            auto repeatResult = repeatPack.RepeatRequests.front();
+            auto& repeatResult = repeatPack.RepeatRequests.front();
             CallAndUpdateTranslationResult(repeatResult);
             std::this_thread::sleep_for(1s);
-            const auto upPack = translator(testPoll.GetUpState());
+            auto upPack = translator(testPoll.GetUpState());
             Assert::IsTrue(upPack.NextStateRequests.size() == 1);
-            auto upResult = upPack.NextStateRequests.front();
+            auto& upResult = upPack.NextStateRequests.front();
             CallAndUpdateTranslationResult(upResult);
 
             const auto noResultPack = translator(testPoll.GetNoState());
@@ -101,17 +94,17 @@ namespace TestKeyboard
             KeyboardActionTranslator translator{ testMaps.GetMappings() };
 
             // Pass a polled state for each phase into the translator, store the result
-            const auto downVec = translator(testPoll.GetDownState());
+            auto downVec = translator(testPoll.GetDownState());
             Assert::IsTrue(downVec.NextStateRequests.size() == 1);
             // Grab only the first elements (should only be 1 result per call)
-            auto downResult = downVec.NextStateRequests.front();
+            auto& downResult = downVec.NextStateRequests.front();
             // Advance the pointed-to mapping in the translationresult to the next state
             CallAndUpdateTranslationResult(downResult);
             std::this_thread::sleep_for(1s);
 
-            const auto repeatVec = translator(testPoll.GetRepeatState());
+            auto repeatVec = translator(testPoll.GetRepeatState());
             Assert::IsTrue(repeatVec.RepeatRequests.size() == 1);
-            auto repeatResult = repeatVec.RepeatRequests.front();
+            auto& repeatResult = repeatVec.RepeatRequests.front();
             CallAndUpdateTranslationResult(repeatResult);
             std::this_thread::sleep_for(1s);
 
@@ -290,12 +283,9 @@ namespace TestKeyboard
         static
         auto CallAndUpdateTranslationResult(sds::TranslationResult& tr) -> void
         {
-            // Don't need to test for containing a function, they will--just
-            // might not do anything.
-            //if (tr.OperationToPerform)
-                tr.OperationToPerform();
-            //if (tr.AdvanceStateFn)
-                tr.AdvanceStateFn();
+            // Don't need to test for containing a function, they will--just might not do anything.
+        	tr.OperationToPerform();
+            tr.AdvanceStateFn();
         }
     private:
 		auto GetThreadUnit() const
