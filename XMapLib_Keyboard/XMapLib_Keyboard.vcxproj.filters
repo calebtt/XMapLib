@@ -68,9 +68,6 @@
     <ClInclude Include="TestMappingProvider.h">
       <Filter>Header Files\TestFiles</Filter>
     </ClInclude>
-    <ClInclude Include="PriorityMgr.h">
-      <Filter>Header Files\Keyboard\KeyInfoWrappers</Filter>
-    </ClInclude>
     <ClInclude Include="ButtonStateMgr.h">
       <Filter>Header Files\Keyboard\KeyInfoWrappers</Filter>
     </ClInclude>

@@ -2,7 +2,6 @@
 #include "LibIncludes.h"
 #include "ControllerButtonToActionMap.h"
 #include "KeyboardPoller.h"
-#include "PriorityMgr.h"
 #include "ButtonStateMgr.h"
 
 #include <iostream>
@@ -21,11 +20,10 @@ namespace sds
 	template<typename T>
 	concept MappingRange_c = requires (T & t)
 	{
-		{ t.begin() };
-		{ t.end() };
 		{ std::same_as<typename T::value_type, CBActionMap> };
-		{ std::ranges::input_range<T> };
+		{ std::ranges::forward_range<T> };
 	};
+
 	struct TranslationResult
 	{
 		// Action to perform
@@ -50,6 +48,30 @@ namespace sds
 
 	struct TranslationPack
 	{
+		// TODO might wrap the vectors in a struct with a call operator to have individual call operators for range of TranslationResult.
+		void operator()() const
+		{
+			for (auto& elem : UpdateRequests)
+			{
+				elem.OperationToPerform();
+				elem.AdvanceStateFn();
+			}
+			for (auto& elem : OvertakenRequests)
+			{
+				elem.OperationToPerform();
+				elem.AdvanceStateFn();
+			}
+			for (auto& elem : RepeatRequests)
+			{
+				elem.OperationToPerform();
+				elem.AdvanceStateFn();
+			}
+			for (auto& elem : NextStateRequests)
+			{
+				elem.OperationToPerform();
+				elem.AdvanceStateFn();
+			}
+		}
 		std::vector<TranslationResult> UpdateRequests;
 		std::vector<TranslationResult> RepeatRequests;
 		std::vector<TranslationResult> OvertakenRequests;
@@ -112,7 +134,7 @@ namespace sds
 			}
 		}
 		// Move-ctor for mappings list.
-		KeyboardActionTranslator(MappingRange_c auto&& mappingsList)
+		KeyboardActionTranslator(std::vector<CBActionMap>&& mappingsList)
 		{
 			if (!AreExclusivityGroupsUnique(mappingsList))
 				throw std::invalid_argument("Mapping list contained multiple exclusivity groupings for a single controller button.");
@@ -280,13 +302,13 @@ namespace sds
 						{
 							results.emplace_back(TranslationResult
 								{
-									ButtonStateMgr::ActionState::KEYUP,
-									[p]()
+									.DoState =ButtonStateMgr::ActionState::KEYUP,
+									.OperationToPerform = [p]()
 									{
 										if(p->OnUp)
 											p->OnUp();
 									},
-									[p]()
+									.AdvanceStateFn = [p]()
 									{
 										p->LastAction.SetUp();
 									}
@@ -360,16 +382,6 @@ namespace sds
 						}
 					});
 			}
-			// special repeat case
-			//if (isButtonRepeat && isMapRepeat)
-			//{
-			//	results.emplace_back(TranslationResult
-			//		{
-			//			.DoState = ButtonStateMgr::ActionState::KEYREPEAT,
-			//			.ButtonMapping = &currentMapping,
-			//			.Priority = PriorityMgr::PriorityState::REPEAT
-			//		});
-			//}
 		}
 	};
 
