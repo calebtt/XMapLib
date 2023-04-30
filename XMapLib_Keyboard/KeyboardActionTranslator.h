@@ -76,15 +76,14 @@ namespace sds
 	[[nodiscard]] inline auto GetUniqueMatches(const std::vector<std::uint32_t> existing, const std::vector<std::uint32_t> toAdd) -> std::vector<std::uint32_t>;
 
 	/**
-	 * \brief This translator is responsible for providing info regarding the state of
+	 * \brief This translator is responsible for managing the state of
 	 * 1. exclusivity groupings,
 	 * 2. the last action of the mapping,
 	 * 3. the decision to do a repeat if the mapping has enabled repeat behavior,
 	 * 4. the key-repeat and key-update timer loops
 	 * 5. *Note that this translator doesn't make the updates to the mapping, only notifies when they should occur.
 	 *
-	 * To perform these tasks, it needs an internal working copy of every mapping in use,
-	 * it encapsulates the mapping array.
+	 * To perform these tasks, it needs an internal working copy of every mapping in use, it encapsulates the mapping array.
 	 * \remarks Construct a new instance to encapsulate a new or altered set of mappings.
 	 * Key mappings only traverse states in these paths, note they begin at "initial":
 	 * 1. initial -> down -> repeat -> up

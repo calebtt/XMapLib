@@ -74,9 +74,6 @@ namespace TestKeyboard
             CallAndUpdateTranslationResult(upResult);
 
             const auto noResultPack = translator(testPoll.GetNoState());
-            //Assert::IsTrue(noResultPack.OvertakingRequests.size() == 1);
-            //auto noResult = noResultPack.front();
-            //CallAndUpdateTranslationResult(noResult);
 
             Assert::IsTrue(downResult.DoState.IsDown(), L"Translation for polled key-down wasn't down.");
             Assert::IsTrue(repeatResult.DoState.IsRepeating(), L"Translation for polled key-repeat wasn't repeat.");
