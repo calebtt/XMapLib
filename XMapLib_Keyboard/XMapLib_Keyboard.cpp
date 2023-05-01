@@ -12,12 +12,13 @@
 
 auto GetDriverMappings()
 {
+
     std::vector<sds::CBActionMap> mapBuffer
     {
         sds::CBActionMap{
             .Vk = VK_PAD_A,
             .UsesRepeat = true,
-            .OnDown = []() { std::cout << "[PAD_A]=[DOWN]\n"; },
+            .OnDown = [&]() { std::cout << "[PAD_A]=[DOWN]\n"; },
             .OnUp = []() { std::cout << "[PAD_A]=[UP]\n"; },
             .OnRepeat = []() { std::cout << "[PAD_A]=[REPEAT]\n"; }
         },
@@ -87,7 +88,7 @@ int main()
 
     GetterExitCallable gec;
     const auto exitFuture = std::async(std::launch::async, [&]() { gec.GetExitSignal(); });
-    constexpr std::uint32_t NumStatesPerIter{ 100 };
+    //constexpr std::uint32_t NumStatesPerIter{ 100 };
     while(!gec.IsDone)
     {
         const auto translation = translator(kp.GetUpdatedState());

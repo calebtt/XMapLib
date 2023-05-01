@@ -26,6 +26,9 @@ namespace sds
 
 	struct TranslationResult
 	{
+		//TODO add meta-data about the mapping, like which VK it's mapped to, the user could build their own mechanism to acquire
+		//this info, but it's much easier to just add it here in the event it could be useful.
+
 		// Action to perform
 		ButtonStateMgr DoState;
 		// Operation being requested to be performed, callable
