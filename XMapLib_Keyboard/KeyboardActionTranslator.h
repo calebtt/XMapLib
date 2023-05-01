@@ -258,6 +258,7 @@ namespace sds
 				.AdvanceStateFn = [&currentMapping]()
 				{
 					currentMapping.LastAction.SetInitial();
+					currentMapping.LastAction.LastSentTime.Reset();
 				}
 			};
 		}
@@ -271,6 +272,7 @@ namespace sds
 				{
 					if (currentMapping.OnRepeat)
 						currentMapping.OnRepeat();
+					currentMapping.LastAction.LastSentTime.Reset();
 				},
 				.AdvanceStateFn = [&currentMapping]()
 				{
@@ -325,6 +327,7 @@ namespace sds
 			const bool isButtonDown = buttonInfo.KeyDown;
 			const bool isButtonUp = buttonInfo.KeyUp;
 			const bool isButtonRepeat = buttonInfo.KeyRepeat;
+			const bool isTimerElapsed = currentMapping.LastAction.LastSentTime.IsElapsed();
 			// Initial key-down case
 			if (isButtonDown && isMapInit)
 			{
@@ -333,8 +336,10 @@ namespace sds
 						.DoState = ButtonStateMgrDown(),
 						.OperationToPerform = [&currentMapping]()
 						{
-							if(currentMapping.OnDown)
+							if (currentMapping.OnDown)
 								currentMapping.OnDown();
+							// Reset timer after activation, to wait for elapsed before another next state translation is returned.
+							currentMapping.LastAction.LastSentTime.Reset();
 						},
 						.AdvanceStateFn = [&currentMapping]()
 						{
@@ -342,7 +347,7 @@ namespace sds
 						}
 					});
 			}
-			if ((isButtonDown || isButtonRepeat) && isMapDown)
+			if ((isButtonDown || isButtonRepeat) && isMapDown && isTimerElapsed)
 			{
 				results.emplace_back(TranslationResult
 					{
@@ -351,16 +356,19 @@ namespace sds
 						{
 							if (currentMapping.OnRepeat)
 								currentMapping.OnRepeat();
+							currentMapping.LastAction.LastSentTime.Reset();
 						},
 						.AdvanceStateFn = [&currentMapping]()
 						{
 							currentMapping.LastAction.SetRepeat();
 						}
 					});
+				
 			}
 			// Key-up case
 			if (isButtonUp && (isMapDown || isMapRepeat))
 			{
+				// Key-up doesn't require timer elapsed.
 				results.emplace_back(TranslationResult
 					{
 						.DoState = ButtonStateMgrUp(),

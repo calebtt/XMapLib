@@ -24,7 +24,7 @@ auto GetDriverMappings()
         },
         sds::CBActionMap{
             .Vk = VK_PAD_B,
-            .UsesRepeat = true,
+            .UsesRepeat = false,
             .OnDown = []() { std::cout << "[PAD_B]=[DOWN]\n"; },
             .OnUp = []() { std::cout << "[PAD_B]=[UP]\n"; },
             .OnRepeat = []() { std::cout << "[PAD_B]=[REPEAT]\n"; }
