@@ -256,6 +256,47 @@ namespace TestKeyboard
                 CallAndUpdateTranslationResult(e);
             }
         }
+        TEST_METHOD(TestBenchmarkTranslator)
+        {
+            using namespace sds;
+            using namespace std::chrono_literals;
+            namespace chron = std::chrono;
+            static constexpr std::size_t TestIterations{ 1'000 };
+
+            Logger::WriteMessage("Beginning timed test of many translation iterations.\n");
+            // Test data provider objs
+            TestMappingProvider testMaps{ VirtKey };
+            KeyboardPoller keyPoller{ 0 };
+
+            // Note that these mappings write to the test logger, might add some latency.
+            std::vector<CBActionMap> mappings;
+            mappings.append_range(testMaps.GetMapping(VK_PAD_A));
+            mappings.append_range(testMaps.GetMapping(VK_PAD_B));
+            mappings.append_range(testMaps.GetMapping(VK_PAD_X));
+            mappings.append_range(testMaps.GetMapping(VK_PAD_Y));
+            mappings.append_range(testMaps.GetMapping(VK_GAMEPAD_LEFT_THUMBSTICK_UP, 101));
+            mappings.append_range(testMaps.GetMapping(VK_GAMEPAD_LEFT_THUMBSTICK_DOWN, 101));
+            mappings.append_range(testMaps.GetMapping(VK_GAMEPAD_LEFT_THUMBSTICK_LEFT, 101));
+            mappings.append_range(testMaps.GetMapping(VK_GAMEPAD_LEFT_THUMBSTICK_RIGHT, 101));
+
+            // Construct a translator object, which encapsulates some test mappings
+            KeyboardActionTranslator translator{ std::move(mappings) };
+
+            const auto beginTime = chron::steady_clock::now();
+            for(std::size_t i{}; i < TestIterations; ++i)
+            {
+                translator(keyPoller())();
+            }
+            const auto endTime = chron::steady_clock::now() - beginTime;
+            const auto indivTime = chron::nanoseconds( endTime.count() / TestIterations);
+            const auto indivTimeUs = chron::duration_cast<chron::microseconds>(indivTime);
+            const auto indivTimeMs = chron::duration_cast<chron::milliseconds>(indivTime);
+
+            const auto totalMsg = std::format("Total time for {} test iterations is: {}\n", TestIterations, endTime);
+            const auto indivMsg = std::format("Avg. time for each test iteration is: {} -or- {} -or- {}\n", indivTime, indivTimeUs, indivTimeMs);
+            const auto timeMsg = totalMsg + indivMsg;
+            Logger::WriteMessage(timeMsg.c_str());
+        }
     private:
         static
         void AssertTranslationPackSizes(

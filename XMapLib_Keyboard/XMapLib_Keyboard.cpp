@@ -8,6 +8,7 @@
 #include "KeyboardActionTranslator.h"
 #include "KeyboardMapper.h"
 #include "KeyboardPoller.h"
+#include "../XMapLib_Utils/nanotime.h"
 
 auto GetDriverMappings()
 {
@@ -66,7 +67,7 @@ auto GetDriverMappings()
 // Crude mechanism to keep the loop running until [enter] is pressed.
 struct GetterExitCallable
 {
-    bool IsDone{ false };
+    std::atomic<bool> IsDone{ false };
     void GetExitSignal()
     {
         std::string buf;
@@ -81,15 +82,17 @@ int main()
 
     auto mapBuffer = GetDriverMappings();
     sds::KeyboardActionTranslator translator(std::move(mapBuffer));
+    sds::KeyboardPlayerInfo kpi{};
+    sds::KeyboardPoller kp(kpi.player_id);
 
     GetterExitCallable gec;
-    auto exitFuture = std::async(std::launch::async, [&]() { gec.GetExitSignal(); });
+    const auto exitFuture = std::async(std::launch::async, [&]() { gec.GetExitSignal(); });
+    constexpr std::uint32_t NumStatesPerIter{ 100 };
     while(!gec.IsDone)
     {
-        sds::KeyboardPoller kp(0);
         const auto translation = translator(kp.GetUpdatedState());
         translation();
-        std::this_thread::sleep_for(10ms);
+        nanotime_sleep(1'000'000);
     }
     std::cout << "Performing cleanup actions...\n";
     const auto cleanupTranslation = translator.GetCleanupActions();

@@ -57,9 +57,15 @@
     <ClInclude Include="IOFuncs.h">
       <Filter>Header Files\IOHelpers</Filter>
     </ClInclude>
+    <ClInclude Include="nanotime.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="nanotime.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

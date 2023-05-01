@@ -15,6 +15,8 @@ namespace sds
 		using StateQueue_t = std::array<ControllerStateWrapper, StateQueueSize>;
 		XINPUT_KEYSTROKE m_tempState{};
 		StateQueue_t m_stateQueue{};
+		// Buffer for holding multiple state polls before returning.
+		std::vector<ControllerStateWrapper> m_stateBuf;
 		int m_playerId{};
 	public:
 		KeyboardPoller() = default;
@@ -27,15 +29,13 @@ namespace sds
 
 		/**
 		 * \brief Returns an updated ControllerStateWrapper containing information gathered about a controller keypress.
-		 * \param playerId controller/player ID value
 		 */
 		[[nodiscard]]
-		auto GetUpdatedState(const int playerId) noexcept -> ControllerStateWrapper
+		auto GetUpdatedState() noexcept -> ControllerStateWrapper
 		{
 			// zero controller state struct
 			m_tempState = {};
-			// get updated controller state information
-			const DWORD error = XInputGetKeystroke(playerId, 0, &m_tempState);
+			const DWORD error = XInputGetKeystroke(m_playerId, 0, &m_tempState);
 			if (error == ERROR_SUCCESS || error == ERROR_EMPTY)
 			{
 				const bool isDown = m_tempState.Flags & XINPUT_KEYSTROKE_KEYDOWN;
@@ -46,16 +46,31 @@ namespace sds
 			assert(error != ERROR_BAD_ARGUMENTS);
 			return {};
 		}
-
 		/**
-		 * \brief Returns an updated ControllerStateWrapper containing information gathered about a controller keypress using
-		 * the player id set at construction.
+		 * \brief Returns many updated ControllerStateWrapper containing information gathered about controller keypresses.
 		 */
 		[[nodiscard]]
-		auto GetUpdatedState() noexcept -> ControllerStateWrapper
+		auto GetUpdatedStates(const std::uint32_t numStates) noexcept -> std::vector<ControllerStateWrapper>
 		{
-			return GetUpdatedState(m_playerId);
+			assert(numStates > 0);
+			m_stateBuf = {};
+
+			for (std::size_t i{}; i < numStates; ++i)
+			{
+				m_tempState = {};
+				const DWORD error = XInputGetKeystroke(m_playerId, 0, &m_tempState);
+				if (error == ERROR_SUCCESS || error == ERROR_EMPTY)
+				{
+					const bool isDown = m_tempState.Flags & XINPUT_KEYSTROKE_KEYDOWN;
+					const bool isUp = m_tempState.Flags & XINPUT_KEYSTROKE_KEYUP;
+					const bool isRepeat = m_tempState.Flags & XINPUT_KEYSTROKE_REPEAT;
+					m_stateBuf.emplace_back(ControllerStateWrapper{ .VirtualKey = m_tempState.VirtualKey, .KeyDown = isDown, .KeyUp = isUp, .KeyRepeat = isRepeat });
+				}
+				assert(error != ERROR_BAD_ARGUMENTS);
+			}
+			return m_stateBuf;
 		}
+
 
 		/**
 		 * \brief Returns an updated ControllerStateWrapper buffer containing information gathered about controller keypresses.
