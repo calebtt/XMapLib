@@ -24,8 +24,7 @@ namespace sds
 		ActionState m_currentValue{ ActionState::INIT };
 		KeyboardSettings m_keyDefaults{};
 	public:
-		//DelayManagement::DelayManager LastSentTime{ std::chrono::microseconds{m_keyDefaults.MICROSECONDS_DELAY_KEYREPEAT} };
-		DelayManagement::DelayManager LastSentTime{ std::chrono::seconds{1} };
+		DelayManagement::DelayManager LastSentTime{ std::chrono::microseconds{m_keyDefaults.MICROSECONDS_DELAY_KEYREPEAT} };
 	public:
 		[[nodiscard]] constexpr bool IsRepeating() const noexcept { return m_currentValue == ActionState::KEYREPEAT; }
 		[[nodiscard]] constexpr bool IsDown() const noexcept { return m_currentValue == ActionState::KEYDOWN; }
