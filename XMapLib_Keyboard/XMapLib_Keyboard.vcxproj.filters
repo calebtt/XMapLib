@@ -74,5 +74,8 @@
     <ClInclude Include="CustomTypes.h">
       <Filter>Header Files\Keyboard</Filter>
     </ClInclude>
+    <ClInclude Include="KeyboardTranslationResult.h">
+      <Filter>Header Files\Keyboard</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

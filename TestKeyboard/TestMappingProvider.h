@@ -19,7 +19,7 @@ namespace TestKeyboard
             std::vector<CBActionMap> mappings;
             CBActionMap tm{
                 .Vk = Vk,
-                .UsesRepeat = true,
+                .UsesRepeatBehavior = true,
                 .ExclusivityGrouping = {},
                 .OnDown = [=]() { Logger::WriteMessage(downMessage.c_str()); },
                 .OnUp = [=]() { Logger::WriteMessage(upMessage.c_str()); },
@@ -43,7 +43,7 @@ namespace TestKeyboard
             std::vector<CBActionMap> mappings;
             CBActionMap tm{
                 .Vk = newVk,
-                .UsesRepeat = true,
+                .UsesRepeatBehavior = true,
                 .ExclusivityGrouping = exGroup,
                 .OnDown = [=](){ Logger::WriteMessage(downMessage.c_str()); },
                 .OnUp = [=]() { Logger::WriteMessage(upMessage.c_str()); },

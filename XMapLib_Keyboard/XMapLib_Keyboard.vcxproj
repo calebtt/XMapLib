@@ -154,6 +154,7 @@
     <ClInclude Include="KeyboardSendFuncs.h" />
     <ClInclude Include="KeyboardSettingsPack.h" />
     <ClInclude Include="KeyboardActionTranslator.h" />
+    <ClInclude Include="KeyboardTranslationResult.h" />
     <ClInclude Include="KeyStateMachine.h" />
     <ClInclude Include="KeyStateMachineInformational.h" />
     <ClInclude Include="LibIncludes.h" />

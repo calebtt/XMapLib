@@ -10,6 +10,13 @@
 #include "KeyboardPoller.h"
 #include "../XMapLib_Utils/nanotime.h"
 
+inline
+auto GetEpochTimestamp()
+{
+    const auto currentTime = std::chrono::steady_clock::now();
+    return std::chrono::duration_cast<std::chrono::seconds>(currentTime.time_since_epoch());
+}
+
 auto GetDriverMappings()
 {
 
@@ -17,21 +24,22 @@ auto GetDriverMappings()
     {
         sds::CBActionMap{
             .Vk = VK_PAD_A,
-            .UsesRepeat = true,
-            .OnDown = [&]() { std::cout << "[PAD_A]=[DOWN]\n"; },
-            .OnUp = []() { std::cout << "[PAD_A]=[UP]\n"; },
-            .OnRepeat = []() { std::cout << "[PAD_A]=[REPEAT]\n"; }
+            .UsesRepeatBehavior = true,
+            .OnDown = [&]() { std::cout << std::format("[PAD_A]=[DOWN] @{}\n",GetEpochTimestamp()); },
+            .OnUp = []() { std::cout << std::format("[PAD_A]=[UP] @{}\n", GetEpochTimestamp()); },
+            .OnRepeat = []() { std::cout << std::format("[PAD_A]=[REPEAT] @{}\n", GetEpochTimestamp()); },
         },
         sds::CBActionMap{
             .Vk = VK_PAD_B,
-            .UsesRepeat = false,
-            .OnDown = []() { std::cout << "[PAD_B]=[DOWN]\n"; },
-            .OnUp = []() { std::cout << "[PAD_B]=[UP]\n"; },
-            .OnRepeat = []() { std::cout << "[PAD_B]=[REPEAT]\n"; }
+            .UsesRepeatBehavior = false,
+            .SendsFirstRepeatOnly = true,
+            .OnDown = []() { std::cout << std::format("[PAD_B]=[DOWN] @{}\n", GetEpochTimestamp()); },
+            .OnUp = []() { std::cout << std::format("[PAD_B]=[UP] @{}\n", GetEpochTimestamp()); },
+            .OnRepeat = []() { std::cout << std::format("[PAD_B]=[REPEAT] @{}\n", GetEpochTimestamp()); },
         },
         sds::CBActionMap{
             .Vk = VK_PAD_LTHUMB_UP,
-            .UsesRepeat = true,
+            .UsesRepeatBehavior = true,
             .ExclusivityGrouping = 101,
             .OnDown = []() { std::cout << "[LTHUMB_UP]=[DOWN]\n"; },
             .OnUp = []() { std::cout << "[LTHUMB_UP]=[UP]\n"; },
@@ -39,7 +47,7 @@ auto GetDriverMappings()
         },
         sds::CBActionMap{
             .Vk = VK_PAD_LTHUMB_DOWN,
-            .UsesRepeat = true,
+            .UsesRepeatBehavior = true,
             .ExclusivityGrouping = 101,
             .OnDown = []() { std::cout << "[LTHUMB_DOWN]=[DOWN]\n"; },
             .OnUp = []() { std::cout << "[LTHUMB_DOWN]=[UP]\n"; },
@@ -47,7 +55,7 @@ auto GetDriverMappings()
         },
         sds::CBActionMap{
             .Vk = VK_PAD_LTHUMB_RIGHT,
-            .UsesRepeat = true,
+            .UsesRepeatBehavior = true,
             .ExclusivityGrouping = 101,
             .OnDown = []() { std::cout << "[LTHUMB_RIGHT]=[DOWN]\n"; },
             .OnUp = []() { std::cout << "[LTHUMB_RIGHT]=[UP]\n"; },
@@ -55,7 +63,7 @@ auto GetDriverMappings()
         },
         sds::CBActionMap{
             .Vk = VK_PAD_LTHUMB_LEFT,
-            .UsesRepeat = true,
+            .UsesRepeatBehavior = true,
             .ExclusivityGrouping = 101,
             .OnDown = []() { std::cout << "[LTHUMB_LEFT]=[DOWN]\n"; },
             .OnUp = []() { std::cout << "[LTHUMB_LEFT]=[UP]\n"; },

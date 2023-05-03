@@ -11,7 +11,7 @@ struct TestMappingProvider
         std::vector<CBActionMap> mappings;
         CBActionMap tm{
             .Vk = Vk,
-            .UsesRepeat = false,
+            .UsesRepeatBehavior = false,
             .ExclusivityGrouping = {},
             .OnDown = []() { std::cout << "Action:[Down]\n"; },
             .OnUp = []() { std::cout << "Action:[Up]\n"; },
