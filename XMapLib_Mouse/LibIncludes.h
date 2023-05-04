@@ -45,7 +45,6 @@
 
 // Begin custom includes
 #include "../DelayManagerProj/DelayManager/DelayManager.hpp"
-#include "../DelayManagerProj/DelayManager/DelayManagerSafe.hpp"
 
 #include "../PolarCode/PolarQuadrantCalc/PolarCalc.h"
 #include "../PolarCode/PolarQuadrantCalc/PolarCalcFaster.h"

@@ -10,7 +10,7 @@ namespace sds
 	/**
 	 * \brief Wrapper for key mapping state enum, the least I can do is make sure state modifications occur through a managing class,
 	 * and that there exists only one 'current' state, and that it can only be a finite set of possibilities.
-	 * Also contains last sent time and a keyboard settings pack.
+	 * Also contains last sent time (for key-repeat), delay before first key-repeat timer, and a keyboard settings pack.
 	 */
 	class MappingStateManager
 	{
@@ -24,7 +24,14 @@ namespace sds
 		ActionState m_currentValue{ ActionState::INIT };
 		KeyboardSettings m_keyDefaults{};
 	public:
+		/**
+		 * \brief	This delay is mostly used for in-between key-repeats, but could also be in between other state transitions.
+		 */
 		DelayManagement::DelayManager LastSentTime{ std::chrono::microseconds{m_keyDefaults.MICROSECONDS_DELAY_KEYREPEAT} };
+		/**
+		 * \brief	This is the delay before the first repeat is sent whilst holding the button down.
+		 */
+		DelayManagement::DelayManager DelayBeforeFirstRepeat{ LastSentTime.GetTimerPeriod() };
 	public:
 		[[nodiscard]] constexpr bool IsRepeating() const noexcept { return m_currentValue == ActionState::KEYREPEAT; }
 		[[nodiscard]] constexpr bool IsDown() const noexcept { return m_currentValue == ActionState::KEYDOWN; }
@@ -68,7 +75,7 @@ namespace sds
 		detail::Fn_t OnUp; // Key-up
 		detail::Fn_t OnRepeat; // Key-repeat
 		detail::Fn_t OnReset; // Reset after key-up prior to another key-down
-		detail::Delay_t PriorToRepeatDelay; // TODO
+		detail::OptDelay_t PriorToRepeatDelay; // optional custom delay before first key-repeat
 		detail::OptDelay_t CustomRepeatDelay; // optional custom delay between key-repeats
 		MappingStateManager LastAction; // Last action performed, with get/set methods.
 	};

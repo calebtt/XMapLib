@@ -30,6 +30,8 @@ namespace sds
 	[[nodiscard]] inline auto GetRepeatIndices(const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>;
 	[[nodiscard]] constexpr auto GetVkMatchIndices(const int vk, const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>;
 	[[nodiscard]] inline auto GetUniqueMatches(const std::vector<std::uint32_t> existing, const std::vector<std::uint32_t> toAdd) -> std::vector<std::uint32_t>;
+	inline void InitCustomTimers(CBActionMap& mappingElem); // Init some custom timers, if present
+
 
 	//// Hopefully behavior not too specific so as to become unusable
 	//// for someone trying to add a customization.
@@ -56,6 +58,7 @@ namespace sds
 	{
 		//TODO might extract exclusivity grouping code into an object used by the translator, could be a template param that provides
 		//the specialized behavior that could work in many different ways.
+		static constexpr std::string_view ExclusivityGroupError{ "Mapping list contained multiple exclusivity groupings for a single controller button." };
 	private:
 		std::vector<CBActionMap> m_mappings;
 		std::map<int, std::vector<CBActionMap*>> m_exGroupMap;
@@ -69,43 +72,15 @@ namespace sds
 		KeyboardActionTranslator(const MappingRange_c auto& mappingsList)
 		{
 			if (!AreExclusivityGroupsUnique(mappingsList))
-				throw std::invalid_argument("Mapping list contained multiple exclusivity groupings for a single controller button.");
-			m_mappings.reserve(std::size(mappingsList));
-			for(const CBActionMap& elem: mappingsList)
-			{
-				// Add to internal vector, possibly with custom repeat delay.
-				m_mappings.emplace_back(elem);
-				// If has an exclusivity grouping, add to map
-				auto& tempBack = m_mappings.back();
-				if (tempBack.CustomRepeatDelay)
-					tempBack.LastAction.LastSentTime.Reset(tempBack.CustomRepeatDelay.value());
-				if (tempBack.ExclusivityGrouping)
-				{
-					// Build map with pointers to elements of internal buffer.
-					m_exGroupMap[*tempBack.ExclusivityGrouping].emplace_back(&tempBack);
-				}
-			}
+				throw std::invalid_argument(ExclusivityGroupError.data());
+			InitMappingDetails(mappingsList);
 		}
 		// Move-ctor for mappings list.
 		KeyboardActionTranslator(std::vector<CBActionMap>&& mappingsList)
 		{
 			if (!AreExclusivityGroupsUnique(mappingsList))
-				throw std::invalid_argument("Mapping list contained multiple exclusivity groupings for a single controller button.");
-			m_mappings.reserve(std::size(mappingsList));
-			for (CBActionMap& elem : mappingsList)
-			{
-				// Add to internal vector, possibly with custom repeat delay.
-				m_mappings.emplace_back(std::move(elem));
-				// If has an exclusivity grouping, add to map
-				auto& tempBack = m_mappings.back();
-				if (tempBack.CustomRepeatDelay)
-					tempBack.LastAction.LastSentTime.Reset(tempBack.CustomRepeatDelay.value());
-				if (tempBack.ExclusivityGrouping)
-				{
-					// Build map with pointers to elements of internal buffer.
-					m_exGroupMap[*tempBack.ExclusivityGrouping].emplace_back(&tempBack);
-				}
-			}
+				throw std::invalid_argument(ExclusivityGroupError.data());
+			InitMappingDetails(mappingsList);
 		}
 	public:
 		// Gets state update actions, typical usage of the type.
@@ -348,6 +323,20 @@ namespace sds
 					});
 			}
 		}
+		void InitMappingDetails(const MappingRange_c auto& mappingsList)
+		{
+			m_mappings.reserve(std::size(mappingsList));
+			for (const CBActionMap& elem : mappingsList)
+			{
+				// Add to internal vector, possibly with custom repeat delay.
+				m_mappings.emplace_back(elem);
+				auto& tempBack = m_mappings.back();
+				InitCustomTimers(tempBack);
+				// If has an exclusivity grouping, add to map
+				if (tempBack.ExclusivityGrouping)
+					m_exGroupMap[*tempBack.ExclusivityGrouping].emplace_back(&tempBack);
+			}
+		}
 	};
 
 	/**
@@ -463,5 +452,17 @@ namespace sds
 				buf.emplace_back(i);
 		}
 		return buf;
+	}
+
+	/**
+	 * \brief	Initializes the MappingStateManager timers with custom time delays from the mapping.
+	 * \param mappingElem	The controller button to action mapping, possibly with the optional custom delay values.
+	 */
+	inline void InitCustomTimers(CBActionMap& mappingElem)
+	{
+		if (mappingElem.CustomRepeatDelay)
+			mappingElem.LastAction.LastSentTime.Reset(mappingElem.CustomRepeatDelay.value());
+		if (mappingElem.PriorToRepeatDelay)
+			mappingElem.LastAction.DelayBeforeFirstRepeat.Reset(mappingElem.PriorToRepeatDelay.value());
 	}
 }
