@@ -4,3 +4,6 @@
 [submodule "PolarCode"]
 	path = PolarCode
 	url = https://github.com/calebtt/PolarCode.git
+[submodule "DelayManagerProj"]
+	path = DelayManagerProj
+	url = https://github.com/calebtt/DelayManagerProj.git
