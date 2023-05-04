@@ -22,5 +22,4 @@
 #include <vector>
 #include <algorithm>
 #include "TemplatesForTest.h"
-#include "../XMapLib/Utilities.h"
 #endif //PCH_H
