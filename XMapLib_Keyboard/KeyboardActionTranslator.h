@@ -103,8 +103,6 @@ namespace sds
 			using std::ranges::find_if, std::erase_if, std::ranges::begin, std::ranges::end, std::ranges::cbegin, std::ranges::cend;
 			using std::ranges::find, std::ranges::transform;
 
-			TranslationPack tPack;
-
 			// Get update, repeat, direct match, etc. indices lists
 			const auto matchingIndices = GetVkMatchIndices(buttonInfo.VirtualKey, m_mappings); // Gets all indices matching VK
 			
@@ -121,6 +119,7 @@ namespace sds
 
 			const auto uniqueMatches = GetUniqueMatches(repeatIndices, matchingIndices); // Filters out the key-repeat indices
 
+			TranslationPack tPack;
 			// Get exclusivity group overtaken
 			for(const auto cur : uniqueMatches)
 			{
@@ -261,7 +260,7 @@ namespace sds
 			const bool isButtonDown = buttonInfo.KeyDown;
 			const bool isButtonUp = buttonInfo.KeyUp;
 			const bool isButtonRepeat = buttonInfo.KeyRepeat;
-			const bool isTimerElapsed = currentMapping.LastAction.LastSentTime.IsElapsed();
+			//const bool isTimerElapsed = currentMapping.LastAction.LastSentTime.IsElapsed();
 			const bool isSingleRepeatOnly = currentMapping.SendsFirstRepeatOnly;
 
 			// Initial key-down case
@@ -276,6 +275,7 @@ namespace sds
 								currentMapping.OnDown();
 							// Reset timer after activation, to wait for elapsed before another next state translation is returned.
 							currentMapping.LastAction.LastSentTime.Reset();
+							currentMapping.LastAction.DelayBeforeFirstRepeat.Reset();
 						},
 						.AdvanceStateFn = [&currentMapping]()
 						{
@@ -286,7 +286,8 @@ namespace sds
 			// Key-repeat case
 			if (isSingleRepeatOnly)
 			{
-				if ((isButtonDown || isButtonRepeat) && isMapDown && isTimerElapsed)
+				const bool isInitialRepeatTimerElapsed = currentMapping.LastAction.DelayBeforeFirstRepeat.IsElapsed();
+				if ((isButtonDown || isButtonRepeat) && isMapDown && isInitialRepeatTimerElapsed)
 				{
 					results.emplace_back(TranslationResult
 						{
@@ -295,7 +296,6 @@ namespace sds
 							{
 								if (currentMapping.OnRepeat)
 									currentMapping.OnRepeat();
-								//currentMapping.LastAction.LastSentTime.Reset();
 							},
 							.AdvanceStateFn = [&currentMapping]()
 							{
@@ -403,12 +403,14 @@ namespace sds
 			const bool doesRepeat = elem.UsesRepeatBehavior;
 			const bool isDown = elem.LastAction.IsDown();
 			const bool isRepeating = elem.LastAction.IsRepeating();
-			const bool downOrRepeat = isDown || isRepeating;
+			//const bool downOrRepeat = isDown || isRepeating;
 			const bool isElapsed = elem.LastAction.LastSentTime.IsElapsed();
-			if (doesRepeat && downOrRepeat && isElapsed)
-			{
+			const bool isInitialRepeatDelayElapsed = elem.LastAction.DelayBeforeFirstRepeat.IsElapsed();
+
+			const bool doInitialRepeat = doesRepeat && isDown && isInitialRepeatDelayElapsed;
+			const bool doRepeatRepeat = doesRepeat && isRepeating && isElapsed;
+			if(doInitialRepeat || doRepeatRepeat)
 				buf.emplace_back(i);
-			}
 		}
 		return buf;
 	}

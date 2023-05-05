@@ -25,7 +25,6 @@ namespace TestKeyboard
                 .OnUp = [=]() { Logger::WriteMessage(upMessage.c_str()); },
                 .OnRepeat = [=]() { Logger::WriteMessage(repeatMessage.c_str()); },
                 .OnReset = [=]() { Logger::WriteMessage(resetMessage.c_str()); },
-                .CustomRepeatDelay = {},
                 .LastAction = {}
             };
             mappings.emplace_back(tm);
@@ -49,7 +48,6 @@ namespace TestKeyboard
                 .OnUp = [=]() { Logger::WriteMessage(upMessage.c_str()); },
                 .OnRepeat = [=]() { Logger::WriteMessage(repeatMessage.c_str()); },
                 .OnReset = [=]() { Logger::WriteMessage(resetMessage.c_str()); },
-                .CustomRepeatDelay = {},
                 .LastAction = {}
             };
             mappings.emplace_back(tm);
