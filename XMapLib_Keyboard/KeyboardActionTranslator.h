@@ -227,6 +227,7 @@ namespace sds
 			const bool isButtonDown = buttonInfo.KeyDown;
 			const bool isButtonUp = buttonInfo.KeyUp;
 			const bool isSingleRepeatOnly = currentMapping.SendsFirstRepeatOnly;
+			const bool isInitialRepeatTimerElapsed = currentMapping.LastAction.DelayBeforeFirstRepeat.IsElapsed();
 
 			// Initial key-down case
 			if (isButtonDown && isMapInit)
@@ -248,12 +249,12 @@ namespace sds
 						}
 					});
 			}
-			// Key-repeat case
-			if (isSingleRepeatOnly)
+			// Single key-repeat case
+			if (isSingleRepeatOnly && isInitialRepeatTimerElapsed)
 			{
-				const bool isInitialRepeatTimerElapsed = currentMapping.LastAction.DelayBeforeFirstRepeat.IsElapsed();
 				if (isButtonDown && isMapDown && isInitialRepeatTimerElapsed)
 				{
+					std::cerr << "Single repeat activated\n";
 					results.emplace_back(TranslationResult
 						{
 							.DoState = ButtonStateMgrRepeat(),
@@ -342,8 +343,8 @@ namespace sds
 		std::vector<std::uint32_t> resetBuffer;
 		for_each(mappingsList, [&resetBuffer, &currentLocation](const auto& elem)
 			{
-				const bool DoUpdate = (elem.LastAction.IsUp() && elem.LastAction.LastSentTime.IsElapsed()) && elem.UsesRepeatBehavior;
-				const bool DoImmediate = elem.LastAction.IsUp() && !elem.UsesRepeatBehavior;
+				const bool DoUpdate = (elem.LastAction.IsUp() && elem.LastAction.LastSentTime.IsElapsed()) && elem.UsesInfiniteRepeat;
+				const bool DoImmediate = elem.LastAction.IsUp() && !elem.UsesInfiniteRepeat;
 				if (DoUpdate || DoImmediate)
 				{
 					resetBuffer.emplace_back(currentLocation);
@@ -365,16 +366,17 @@ namespace sds
 		for(std::uint32_t i{}; i < mappingsList.size(); ++i)
 		{
 			const auto& elem = mappingsList[i];
-			const bool doesRepeat = elem.UsesRepeatBehavior;
+			const bool doesInfiniteRepeat = elem.UsesInfiniteRepeat;
+			const bool doesSingleRepeat = elem.SendsFirstRepeatOnly;
 			const bool isDown = elem.LastAction.IsDown();
 			const bool isRepeating = elem.LastAction.IsRepeating();
-			//const bool downOrRepeat = isDown || isRepeating;
 			const bool isElapsed = elem.LastAction.LastSentTime.IsElapsed();
 			const bool isInitialRepeatDelayElapsed = elem.LastAction.DelayBeforeFirstRepeat.IsElapsed();
 
-			const bool doInitialRepeat = doesRepeat && isDown && isInitialRepeatDelayElapsed;
-			const bool doRepeatRepeat = doesRepeat && isRepeating && isElapsed;
-			if(doInitialRepeat || doRepeatRepeat)
+			const bool doSingleRepeat = !doesInfiniteRepeat  && doesSingleRepeat && isDown && isInitialRepeatDelayElapsed;
+			const bool doInitialRepeat = doesInfiniteRepeat && isDown && isInitialRepeatDelayElapsed;
+			const bool doRepeatRepeat = doesInfiniteRepeat && isRepeating && isElapsed;
+			if(doInitialRepeat || doRepeatRepeat || doSingleRepeat)
 				buf.emplace_back(i);
 		}
 		return buf;
@@ -425,10 +427,10 @@ namespace sds
 	inline
 	void InitCustomTimers(CBActionMap& mappingElem)
 	{
-		if (mappingElem.CustomRepeatDelay)
-			mappingElem.LastAction.LastSentTime.Reset(mappingElem.CustomRepeatDelay.value());
-		if (mappingElem.PriorToRepeatDelay)
-			mappingElem.LastAction.DelayBeforeFirstRepeat.Reset(mappingElem.PriorToRepeatDelay.value());
+		if (mappingElem.DelayForRepeats)
+			mappingElem.LastAction.LastSentTime.Reset(mappingElem.DelayForRepeats.value());
+		if (mappingElem.DelayBeforeFirstRepeat)
+			mappingElem.LastAction.DelayBeforeFirstRepeat.Reset(mappingElem.DelayBeforeFirstRepeat.value());
 	}
 
 	[[nodiscard]]

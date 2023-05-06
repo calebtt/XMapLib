@@ -56,27 +56,28 @@ namespace sds
 		 */
 		int Vk{};
 		/**
-		 * \brief	If 'true', upon the button being held down, will translate to the key-repeat function repeatedly using a delay in between repeats.
+		 * \brief	If 'true', upon the button being held down, will translate to the key-repeat function activating repeatedly
+		 *	using a delay in between repeats.
 		 */
-		bool UsesRepeatBehavior{ true };
+		bool UsesInfiniteRepeat{ true };
 		/**
 		 * \brief	If 'true', upon the button being held down, will send a single repeat, will not continue translating to repeat after the single repeat.
 		 * \remarks Note that UsesRepeatBehavior is expected to be set to 'false' for this to have a meaningful impact.
 		 */
 		bool SendsFirstRepeatOnly{ false };
 		/**
-		 * \brief The exclusivity grouping member is intended to allow the user to add different groups of mappings
-		 * that require another mapping from the same group to be "overtaken" or key-up sent before the "overtaking" new mapping
-		 * can perform the key-down.
-		 * \remarks optional, if not in use set to default constructed value or '{}'
+		 * \brief	The exclusivity grouping member is intended to allow the user to add different groups of mappings
+		 *	that require another mapping from the same group to be "overtaken" or key-up sent before the "overtaking" new mapping
+		 *	can perform the key-down.
+		 * \remarks		optional, if not in use set to default constructed value or '{}'
 		 */
 		detail::OptGrp_t ExclusivityGrouping;
 		detail::Fn_t OnDown; // Key-down
 		detail::Fn_t OnUp; // Key-up
 		detail::Fn_t OnRepeat; // Key-repeat
 		detail::Fn_t OnReset; // Reset after key-up prior to another key-down
-		detail::OptDelay_t PriorToRepeatDelay; // optional custom delay before first key-repeat
-		detail::OptDelay_t CustomRepeatDelay; // optional custom delay between key-repeats
+		detail::OptDelay_t DelayBeforeFirstRepeat; // optional custom delay before first key-repeat
+		detail::OptDelay_t DelayForRepeats; // optional custom delay between key-repeats
 		MappingStateManager LastAction; // Last action performed, with get/set methods.
 	};
 }
