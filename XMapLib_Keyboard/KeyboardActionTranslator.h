@@ -74,6 +74,7 @@ namespace sds
 		 */
 		KeyboardActionTranslator(const MappingRange_c auto& mappingsList)
 		{
+			// TODO add check for sends single repeat and uses repeat in an invalid config.
 			if (!AreExclusivityGroupsUnique(mappingsList))
 				throw std::invalid_argument(ExclusivityGroupError.data());
 			InitMappingDetails(mappingsList);
@@ -226,8 +227,6 @@ namespace sds
 			const bool isMapRepeat = currentMapping.LastAction.IsRepeating();
 			const bool isButtonDown = buttonInfo.KeyDown;
 			const bool isButtonUp = buttonInfo.KeyUp;
-			const bool isSingleRepeatOnly = currentMapping.SendsFirstRepeatOnly;
-			const bool isInitialRepeatTimerElapsed = currentMapping.LastAction.DelayBeforeFirstRepeat.IsElapsed();
 
 			// Initial key-down case
 			if (isButtonDown && isMapInit)
@@ -248,27 +247,6 @@ namespace sds
 							currentMapping.LastAction.SetDown();
 						}
 					});
-			}
-			// Single key-repeat case
-			if (isSingleRepeatOnly && isInitialRepeatTimerElapsed)
-			{
-				if (isButtonDown && isMapDown && isInitialRepeatTimerElapsed)
-				{
-					std::cerr << "Single repeat activated\n";
-					results.emplace_back(TranslationResult
-						{
-							.DoState = ButtonStateMgrRepeat(),
-							.OperationToPerform = [&currentMapping]()
-							{
-								if (currentMapping.OnRepeat)
-									currentMapping.OnRepeat();
-							},
-							.AdvanceStateFn = [&currentMapping]()
-							{
-								currentMapping.LastAction.SetRepeat();
-							}
-						});
-				}
 			}
 			// Key-up case
 			if (isButtonUp && (isMapDown || isMapRepeat))
@@ -306,9 +284,9 @@ namespace sds
 	};
 
 	/**
-	 * \brief Checks a list of mappings for having multiple exclusivity groupings mapped to a single controller button.
-	 * \param mappingsList List of controller button to action mappings.
-	 * \return true if good mapping list, false if there is a problem.
+	 * \brief	Checks a list of mappings for having multiple exclusivity groupings mapped to a single controller button.
+	 * \param	mappingsList Vector of controller button to action mappings.
+	 * \return	true if good mapping list, false if there is a problem.
 	 */
 	[[nodiscard]]
 	inline
