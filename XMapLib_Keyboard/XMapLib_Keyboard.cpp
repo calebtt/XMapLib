@@ -19,55 +19,59 @@ auto GetEpochTimestamp()
 
 auto GetDriverMappings()
 {
-
-    std::vector<sds::CBActionMap> mapBuffer
+    using std::vector, sds::CBActionMap, std::cout;
+    vector mapBuffer
     {
-        sds::CBActionMap{
+        CBActionMap{
             .Vk = VK_PAD_A,
             .UsesRepeatBehavior = true,
             .OnDown = [&]() { std::cout << std::format("[PAD_A]=[DOWN] @{}\n",GetEpochTimestamp()); },
             .OnUp = []() { std::cout << std::format("[PAD_A]=[UP] @{}\n", GetEpochTimestamp()); },
             .OnRepeat = []() { std::cout << std::format("[PAD_A]=[REPEAT] @{}\n", GetEpochTimestamp()); },
+            //.OnReset = []() { std::cout << std::format("[PAD_A]=[RESET] @{}\n", GetEpochTimestamp()); }
+            //.CustomRepeatDelay = std::chrono::seconds{1},
+            .PriorToRepeatDelay = std::chrono::milliseconds{500},
         },
-        sds::CBActionMap{
+        CBActionMap{
             .Vk = VK_PAD_B,
             .UsesRepeatBehavior = false,
             .SendsFirstRepeatOnly = true,
             .OnDown = []() { std::cout << std::format("[PAD_B]=[DOWN] @{}\n", GetEpochTimestamp()); },
             .OnUp = []() { std::cout << std::format("[PAD_B]=[UP] @{}\n", GetEpochTimestamp()); },
             .OnRepeat = []() { std::cout << std::format("[PAD_B]=[REPEAT] @{}\n", GetEpochTimestamp()); },
+            .OnReset = []() { std::cout << std::format("[PAD_B]=[RESET] @{}\n", GetEpochTimestamp()); },
         },
-        sds::CBActionMap{
+        CBActionMap{
             .Vk = VK_PAD_LTHUMB_UP,
             .UsesRepeatBehavior = true,
             .ExclusivityGrouping = 101,
-            .OnDown = []() { std::cout << "[LTHUMB_UP]=[DOWN]\n"; },
-            .OnUp = []() { std::cout << "[LTHUMB_UP]=[UP]\n"; },
-            .OnRepeat = []() { std::cout << "[LTHUMB_UP]=[REPEAT]\n"; }
+            .OnDown = []() { std::cout << std::format("[LTHUMB_UP]=[DOWN] @{}\n", GetEpochTimestamp()); },
+            .OnUp = []() { std::cout << std::format("[LTHUMB_UP]=[UP] @{}\n", GetEpochTimestamp()); },
+            .OnRepeat = []() { std::cout << std::format("[LTHUMB_UP]=[REPEAT] @{}\n", GetEpochTimestamp()); }
         },
-        sds::CBActionMap{
+        CBActionMap{
             .Vk = VK_PAD_LTHUMB_DOWN,
             .UsesRepeatBehavior = true,
             .ExclusivityGrouping = 101,
-            .OnDown = []() { std::cout << "[LTHUMB_DOWN]=[DOWN]\n"; },
-            .OnUp = []() { std::cout << "[LTHUMB_DOWN]=[UP]\n"; },
-            .OnRepeat = []() { std::cout << "[LTHUMB_DOWN]=[REPEAT]\n"; }
+            .OnDown = []() { std::cout << std::format("[LTHUMB_DOWN]=[DOWN] @{}\n", GetEpochTimestamp()); },
+            .OnUp = []() { std::cout << std::format("[LTHUMB_DOWN]=[UP] @{}\n", GetEpochTimestamp()); },
+            .OnRepeat = []() { std::cout << std::format("[LTHUMB_DOWN]=[REPEAT] @{}\n", GetEpochTimestamp()); }
         },
-        sds::CBActionMap{
+        CBActionMap{
             .Vk = VK_PAD_LTHUMB_RIGHT,
             .UsesRepeatBehavior = true,
             .ExclusivityGrouping = 101,
-            .OnDown = []() { std::cout << "[LTHUMB_RIGHT]=[DOWN]\n"; },
-            .OnUp = []() { std::cout << "[LTHUMB_RIGHT]=[UP]\n"; },
-            .OnRepeat = []() { std::cout << "[LTHUMB_RIGHT]=[REPEAT]\n"; }
+            .OnDown = []() { std::cout << std::format("[LTHUMB_RIGHT]=[DOWN] @{}\n", GetEpochTimestamp()); },
+            .OnUp = []() { std::cout << std::format("[LTHUMB_RIGHT]=[UP] @{}\n", GetEpochTimestamp()); },
+            .OnRepeat = []() { std::cout << std::format("[LTHUMB_RIGHT]=[REPEAT] @{}\n", GetEpochTimestamp()); }
         },
-        sds::CBActionMap{
+        CBActionMap{
             .Vk = VK_PAD_LTHUMB_LEFT,
             .UsesRepeatBehavior = true,
             .ExclusivityGrouping = 101,
-            .OnDown = []() { std::cout << "[LTHUMB_LEFT]=[DOWN]\n"; },
-            .OnUp = []() { std::cout << "[LTHUMB_LEFT]=[UP]\n"; },
-            .OnRepeat = []() { std::cout << "[LTHUMB_LEFT]=[REPEAT]\n"; }
+            .OnDown = []() { std::cout << std::format("[LTHUMB_LEFT]=[DOWN] @{}\n", GetEpochTimestamp()); },
+            .OnUp = []() { std::cout << std::format("[LTHUMB_LEFT]=[UP] @{}\n", GetEpochTimestamp()); },
+            .OnRepeat = []() { std::cout << std::format("[LTHUMB_LEFT]=[REPEAT] @{}\n", GetEpochTimestamp()); }
         }
     };
     return mapBuffer;

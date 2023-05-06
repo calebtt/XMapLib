@@ -32,6 +32,9 @@ namespace sds
 	[[nodiscard]] inline auto GetUniqueMatches(const std::vector<std::uint32_t> existing, const std::vector<std::uint32_t> toAdd) -> std::vector<std::uint32_t>;
 	inline void InitCustomTimers(CBActionMap& mappingElem); // Init some custom timers, if present
 
+	[[nodiscard]] inline auto GetUpdateTranslationResult(CBActionMap& currentMapping) -> TranslationResult;
+	[[nodiscard]] inline auto GetRepeatTranslationResult(CBActionMap& currentMapping) -> TranslationResult;
+
 
 	//// Hopefully behavior not too specific so as to become unusable
 	//// for someone trying to add a customization.
@@ -128,12 +131,12 @@ namespace sds
 			// Adds maps with timer being reset (updated)
 			transform(updateIndices, std::back_inserter(tPack.UpdateRequests), [&](const auto n)
 			{
-				return GetUpdateTranslationResultAt(n);
+				return GetUpdateTranslationResult(MappingAt(n));
 			});
 			// Adds maps being key-repeat'd
 			transform(repeatIndices, std::back_inserter(tPack.RepeatRequests), [&](const auto n)
 			{
-				return GetRepeatTranslationResultAt(n);
+				return GetRepeatTranslationResult(MappingAt(n));
 			});
 			// Add direct translations for each unique
 			for(const auto matchInd : uniqueMatches)
@@ -176,42 +179,6 @@ namespace sds
 		auto MappingAt(const std::uint32_t index) noexcept -> CBActionMap&
 		{
 			return m_mappings.at(index);
-		}
-		auto GetUpdateTranslationResultAt(const std::uint32_t ind) -> TranslationResult
-		{
-			auto& currentMapping = m_mappings.at(ind);
-			return TranslationResult
-			{
-				.DoState = ButtonStateMgrInitial(),
-				.OperationToPerform = [&currentMapping]()
-				{
-					if (currentMapping.OnReset)
-						currentMapping.OnReset();
-				},
-				.AdvanceStateFn = [&currentMapping]()
-				{
-					currentMapping.LastAction.SetInitial();
-					currentMapping.LastAction.LastSentTime.Reset();
-				}
-			};
-		}
-		auto GetRepeatTranslationResultAt(const std::uint32_t ind)  -> TranslationResult
-		{
-			auto& currentMapping = m_mappings.at(ind);
-			return TranslationResult
-			{
-				.DoState = ButtonStateMgrRepeat(),
-				.OperationToPerform = [&currentMapping]()
-				{
-					if (currentMapping.OnRepeat)
-						currentMapping.OnRepeat();
-					currentMapping.LastAction.LastSentTime.Reset();
-				},
-				.AdvanceStateFn = [&currentMapping]()
-				{
-					currentMapping.LastAction.SetRepeat();
-				}
-			};
 		}
 		auto GetOvertakenTranslationResultsFor(const std::uint32_t currentIndex) -> std::vector<TranslationResult>
 		{
@@ -259,8 +226,6 @@ namespace sds
 			const bool isMapRepeat = currentMapping.LastAction.IsRepeating();
 			const bool isButtonDown = buttonInfo.KeyDown;
 			const bool isButtonUp = buttonInfo.KeyUp;
-			const bool isButtonRepeat = buttonInfo.KeyRepeat;
-			//const bool isTimerElapsed = currentMapping.LastAction.LastSentTime.IsElapsed();
 			const bool isSingleRepeatOnly = currentMapping.SendsFirstRepeatOnly;
 
 			// Initial key-down case
@@ -287,7 +252,7 @@ namespace sds
 			if (isSingleRepeatOnly)
 			{
 				const bool isInitialRepeatTimerElapsed = currentMapping.LastAction.DelayBeforeFirstRepeat.IsElapsed();
-				if ((isButtonDown || isButtonRepeat) && isMapDown && isInitialRepeatTimerElapsed)
+				if (isButtonDown && isMapDown && isInitialRepeatTimerElapsed)
 				{
 					results.emplace_back(TranslationResult
 						{
@@ -418,18 +383,15 @@ namespace sds
 	inline
 	auto GetUniqueMatches(const std::vector<std::uint32_t> existing, const std::vector<std::uint32_t> toAdd) -> std::vector<std::uint32_t>
 	{
-		using std::ranges::find, std::ranges::end, std::ranges::begin, std::ranges::transform;
+		using std::ranges::find, std::ranges::end, std::ranges::begin, std::ranges::transform, std::size_t;
 		// TODO use some of the algo header funcs, possibly set_intersection or merge or similar
 		std::vector<std::uint32_t> uniqueMatchResult;
-		// Don't add existing indices to a set or anything, cpu arch will speed up iterating an array 1-100x iterating a r-b tree.
-		//const std::set tempSet(std::ranges::begin(existingIndices), std::ranges::end(existingIndices));
-		for (std::uint32_t i{}; i < toAdd.size(); ++i)
+		// Don't add existing indices to a set or anything, cpu arch will speed up iterating an array 1-100x vs iterating a r-b tree.
+		for (size_t i{}; i < toAdd.size(); ++i)
 		{
 			const auto e = toAdd[i];
 			if (find(existing, e) == end(existing))
-			{
 				uniqueMatchResult.emplace_back(e);
-			}
 		}
 		return uniqueMatchResult;
 	}
@@ -460,11 +422,48 @@ namespace sds
 	 * \brief	Initializes the MappingStateManager timers with custom time delays from the mapping.
 	 * \param mappingElem	The controller button to action mapping, possibly with the optional custom delay values.
 	 */
-	inline void InitCustomTimers(CBActionMap& mappingElem)
+	inline
+	void InitCustomTimers(CBActionMap& mappingElem)
 	{
 		if (mappingElem.CustomRepeatDelay)
 			mappingElem.LastAction.LastSentTime.Reset(mappingElem.CustomRepeatDelay.value());
 		if (mappingElem.PriorToRepeatDelay)
 			mappingElem.LastAction.DelayBeforeFirstRepeat.Reset(mappingElem.PriorToRepeatDelay.value());
+	}
+
+	[[nodiscard]]
+	inline
+	auto GetUpdateTranslationResult(CBActionMap& currentMapping) -> TranslationResult
+	{
+		return TranslationResult
+		{
+			.DoState = ButtonStateMgrInitial(),
+			.OperationToPerform = [&currentMapping](){
+				if (currentMapping.OnReset)
+					currentMapping.OnReset();
+			},
+			.AdvanceStateFn = [&currentMapping](){
+				currentMapping.LastAction.SetInitial();
+				currentMapping.LastAction.LastSentTime.Reset();
+			}
+		};
+	}
+
+	[[nodiscard]]
+	inline
+	auto GetRepeatTranslationResult(CBActionMap& currentMapping) -> TranslationResult
+	{
+		return TranslationResult
+		{
+			.DoState = ButtonStateMgrRepeat(),
+			.OperationToPerform = [&currentMapping](){
+				if (currentMapping.OnRepeat)
+					currentMapping.OnRepeat();
+				currentMapping.LastAction.LastSentTime.Reset();
+			},
+			.AdvanceStateFn = [&currentMapping](){
+				currentMapping.LastAction.SetRepeat();
+			}
+		};
 	}
 }
