@@ -25,6 +25,7 @@ auto GetDriverMappings()
         CBActionMap{
             .Vk = VK_PAD_A,
             .UsesInfiniteRepeat = true,
+            .ExclusivityGrouping = 111,
             .OnDown = [&]() { std::cout << std::format("[PAD_A]=[DOWN] @{}\n",GetEpochTimestamp()); },
             .OnUp = []() { std::cout << std::format("[PAD_A]=[UP] @{}\n", GetEpochTimestamp()); },
             .OnRepeat = []() { std::cout << std::format("[PAD_A]=[REPEAT] @{}\n", GetEpochTimestamp()); },
@@ -36,6 +37,7 @@ auto GetDriverMappings()
             .Vk = VK_PAD_B,
             .UsesInfiniteRepeat = false,
             .SendsFirstRepeatOnly = true,
+            .ExclusivityGrouping = 111,
             .OnDown = []() { std::cout << std::format("[PAD_B]=[DOWN] @{}\n", GetEpochTimestamp()); },
             .OnUp = []() { std::cout << std::format("[PAD_B]=[UP] @{}\n", GetEpochTimestamp()); },
             .OnRepeat = []() { std::cout << std::format("[PAD_B]=[REPEAT] @{}\n", GetEpochTimestamp()); },

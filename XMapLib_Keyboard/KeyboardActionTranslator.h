@@ -34,13 +34,33 @@ namespace sds
 
 	[[nodiscard]] inline auto GetUpdateTranslationResult(CBActionMap& currentMapping) -> TranslationResult;
 	[[nodiscard]] inline auto GetRepeatTranslationResult(CBActionMap& currentMapping) -> TranslationResult;
-
+	[[nodiscard]] inline auto GetOvertakenTranslationResult(CBActionMap& overtakenMapping) -> TranslationResult;
+	[[nodiscard]] inline auto GetKeyUpTranslationResult(CBActionMap& currentMapping) -> TranslationResult;
+	[[nodiscard]] inline auto GetInitialKeyDownTranslationResult(CBActionMap& currentMapping) -> TranslationResult;
 
 	//// Hopefully behavior not too specific so as to become unusable
-	//// for someone trying to add a customization.
+	//// for someone trying to add a customization. Customization class for exclusivity group
+	//// behavior.
 	//class OvertakingBehavior
 	//{
+	//	std::span<CBActionMap> m_mappings;
+	//	std::map<int, std::vector<CBActionMap*>> m_exGroupMap;
+	//public:
 	//	// TODO complete this
+	// // TODO might extract exclusivity grouping code into an object used by the translator, could be a template param
+	//	OvertakingBehavior(std::span<CBActionMap> mappingsList) : m_mappings(mappingsList)
+	//	{
+	//		for (CBActionMap& elem : mappingsList)
+	//		{
+	//			// If has an exclusivity grouping, add to map
+	//			if (elem.ExclusivityGrouping)
+	//				m_exGroupMap[*elem.ExclusivityGrouping].emplace_back(&elem);
+	//		}
+	//	}
+	//	auto GetOvertakenTranslationResultsFor(const std::uint32_t currentIndex) -> std::vector<TranslationResult>
+	//	{
+	//		return {};
+	//	}
 	//};
 
 	/**
@@ -59,8 +79,6 @@ namespace sds
 	 */
 	class KeyboardActionTranslator
 	{
-		//TODO might extract exclusivity grouping code into an object used by the translator, could be a template param that provides
-		//the specialized behavior that could work in many different ways.
 		static constexpr std::string_view ExclusivityGroupError{ "Mapping list contained multiple exclusivity groupings for a single controller button." };
 	private:
 		std::vector<CBActionMap> m_mappings;
@@ -84,7 +102,7 @@ namespace sds
 		{
 			if (!AreExclusivityGroupsUnique(mappingsList))
 				throw std::invalid_argument(ExclusivityGroupError.data());
-			InitMappingDetails(mappingsList);
+			InitMappingDetails(std::move(mappingsList));
 		}
 	public:
 		// Gets state update actions, typical usage of the type.
@@ -124,10 +142,13 @@ namespace sds
 			const auto uniqueMatches = GetUniqueMatches(repeatIndices, matchingIndices); // Filters out the key-repeat indices
 
 			TranslationPack tPack;
-			// Get exclusivity group overtaken
-			for(const auto cur : uniqueMatches)
+			// Get exclusivity group overtaken, but not on a key-up
+			if (!buttonInfo.KeyUp)
 			{
-				tPack.OvertakenRequests.append_range(GetOvertakenTranslationResultsFor(cur));
+				for (const auto cur : uniqueMatches)
+				{
+					tPack.OvertakenRequests.append_range(GetOvertakenTranslationResultsFor(cur));
+				}
 			}
 			// Adds maps with timer being reset (updated)
 			transform(updateIndices, std::back_inserter(tPack.UpdateRequests), [&](const auto n)
@@ -157,20 +178,7 @@ namespace sds
 			{
 				if(elem.LastAction.IsDown() || elem.LastAction.IsRepeating())
 				{
-					results.emplace_back(
-						TranslationResult
-						{
-							.DoState = ButtonStateMgrUp(),
-							.OperationToPerform = [&elem]()
-							{
-								if(elem.OnUp)
-									elem.OnUp();
-							},
-							.AdvanceStateFn = [&elem]()
-							{
-								elem.LastAction.SetUp();
-							}
-						});
+					results.emplace_back(GetKeyUpTranslationResult(elem));
 				}
 			}
 			return results;
@@ -196,19 +204,7 @@ namespace sds
 					{
 						if (p->LastAction.IsDown() || p->LastAction.IsRepeating())
 						{
-							results.emplace_back(TranslationResult
-								{
-									.DoState = ButtonStateMgrUp(),
-									.OperationToPerform = [p]()
-									{
-										if(p->OnUp)
-											p->OnUp();
-									},
-									.AdvanceStateFn = [p]()
-									{
-										p->LastAction.SetUp();
-									}
-								});
+							results.emplace_back(GetOvertakenTranslationResult(*p));
 						}
 					}
 				}
@@ -231,40 +227,13 @@ namespace sds
 			// Initial key-down case
 			if (isButtonDown && isMapInit)
 			{
-				results.emplace_back(TranslationResult
-					{
-						.DoState = ButtonStateMgrDown(),
-						.OperationToPerform = [&currentMapping]()
-						{
-							if (currentMapping.OnDown)
-								currentMapping.OnDown();
-							// Reset timer after activation, to wait for elapsed before another next state translation is returned.
-							currentMapping.LastAction.LastSentTime.Reset();
-							currentMapping.LastAction.DelayBeforeFirstRepeat.Reset();
-						},
-						.AdvanceStateFn = [&currentMapping]()
-						{
-							currentMapping.LastAction.SetDown();
-						}
-					});
+				results.emplace_back(GetInitialKeyDownTranslationResult(currentMapping));
 			}
 			// Key-up case
 			if (isButtonUp && (isMapDown || isMapRepeat))
 			{
 				// Key-up doesn't require timer elapsed.
-				results.emplace_back(TranslationResult
-					{
-						.DoState = ButtonStateMgrUp(),
-						.OperationToPerform = [&currentMapping]()
-						{
-							if (currentMapping.OnUp)
-								currentMapping.OnUp();
-						},
-						.AdvanceStateFn = [&currentMapping]()
-						{
-							currentMapping.LastAction.SetUp();
-						}
-					});
+				results.emplace_back(GetKeyUpTranslationResult(currentMapping));
 			}
 		}
 		void InitMappingDetails(const MappingRange_c auto& mappingsList)
@@ -279,6 +248,17 @@ namespace sds
 				// If has an exclusivity grouping, add to map
 				if (tempBack.ExclusivityGrouping)
 					m_exGroupMap[*tempBack.ExclusivityGrouping].emplace_back(&tempBack);
+			}
+		}
+		void InitMappingDetails(std::vector<CBActionMap>&& mappingsList)
+		{
+			m_mappings = std::move(mappingsList);
+			for(auto& elem: m_mappings)
+			{
+				InitCustomTimers(elem);
+				// If has an exclusivity grouping, add to map
+				if (elem.ExclusivityGrouping)
+					m_exGroupMap[*elem.ExclusivityGrouping].emplace_back(&elem);
 			}
 		}
 	};
@@ -443,6 +423,66 @@ namespace sds
 			},
 			.AdvanceStateFn = [&currentMapping](){
 				currentMapping.LastAction.SetRepeat();
+			}
+		};
+	}
+
+	[[nodiscard]]
+	inline
+	auto GetOvertakenTranslationResult(CBActionMap& overtakenMapping) -> TranslationResult
+	{
+		return TranslationResult
+		{
+			.DoState = ButtonStateMgrUp(),
+			.OperationToPerform = [&overtakenMapping]()
+			{
+				if (overtakenMapping.OnUp)
+					overtakenMapping.OnUp();
+			},
+			.AdvanceStateFn = [&overtakenMapping]()
+			{
+				overtakenMapping.LastAction.SetUp();
+			}
+		};
+	}
+
+	[[nodiscard]]
+	inline
+	auto GetKeyUpTranslationResult(CBActionMap& currentMapping) -> TranslationResult
+	{
+		return TranslationResult
+		{
+			.DoState = ButtonStateMgrUp(),
+			.OperationToPerform = [&currentMapping]()
+			{
+				if (currentMapping.OnUp)
+					currentMapping.OnUp();
+			},
+			.AdvanceStateFn = [&currentMapping]()
+			{
+				currentMapping.LastAction.SetUp();
+			}
+		};
+	}
+
+	[[nodiscard]]
+	inline
+	auto GetInitialKeyDownTranslationResult(CBActionMap& currentMapping) -> TranslationResult
+	{
+		return TranslationResult
+		{
+			.DoState = ButtonStateMgrDown(),
+			.OperationToPerform = [&currentMapping]()
+			{
+				if (currentMapping.OnDown)
+					currentMapping.OnDown();
+				// Reset timer after activation, to wait for elapsed before another next state translation is returned.
+				currentMapping.LastAction.LastSentTime.Reset();
+				currentMapping.LastAction.DelayBeforeFirstRepeat.Reset();
+			},
+			.AdvanceStateFn = [&currentMapping]()
+			{
+				currentMapping.LastAction.SetDown();
 			}
 		};
 	}
