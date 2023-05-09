@@ -266,7 +266,7 @@ namespace TestKeyboard
             Logger::WriteMessage("Beginning timed test of many translation iterations.\n");
             // Test data provider objs
             TestMappingProvider testMaps{ VirtKey };
-            KeyboardPoller keyPoller{ 0 };
+            KeyboardPollerController keyPoller{ 0 };
 
             // Note that these mappings write to the test logger, might add some latency.
             std::vector<CBActionMap> mappings;

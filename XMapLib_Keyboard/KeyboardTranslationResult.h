@@ -10,6 +10,10 @@
 
 namespace sds
 {
+	/**
+	 * \brief	TranslationResult holds info from a translated state change, typically the operation to perform (if any) and
+	 *	a function to call to advance the state to the next state to continue to receive proper translation results.
+	 */
 	struct TranslationResult
 	{
 		//TODO add meta-data about the mapping, like which VK it's mapped to, the user could build their own mechanism to acquire
@@ -38,10 +42,16 @@ namespace sds
 		}
 	};
 
+	/**
+	 * \brief	TranslationPack is a pack of ranges containing individual TranslationResult structs for processing
+	 *	state changes.
+	 */
 	struct TranslationPack
 	{
 		void operator()() const
 		{
+			// Note that there will be a function called if there is a state change,
+			// it just may not have any custom behavior attached to it.
 			for (const auto& elem : UpdateRequests)
 				elem();
 			for (const auto& elem : OvertakenRequests)

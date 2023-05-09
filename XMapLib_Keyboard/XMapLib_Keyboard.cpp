@@ -7,7 +7,7 @@
 
 #include "KeyboardActionTranslator.h"
 #include "KeyboardMapper.h"
-#include "KeyboardPoller.h"
+#include "KeyboardPollerController.h"
 #include "../XMapLib_Utils/nanotime.h"
 
 inline
@@ -104,7 +104,7 @@ int main()
     auto mapBuffer = GetDriverMappings();
     sds::KeyboardActionTranslator translator(std::move(mapBuffer));
     sds::KeyboardPlayerInfo kpi{};
-    sds::KeyboardPoller kp(kpi.player_id);
+    sds::KeyboardPollerController kp(kpi.player_id);
 
     GetterExitCallable gec;
     const auto exitFuture = std::async(std::launch::async, [&]() { gec.GetExitSignal(); });

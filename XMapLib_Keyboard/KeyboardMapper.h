@@ -2,7 +2,7 @@
 #include "LibIncludes.h"
 #include <atomic>
 #include "ControllerButtonToActionMap.h"
-#include "KeyboardPoller.h"
+#include "KeyboardPollerController.h"
 #include "KeyboardActionTranslator.h"
 
 namespace sds

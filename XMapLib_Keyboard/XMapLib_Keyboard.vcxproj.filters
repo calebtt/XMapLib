@@ -44,29 +44,14 @@
     <ClInclude Include="KeyboardMapper.h">
       <Filter>Header Files\Keyboard</Filter>
     </ClInclude>
-    <ClInclude Include="KeyboardPoller.h">
+    <ClInclude Include="KeyboardPollerController.h">
       <Filter>Header Files\Keyboard</Filter>
     </ClInclude>
     <ClInclude Include="KeyboardActionTranslator.h">
       <Filter>Header Files\Keyboard</Filter>
     </ClInclude>
-    <ClInclude Include="KeyStateMachine.h">
-      <Filter>Header Files\Keyboard</Filter>
-    </ClInclude>
-    <ClInclude Include="KeyStateMachineInformational.h">
-      <Filter>Header Files\Keyboard</Filter>
-    </ClInclude>
     <ClInclude Include="LibIncludes.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="KeyboardSendFuncs.h">
-      <Filter>Header Files\Keyboard</Filter>
-    </ClInclude>
-    <ClInclude Include="TestPollProvider.h">
-      <Filter>Header Files\TestFiles</Filter>
-    </ClInclude>
-    <ClInclude Include="TestMappingProvider.h">
-      <Filter>Header Files\TestFiles</Filter>
     </ClInclude>
     <ClInclude Include="ButtonStateMgr.h">
       <Filter>Header Files\Keyboard\KeyInfoWrappers</Filter>

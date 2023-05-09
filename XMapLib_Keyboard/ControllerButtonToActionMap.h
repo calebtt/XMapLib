@@ -3,7 +3,6 @@
 #include <syncstream>
 #include <typeindex>
 #include "KeyboardSettingsPack.h"
-#include "KeyStateMachineInformational.h"
 
 namespace sds
 {
