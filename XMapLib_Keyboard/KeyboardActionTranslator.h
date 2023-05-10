@@ -135,7 +135,7 @@ namespace sds
 			{
 				erase_if(repeatIndices, [&](const auto e)
 				{
-					return m_mappings[e].Vk == buttonInfo.VirtualKey;
+					return MappingAt(e).Vk == buttonInfo.VirtualKey;
 				});
 			}
 
@@ -193,7 +193,7 @@ namespace sds
 		{
 			using std::ranges::find_if;
 			// Iterate through each matching mapping and find ones with an exclusivity grouping, and then add the rest of the grouping to the results with key-up
-			const auto& currentMap = m_mappings[currentIndex];
+			const auto& currentMap = MappingAt(currentIndex);
 			if (currentMap.ExclusivityGrouping)
 			{
 				std::vector<TranslationResult> results;
@@ -217,7 +217,7 @@ namespace sds
 			std::vector<TranslationResult>& results, 
 			const std::uint32_t matchInd)
 		{
-			auto& currentMapping = m_mappings[matchInd];
+			auto& currentMapping = MappingAt(matchInd);
 			const bool isMapInit = currentMapping.LastAction.IsInitialState();
 			const bool isMapDown = currentMapping.LastAction.IsDown();
 			const bool isMapRepeat = currentMapping.LastAction.IsRepeating();
