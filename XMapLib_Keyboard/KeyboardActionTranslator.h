@@ -2,7 +2,6 @@
 #include "LibIncludes.h"
 #include "ControllerButtonToActionMap.h"
 #include "KeyboardPollerController.h"
-#include "ButtonStateMgr.h"
 #include "KeyboardTranslationResult.h"
 
 #include <iostream>
@@ -397,7 +396,7 @@ namespace sds
 	{
 		return TranslationResult
 		{
-			.DoState = ButtonStateMgrInitial(),
+			.DoState = ActionState::INIT,
 			.OperationToPerform = [&currentMapping](){
 				if (currentMapping.OnReset)
 					currentMapping.OnReset();
@@ -415,7 +414,7 @@ namespace sds
 	{
 		return TranslationResult
 		{
-			.DoState = ButtonStateMgrRepeat(),
+			.DoState = ActionState::KEYREPEAT,
 			.OperationToPerform = [&currentMapping](){
 				if (currentMapping.OnRepeat)
 					currentMapping.OnRepeat();
@@ -433,7 +432,7 @@ namespace sds
 	{
 		return TranslationResult
 		{
-			.DoState = ButtonStateMgrUp(),
+			.DoState = ActionState::KEYUP,
 			.OperationToPerform = [&overtakenMapping]()
 			{
 				if (overtakenMapping.OnUp)
@@ -452,7 +451,7 @@ namespace sds
 	{
 		return TranslationResult
 		{
-			.DoState = ButtonStateMgrUp(),
+			.DoState = ActionState::KEYUP,
 			.OperationToPerform = [&currentMapping]()
 			{
 				if (currentMapping.OnUp)
@@ -471,7 +470,7 @@ namespace sds
 	{
 		return TranslationResult
 		{
-			.DoState = ButtonStateMgrDown(),
+			.DoState = ActionState::KEYDOWN,
 			.OperationToPerform = [&currentMapping]()
 			{
 				if (currentMapping.OnDown)

@@ -145,7 +145,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ButtonStateMgr.h" />
     <ClInclude Include="ControllerButtonToActionMap.h" />
     <ClInclude Include="ControllerStateWrapper.h" />
     <ClInclude Include="CustomTypes.h" />

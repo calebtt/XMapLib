@@ -1,6 +1,5 @@
 #pragma once
 #include "LibIncludes.h"
-#include "ButtonStateMgr.h"
 
 #include <iostream>
 #include <chrono>
@@ -10,6 +9,14 @@
 
 namespace sds
 {
+	enum class ActionState : int
+	{
+		INIT, // State indicating ready for new cycle
+		KEYDOWN,
+		KEYREPEAT,
+		KEYUP,
+	};
+
 	/**
 	 * \brief	TranslationResult holds info from a translated state change, typically the operation to perform (if any) and
 	 *	a function to call to advance the state to the next state to continue to receive proper translation results.
@@ -20,7 +27,7 @@ namespace sds
 		//this info, but it's much easier to just add it here in the event it could be useful.
 
 		// Action to perform
-		ButtonStateMgr DoState;
+		ActionState DoState;
 		// Operation being requested to be performed, callable
 		detail::Fn_t OperationToPerform;
 		// Function to advance the button mapping to the next state (after operation has been performed)
@@ -35,10 +42,7 @@ namespace sds
 		friend auto operator<<(std::ostream& os, const TranslationResult& obj) -> std::ostream&
 		{
 			return os
-				<< "DoDown: " << std::boolalpha << obj.DoState.IsDown()
-				<< " DoRepeat: " << std::boolalpha << obj.DoState.IsRepeating()
-				<< " DoUp: " << std::boolalpha << obj.DoState.IsUp()
-				<< " DoReset: " << std::boolalpha << obj.DoState.IsInitialState();
+				<< "DoState: " << std::boolalpha << (int)obj.DoState;
 		}
 	};
 

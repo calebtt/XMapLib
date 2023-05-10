@@ -50,9 +50,6 @@
     <ClInclude Include="LibIncludes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ButtonStateMgr.h">
-      <Filter>Header Files\Keyboard\KeyInfoWrappers</Filter>
-    </ClInclude>
     <ClInclude Include="CustomTypes.h">
       <Filter>Header Files\Keyboard</Filter>
     </ClInclude>

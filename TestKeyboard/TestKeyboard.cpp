@@ -75,9 +75,9 @@ namespace TestKeyboard
 
             const auto noResultPack = translator(testPoll.GetNoState());
 
-            Assert::IsTrue(downResult.DoState.IsDown(), L"Translation for polled key-down wasn't down.");
-            Assert::IsTrue(repeatResult.DoState.IsRepeating(), L"Translation for polled key-repeat wasn't repeat.");
-            Assert::IsTrue(upResult.DoState.IsUp(), L"Translation for polled key-up wasn't up.");
+            Assert::IsTrue(downResult.DoState == ActionState::KEYDOWN, L"Translation for polled key-down wasn't down.");
+            Assert::IsTrue(repeatResult.DoState == ActionState::KEYREPEAT, L"Translation for polled key-repeat wasn't repeat.");
+            Assert::IsTrue(upResult.DoState == ActionState::KEYUP, L"Translation for polled key-up wasn't up.");
             //Assert::IsTrue(noResult.DoState.IsInitialState(), L"Translation for polled none wasn't none.");
 		}
         TEST_METHOD(TestCleanup)
@@ -112,7 +112,7 @@ namespace TestKeyboard
             for_each(cleanupActions, [&](const sds::TranslationResult& e)
             {
 	            ss << e << '\n';
-                Assert::IsTrue(e.DoState.IsUp(), L"Cleanup action is not 'up'.");
+                Assert::IsTrue(e.DoState == ActionState::KEYUP, L"Cleanup action is not 'up'.");
             });
             Logger::WriteMessage(ss.str().c_str());
 		}
@@ -199,7 +199,7 @@ namespace TestKeyboard
             auto vkDown = translator(testPoll.GetDownState(VirtKey));
             AssertTranslationPackSizes(vkDown, 0, 0, 0, 1);
             auto& vkDownResult = vkDown.NextStateRequests.front();
-            Assert::IsTrue(vkDownResult.DoState.IsDown());
+            Assert::IsTrue(vkDownResult.DoState == ActionState::KEYDOWN);
             CallAndUpdateTranslationResult(vkDownResult);
 
             std::this_thread::sleep_for(SleepDelay);
@@ -207,7 +207,7 @@ namespace TestKeyboard
             auto vk1Down = translator(testPoll.GetDownState(VirtKey + 1));
             AssertTranslationPackSizes(vk1Down, 0, 1, 0, 1);
             auto& vk1DownResult = vk1Down.NextStateRequests.front();
-            Assert::IsTrue(vk1DownResult.DoState.IsDown());
+            Assert::IsTrue(vk1DownResult.DoState == ActionState::KEYDOWN);
             CallAndUpdateTranslationResult(vk1DownResult);
             
         	std::this_thread::sleep_for(SleepDelay);
@@ -224,7 +224,7 @@ namespace TestKeyboard
             // but only 1 repeat request, as this key-up request should remove the repeat for this down key.
             AssertTranslationPackSizes(vk1Up, 0, 1, 0, 1);
             auto& vk1UpResult = vk1Up.NextStateRequests.front();
-            Assert::IsTrue(vk1UpResult.DoState.IsUp());
+            Assert::IsTrue(vk1UpResult.DoState == ActionState::KEYUP);
             CallAndUpdateTranslationResult(vk1UpResult);
 
             std::this_thread::sleep_for(SleepDelay);
@@ -234,7 +234,7 @@ namespace TestKeyboard
             auto vk4Down = translator(testPoll.GetDownState(VirtKey + 4));
             AssertTranslationPackSizes(vk4Down, 1, 1, 0, 1);
             auto& vk4DownResult = vk4Down.NextStateRequests.front();
-            Assert::IsTrue(vk4DownResult.DoState.IsDown());
+            Assert::IsTrue(vk4DownResult.DoState == ActionState::KEYDOWN);
             CallAndUpdateTranslationResult(vk4DownResult);
 
             std::this_thread::sleep_for(SleepDelay);
@@ -243,8 +243,8 @@ namespace TestKeyboard
             AssertTranslationPackSizes(vk5Down, 1, 2, 1, 1);
             auto& vk5DownResult = vk5Down.NextStateRequests.front();
             auto& vk5OvertakenResult = vk5Down.OvertakenRequests.front();
-            Assert::IsTrue(vk5DownResult.DoState.IsDown());
-            Assert::IsTrue(vk5OvertakenResult.DoState.IsUp());
+            Assert::IsTrue(vk5DownResult.DoState == ActionState::KEYDOWN);
+            Assert::IsTrue(vk5OvertakenResult.DoState == ActionState::KEYUP);
             CallAndUpdateTranslationResult(vk5Down.OvertakenRequests.front());
             CallAndUpdateTranslationResult(vk5DownResult);
 
