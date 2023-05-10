@@ -103,22 +103,21 @@ int main()
 
     auto mapBuffer = GetDriverMappings();
     sds::KeyboardActionTranslator translator(std::move(mapBuffer));
-    sds::KeyboardPlayerInfo kpi{};
-    sds::KeyboardPollerController kp(kpi.player_id);
+    sds::KeyboardPlayerInfo playerInfo{};
+    sds::KeyboardPollerController controllerPoller(playerInfo.player_id);
 
     GetterExitCallable gec;
     const auto exitFuture = std::async(std::launch::async, [&]() { gec.GetExitSignal(); });
-    //constexpr std::uint32_t NumStatesPerIter{ 100 };
     while(!gec.IsDone)
     {
-        const auto translation = translator(kp.GetUpdatedState());
+        const auto translation = translator(controllerPoller());
         translation();
         nanotime_sleep(1'000'000);
     }
     std::cout << "Performing cleanup actions...\n";
     const auto cleanupTranslation = translator.GetCleanupActions();
-    for (auto& elem : cleanupTranslation)
-        elem();
+    for (auto& cleanupAction : cleanupTranslation)
+        cleanupAction();
 
     exitFuture.wait();
 }
