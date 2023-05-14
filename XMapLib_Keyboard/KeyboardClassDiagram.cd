@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="sds::KeyboardPollerController">
+    <Position X="7.75" Y="0.75" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAEAAAQEFAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>KeyboardPollerController.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="sds::KeyboardActionTranslator">
+    <Position X="7.75" Y="5.75" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAAIAAAAAACAAAAAEAgAAAIAEAAAAgAAoAAAAEAAAIA=</HashCode>
+      <FileName>KeyboardActionTranslator.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="sds::MappingStateManager" Collapsed="true">
+    <Position X="17.5" Y="0.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAACAAAAABAAgAgABAAAAAAAAAAAIAAAtAACAAAAA=</HashCode>
+      <FileName>ControllerButtonToActionMap.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="GetterExitCallable" Collapsed="true">
+    <Position X="1" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAACAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>XMapLib_Keyboard.cpp</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="sds::TranslationResult" Collapsed="true">
+    <Position X="12.75" Y="6" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>ACAAAAAAAAAAAAACEAAAAAAAAAAAAAAAAAAAAAAAAAg=</HashCode>
+      <FileName>KeyboardTranslationResult.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="sds::TranslationPack">
+    <Position X="12.75" Y="6.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAACAAAAAAAAAAAEAAAAAAAIgAAAAAQAAAAAAAAAAA=</HashCode>
+      <FileName>KeyboardTranslationResult.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="sds::CBActionMap">
+    <Position X="4.5" Y="5.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>gAAAAIAAAAAAAAAAgAAAAACAAiAAAEAAgAIAAAAgAAA=</HashCode>
+      <FileName>ControllerButtonToActionMap.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="sds::ControllerStateWrapper">
+    <Position X="8.25" Y="3.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAEAAAgAAAAAgAAAAAAAAAAAgAAAAAAAAAAAA=</HashCode>
+      <FileName>ControllerStateWrapper.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="sds::KeyboardPlayerInfo" Collapsed="true">
+    <Position X="1" Y="2.25" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>KeyboardSettingsPack.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="sds::KeyboardSettings" Collapsed="true">
+    <Position X="1" Y="1.5" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAACAAAA=</HashCode>
+      <FileName>KeyboardSettingsPack.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="sds::KeyboardSettingsPack" Collapsed="true">
+    <Position X="17.25" Y="2.25" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAACAABAAAAAAAAAAAAA=</HashCode>
+      <FileName>KeyboardSettingsPack.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Enum Name="sds::ActionState" Collapsed="true">
+    <Position X="1" Y="8.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAACAAAAAAAAIAAAAAAIAAAAAAAAAAAAACAAAA=</HashCode>
+      <FileName>ControllerButtonToActionMap.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

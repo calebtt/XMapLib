@@ -9,14 +9,6 @@
 
 namespace sds
 {
-	enum class ActionState : int
-	{
-		INIT, // State indicating ready for new cycle
-		KEYDOWN,
-		KEYREPEAT,
-		KEYUP,
-	};
-
 	/**
 	 * \brief	TranslationResult holds info from a translated state change, typically the operation to perform (if any) and
 	 *	a function to call to advance the state to the next state to continue to receive proper translation results.

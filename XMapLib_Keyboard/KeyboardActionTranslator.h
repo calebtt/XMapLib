@@ -28,7 +28,7 @@ namespace sds
 	[[nodiscard]] inline auto GetUpdateIndices(const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>;
 	[[nodiscard]] inline auto GetRepeatIndices(const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>;
 	[[nodiscard]] constexpr auto GetVkMatchIndices(const int vk, const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>;
-	[[nodiscard]] inline auto GetUniqueMatches(const std::vector<std::uint32_t> existing, const std::vector<std::uint32_t> toAdd) -> std::vector<std::uint32_t>;
+	[[nodiscard]] inline auto GetUniqueMatches(const std::vector<std::uint32_t>& existing, const std::vector<std::uint32_t>& toAdd) -> std::vector<std::uint32_t>;
 	inline void InitCustomTimers(CBActionMap& mappingElem); // Init some custom timers, if present
 
 	[[nodiscard]] inline auto GetUpdateTranslationResult(CBActionMap& currentMapping) -> TranslationResult;
@@ -296,18 +296,17 @@ namespace sds
 	auto GetUpdateIndices(const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>
 	{
 		using std::ranges::for_each;
-		std::uint32_t currentLocation{};
 		std::vector<std::uint32_t> resetBuffer;
-		for_each(mappingsList, [&resetBuffer, &currentLocation](const auto& elem)
+		for (std::uint32_t i{}; i < mappingsList.size(); ++i)
+		{
+			const auto& elem = mappingsList[i];
+			const bool DoUpdate = (elem.LastAction.IsUp() && elem.LastAction.LastSentTime.IsElapsed()) && elem.UsesInfiniteRepeat;
+			const bool DoImmediate = elem.LastAction.IsUp() && !elem.UsesInfiniteRepeat;
+			if (DoUpdate || DoImmediate)
 			{
-				const bool DoUpdate = (elem.LastAction.IsUp() && elem.LastAction.LastSentTime.IsElapsed()) && elem.UsesInfiniteRepeat;
-				const bool DoImmediate = elem.LastAction.IsUp() && !elem.UsesInfiniteRepeat;
-				if (DoUpdate || DoImmediate)
-				{
-					resetBuffer.emplace_back(currentLocation);
-				}
-				++currentLocation;
-			});
+				resetBuffer.emplace_back(i);
+			}
+		}
 		return resetBuffer;
 	}
 
@@ -318,7 +317,6 @@ namespace sds
 	auto GetRepeatIndices(const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>
 	{
 		using std::ranges::for_each;
-
 		std::vector<std::uint32_t> buf;
 		for(std::uint32_t i{}; i < mappingsList.size(); ++i)
 		{
@@ -339,17 +337,24 @@ namespace sds
 		return buf;
 	}
 
+	/**
+	 * \brief	Used to find the elements of "toAdd" that aren't in "existing".
+	 * \param existing	Existing range of elements
+	 * \param toAdd		Range of elements tested for adding to existing.
+	 * \return	Returns the elements of toAdd that aren't already in existing.
+	 */
 	inline
-	auto GetUniqueMatches(const std::vector<std::uint32_t> existing, const std::vector<std::uint32_t> toAdd) -> std::vector<std::uint32_t>
+	auto GetUniqueMatches(const std::vector<std::uint32_t>& existing, const std::vector<std::uint32_t>& toAdd) -> std::vector<std::uint32_t>
 	{
-		using std::ranges::find, std::ranges::end, std::ranges::begin, std::ranges::transform, std::size_t;
-		// TODO use some of the algo header funcs, possibly set_intersection or merge or similar
-		std::vector<std::uint32_t> uniqueMatchResult;
-		// Don't add existing indices to a set or anything, cpu arch will speed up iterating an array 1-100x vs iterating a r-b tree.
+		using std::size_t, std::ranges::sort, std::ranges::binary_search;
+		using std::vector, std::uint32_t;
+		vector existingSet(existing);
+		sort(existingSet);
+		vector<uint32_t> uniqueMatchResult;
 		for (size_t i{}; i < toAdd.size(); ++i)
 		{
 			const auto e = toAdd[i];
-			if (find(existing, e) == end(existing))
+			if (!binary_search(existingSet, e))
 				uniqueMatchResult.emplace_back(e);
 		}
 		return uniqueMatchResult;

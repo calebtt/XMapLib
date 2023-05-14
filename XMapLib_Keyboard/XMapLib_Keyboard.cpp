@@ -6,7 +6,7 @@
 #include <format>
 
 #include "KeyboardActionTranslator.h"
-#include "KeyboardMapper.h"
+#include "ControllerButtonToActionMap.h"
 #include "KeyboardPollerController.h"
 #include "../XMapLib_Utils/nanotime.h"
 
@@ -26,7 +26,7 @@ auto GetDriverMappings()
             .Vk = VK_PAD_A,
             .UsesInfiniteRepeat = true,
             .ExclusivityGrouping = 111,
-            .OnDown = [&]() { std::cout << std::format("[PAD_A]=[DOWN] @{}\n",GetEpochTimestamp()); },
+            .OnDown = []() { std::cout << std::format("[PAD_A]=[DOWN] @{}\n",GetEpochTimestamp()); },
             .OnUp = []() { std::cout << std::format("[PAD_A]=[UP] @{}\n", GetEpochTimestamp()); },
             .OnRepeat = []() { std::cout << std::format("[PAD_A]=[REPEAT] @{}\n", GetEpochTimestamp()); },
             //.OnReset = []() { std::cout << std::format("[PAD_A]=[RESET] @{}\n", GetEpochTimestamp()); }

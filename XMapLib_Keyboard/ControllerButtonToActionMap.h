@@ -6,6 +6,14 @@
 
 namespace sds
 {
+	enum class ActionState : int
+	{
+		INIT, // State indicating ready for new cycle
+		KEYDOWN,
+		KEYREPEAT,
+		KEYUP,
+	};
+
 	/**
 	 * \brief Wrapper for key mapping state enum, the least I can do is make sure state modifications occur through a managing class,
 	 * and that there exists only one 'current' state, and that it can only be a finite set of possibilities.
@@ -13,13 +21,6 @@ namespace sds
 	 */
 	class MappingStateManager
 	{
-		enum class ActionState : int
-		{
-			INIT, // State indicating ready for new cycle
-			KEYDOWN,
-			KEYREPEAT,
-			KEYUP,
-		};
 		ActionState m_currentValue{ ActionState::INIT };
 		KeyboardSettings m_keyDefaults{};
 	public:

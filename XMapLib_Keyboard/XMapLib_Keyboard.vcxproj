@@ -155,6 +155,9 @@
     <ClInclude Include="KeyboardTranslationResult.h" />
     <ClInclude Include="LibIncludes.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="KeyboardClassDiagram.cd" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
