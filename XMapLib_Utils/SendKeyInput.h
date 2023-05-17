@@ -8,11 +8,11 @@
 namespace sds::Utilities
 {
 	/**
-	 * \brief One function calls SendInput with the eventual built INPUT struct.
-	 * This is useful for debugging or re-routing the output for logging/testing of a real-time system.
-	 * \param inp Pointer to first element of INPUT array.
-	 * \param numSent Number of elements in the array to send.
-	 * \return Returns number of input structures sent.
+	 * \brief	One function calls SendInput with the eventual built INPUT struct.
+	 *	This is useful for debugging or re-routing the output for logging/testing of a near-real-time system.
+	 * \param inp	Pointer to first element of INPUT array.
+	 * \param numSent	Number of elements in the array to send.
+	 * \return	Returns number of input structures sent.
 	 */
 	inline
 	auto CallSendInput(INPUT* inp, std::uint32_t numSent) noexcept
@@ -22,12 +22,12 @@ namespace sds::Utilities
 	}
 
 	/**
-	 * \brief Utility function to send a virtual keycode as input to the OS.
-	 * \remarks Handles keyboard keys and several mouse click buttons.
-	 * \param vk virtual keycode for key (not always the same as a hardware scan code!)
-	 * \param isKeyboard Is the source a keyboard or mouse?
-	 * \param sendDown Send key-down event?
-	 * \return Returns number of events sent.
+	 * \brief	Utility function to send a virtual keycode as input to the OS.
+	 * \param vk	virtual keycode for key (not always the same as a hardware scan code!)
+	 * \param isKeyboard	Is the source a keyboard or mouse?
+	 * \param sendDown	Send key-down event?
+	 * \return	Returns number of events sent.
+	 * \remarks		Handles keyboard keys and several mouse click buttons.
 	 */
 	inline
 	UINT SendVirtualKey(const auto vk, const bool isKeyboard, const bool sendDown) noexcept
@@ -67,9 +67,10 @@ namespace sds::Utilities
 	}
 
 	/**
-	 * \brief Function called to un-set "num lock" key asynchronously. It is a "fire and forget" operation
-	 * that spawns a thread and detaches it. The thread attempts to unset the key, and will not re-attempt if it fails.
-	 * \remarks Uses std::async()
+	 * \brief	Function called to un-set "num lock" key asynchronously. It is a "fire and forget" operation
+	 *	that spawns a thread and returns a shared_future to it. The thread attempts to unset the key, and will not re-attempt if it fails.
+	 * \returns		The shared_future may contain an optional string error message.
+	 * \remarks		Uses std::async()
 	 */
 	inline
 	auto UnsetNumlockAsync() noexcept
@@ -81,8 +82,7 @@ namespace sds::Utilities
 		const auto NumLockState = GetKeyState(static_cast<int>((VK_NUMLOCK)));
 		const std::bitset<sizeof(NumLockState)* CHAR_BIT> bits(NumLockState);
 		static_assert(bits.size() > 0);
-		const bool IsNumLockSet = IsLittlEnd ? bits[0] : bits[bits.size() - 1];
-		if (IsNumLockSet)
+		if (const bool IsNumLockSet = IsLittlEnd ? bits[0] : bits[bits.size() - 1])
 		{
 			auto DoNumlockSend = [&]() -> std::string
 			{
@@ -102,9 +102,9 @@ namespace sds::Utilities
 	}
 
 	/**
-	 * \brief Utility function to map a Virtual Keycode to a scancode
-	 * \param vk integer virtual keycode
-	 * \return returns the hardware scancode of the key
+	 * \brief	Utility function to map a Virtual Keycode to a scancode
+	 * \param	vk integer virtual keycode
+	 * \return	returns the hardware scancode of the key
 	 */
 	[[nodiscard]]
 	inline
@@ -119,10 +119,10 @@ namespace sds::Utilities
 	}
 
 	/**
-	 * \brief Calls UnsetNumlockAsync() and waits for <b>timeout</b> time for a completion result, if timeout then returns nothing.
-	 * If an error occurs within the timeout period, it logs the error.
-	 * \param timeoutTime Time in milliseconds to wait for a result from the asynchronous thread spawned to unset numlock.
-	 * \remarks Do not call this function in a loop, it has a synchronous wait time delay.
+	 * \brief	Calls UnsetNumlockAsync() and waits for <b>timeout</b> time for a completion result, if timeout then returns nothing.
+	 *	If an error occurs within the timeout period, it logs the error.
+	 * \param timeoutTime	Time in milliseconds to wait for a result from the asynchronous thread spawned to unset numlock.
+	 * \remarks		Do not call this function in a loop, it has a synchronous wait time delay.
 	 */
 	inline
 	void UnsetAndCheckNumlock(const std::chrono::milliseconds timeoutTime = std::chrono::milliseconds{ 20 })
@@ -147,8 +147,10 @@ namespace sds::Utilities
 	}
 
 	/**
-	 * \brief Utility class for simulating input via Windows API. SendKeyInput is used primarily for simulating keyboard input.
+	 * \brief	Utility class for simulating input via Windows API. SendKeyInput is used primarily for simulating keyboard input.
 	 * <b>NOTE: Some applications, namely specific games, do not recognize input sent via virtual keycode and instead only register hardware scancodes.</b>
+	 * \remarks		It caches the scancodes retrieved from the virtual keycode given to the function to reduce making WinAPI calls. It also caches the
+	 *	INPUT structs that it builds with the relevant info.
 	 */
 	class SendKeyInput
 	{
@@ -171,10 +173,12 @@ namespace sds::Utilities
 		SendKeyInput& operator=(SendKeyInput&& other) = default;
 		~SendKeyInput() = default;
 
-		/// <summary>Sends the virtual keycode as a hardware scancode.</summary>
-		/// <param name="vk"> is the Virtual Keycode of the keystroke you wish to emulate </param>
-		/// <param name="down"> is a boolean denoting if the keypress event is KEYDOWN or KEYUP</param>
-		void SendScanCode(const int vk, const bool down) noexcept
+		/**
+		 * \brief	Sends the virtual keycode as a hardware scancode
+		 * \param virtualKeycode	is the Virtual Keycode of the keystroke you wish to emulate
+		 * \param doKeyDown	is a boolean denoting if the keypress event is KEYDOWN or KEYUP
+		 */
+		void SendScanCode(const int virtualKeycode, const bool doKeyDown) noexcept
 		{
 			if (m_autoDisableNumlock)
 			{
@@ -183,7 +187,7 @@ namespace sds::Utilities
 			}
 			// Current int bool pair, used as the key for caching built INPUTs,
 			// used in multiple places below.
-			const auto currentPair = std::make_pair(vk, down);
+			const auto currentPair = std::make_pair(virtualKeycode, doKeyDown);
 			// Do test against cached values first, the unordered_map contains() lookup
 			// is constant-time on average, with the worst case being linear.
 			if (m_input_store.contains(currentPair))
@@ -206,25 +210,25 @@ namespace sds::Utilities
 				m_input_store[currentPair] = tempInput;
 				CallSendInput(&tempInput, 1);
 			};
-			const auto scanCode = GetScanCode(vk);
+			const auto scanCode = GetScanCode(virtualKeycode);
 			if (!scanCode)
 			{
 				//try mouse
-				switch (vk)
+				switch (virtualKeycode)
 				{
 				case VK_LBUTTON:
-					MakeItMouse(MOUSEEVENTF_LEFTDOWN, MOUSEEVENTF_LEFTUP, down);
+					MakeItMouse(MOUSEEVENTF_LEFTDOWN, MOUSEEVENTF_LEFTUP, doKeyDown);
 					break;
 				case VK_RBUTTON:
-					MakeItMouse(MOUSEEVENTF_RIGHTDOWN, MOUSEEVENTF_RIGHTUP, down);
+					MakeItMouse(MOUSEEVENTF_RIGHTDOWN, MOUSEEVENTF_RIGHTUP, doKeyDown);
 					break;
 				case VK_MBUTTON:
-					MakeItMouse(MOUSEEVENTF_MIDDLEDOWN, MOUSEEVENTF_MIDDLEUP, down);
+					MakeItMouse(MOUSEEVENTF_MIDDLEDOWN, MOUSEEVENTF_MIDDLEUP, doKeyDown);
 					break;
 				case VK_XBUTTON1:
 					[[fallthrough]];
 				case VK_XBUTTON2:
-					MakeItMouse(MOUSEEVENTF_XDOWN, MOUSEEVENTF_XUP, down);
+					MakeItMouse(MOUSEEVENTF_XDOWN, MOUSEEVENTF_XUP, doKeyDown);
 					break;
 				default:
 					break;
@@ -235,7 +239,7 @@ namespace sds::Utilities
 				//do scancode
 				tempInput = {};
 				tempInput.type = INPUT_KEYBOARD;
-				if (down)
+				if (doKeyDown)
 					tempInput.ki.dwFlags = KEYEVENTF_SCANCODE;
 				else
 					tempInput.ki.dwFlags = KEYEVENTF_KEYUP | KEYEVENTF_SCANCODE;
@@ -248,5 +252,11 @@ namespace sds::Utilities
 			}
 		}
 	};
+
+	// Compile-time asserts for the type above, copyable, moveable.
+	static_assert(std::is_copy_constructible_v<SendKeyInput>);
+	static_assert(std::is_copy_assignable_v<SendKeyInput>);
+	static_assert(std::is_move_constructible_v<SendKeyInput>);
+	static_assert(std::is_move_assignable_v<SendKeyInput>);
 
 }
