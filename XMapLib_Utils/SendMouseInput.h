@@ -17,7 +17,7 @@ namespace sds::Utilities
 			m_mouse_move_input.type = INPUT_MOUSE;
 			m_mouse_move_input.mi.dwFlags = MOUSEEVENTF_MOVE;
 		}
-		SendMouseInput(const SendMouseInput& other) = delete;
+		SendMouseInput(const SendMouseInput& other) = default;
 		SendMouseInput(SendMouseInput&& other) = delete;
 		SendMouseInput& operator=(const SendMouseInput& other) = delete;
 		SendMouseInput& operator=(SendMouseInput&& other) = delete;
@@ -35,4 +35,5 @@ namespace sds::Utilities
 			CallSendInput(&m_mouse_move_input, 1);
 		}
 	};
+
 }

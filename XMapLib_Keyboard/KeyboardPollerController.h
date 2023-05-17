@@ -46,4 +46,7 @@ namespace sds
 			return {};
 		}
 	};
+
+	static_assert(std::is_copy_constructible_v<KeyboardPollerController>);
+	static_assert(std::is_copy_assignable_v<KeyboardPollerController>);
 }

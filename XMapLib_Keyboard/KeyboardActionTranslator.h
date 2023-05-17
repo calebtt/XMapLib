@@ -14,9 +14,13 @@
 #include <ranges>
 #include <set>
 #include <type_traits>
+#include <span>
+#include <unordered_set>
+#include <algorithm>
 
 namespace sds
 {
+	// Concept for range of CBActionMap type that at least provides one-time forward-iteration.
 	template<typename T>
 	concept MappingRange_c = requires (T & t)
 	{
@@ -24,18 +28,19 @@ namespace sds
 		{ std::ranges::forward_range<T> };
 	};
 
-	[[nodiscard]] inline bool AreExclusivityGroupsUnique(const std::vector<CBActionMap>& mappingsList);
-	[[nodiscard]] inline auto GetUpdateIndices(const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>;
-	[[nodiscard]] inline auto GetRepeatIndices(const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>;
+	[[nodiscard]] bool AreExclusivityGroupsUnique(const std::vector<CBActionMap>& mappingsList);
+	[[nodiscard]] auto GetUpdateIndices(const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>;
+	[[nodiscard]] auto GetRepeatIndices(const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>;
 	[[nodiscard]] constexpr auto GetVkMatchIndices(const int vk, const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>;
-	[[nodiscard]] inline auto GetUniqueMatches(const std::vector<std::uint32_t>& existing, const std::vector<std::uint32_t>& toAdd) -> std::vector<std::uint32_t>;
-	inline void InitCustomTimers(CBActionMap& mappingElem); // Init some custom timers, if present
+	auto GetUniqueMatches(const std::vector<std::uint32_t>& existing, const std::vector<std::uint32_t>& toAdd) noexcept -> std::vector<std::uint32_t>;
+	//[[nodiscard]] inline auto GetUniqueMatchesFaster(std::vector<uint32_t> existing, std::vector<uint32_t> toAdd) -> std::vector<uint32_t>;
+	void InitCustomTimers(CBActionMap& mappingElem); // Init some custom timers, if present
 
-	[[nodiscard]] inline auto GetUpdateTranslationResult(CBActionMap& currentMapping) -> TranslationResult;
-	[[nodiscard]] inline auto GetRepeatTranslationResult(CBActionMap& currentMapping) -> TranslationResult;
-	[[nodiscard]] inline auto GetOvertakenTranslationResult(CBActionMap& overtakenMapping) -> TranslationResult;
-	[[nodiscard]] inline auto GetKeyUpTranslationResult(CBActionMap& currentMapping) -> TranslationResult;
-	[[nodiscard]] inline auto GetInitialKeyDownTranslationResult(CBActionMap& currentMapping) -> TranslationResult;
+	[[nodiscard]] auto GetUpdateTranslationResult(CBActionMap& currentMapping) -> TranslationResult;
+	[[nodiscard]] auto GetRepeatTranslationResult(CBActionMap& currentMapping) -> TranslationResult;
+	[[nodiscard]] auto GetOvertakenTranslationResult(CBActionMap& overtakenMapping) -> TranslationResult;
+	[[nodiscard]] auto GetKeyUpTranslationResult(CBActionMap& currentMapping) -> TranslationResult;
+	[[nodiscard]] auto GetInitialKeyDownTranslationResult(CBActionMap& currentMapping) -> TranslationResult;
 
 	//// Hopefully behavior not too specific so as to become unusable
 	//// for someone trying to add a customization. Customization class for exclusivity group
@@ -49,12 +54,6 @@ namespace sds
 	// // TODO might extract exclusivity grouping code into an object used by the translator, could be a template param
 	//	OvertakingBehavior(std::span<CBActionMap> mappingsList) : m_mappings(mappingsList)
 	//	{
-	//		for (CBActionMap& elem : mappingsList)
-	//		{
-	//			// If has an exclusivity grouping, add to map
-	//			if (elem.ExclusivityGrouping)
-	//				m_exGroupMap[*elem.ExclusivityGrouping].emplace_back(&elem);
-	//		}
 	//	}
 	//	auto GetOvertakenTranslationResultsFor(const std::uint32_t currentIndex) -> std::vector<TranslationResult>
 	//	{
@@ -262,6 +261,12 @@ namespace sds
 		}
 	};
 
+	// Compile-time asserts for the type above, copyable, moveable.
+	static_assert(std::is_copy_constructible_v<KeyboardActionTranslator>);
+	static_assert(std::is_copy_assignable_v<KeyboardActionTranslator>);
+	static_assert(std::is_move_constructible_v<KeyboardActionTranslator>);
+	static_assert(std::is_move_assignable_v<KeyboardActionTranslator>);
+
 	/**
 	 * \brief	Checks a list of mappings for having multiple exclusivity groupings mapped to a single controller button.
 	 * \param	mappingsList Vector of controller button to action mappings.
@@ -292,6 +297,7 @@ namespace sds
 	 * \brief If enough time has passed, the key requests to be reset for use again; provided it uses the key-repeat behavior--
 	 * otherwise it requests to be reset immediately.
 	 */
+	[[nodiscard]]
 	inline
 	auto GetUpdateIndices(const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>
 	{
@@ -313,6 +319,7 @@ namespace sds
 	/**
 	 * \brief Returns vec of index to mappings that require a key-repeat (timer has elapsed, key is doing key-repeat).
 	 */
+	[[nodiscard]]
 	inline
 	auto GetRepeatIndices(const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>
 	{
@@ -344,7 +351,7 @@ namespace sds
 	 * \return	Returns the elements of toAdd that aren't already in existing.
 	 */
 	inline
-	auto GetUniqueMatches(const std::vector<std::uint32_t>& existing, const std::vector<std::uint32_t>& toAdd) -> std::vector<std::uint32_t>
+	auto GetUniqueMatches(const std::vector<std::uint32_t>& existing, const std::vector<std::uint32_t>& toAdd) noexcept -> std::vector<std::uint32_t>
 	{
 		using std::size_t, std::ranges::sort, std::ranges::binary_search;
 		using std::vector, std::uint32_t;
@@ -360,6 +367,22 @@ namespace sds
 		return uniqueMatchResult;
 	}
 
+	// Potential future replacement for GetUniqueMatches(...), benchmarks show it to be slower--at least, for small sizes.
+	//[[nodiscard]]
+	//inline
+	//auto GetUniqueMatchesFaster(std::vector<uint32_t> existing, std::vector<uint32_t> toAdd) -> std::vector<uint32_t>
+	//{
+	//	std::ranges::sort(existing);
+	//	std::ranges::sort(toAdd);
+
+	//	// Faster to use resize + erase than reserve + back_insert_iterator
+	//	std::vector<uint32_t> results(toAdd.size());
+	//	auto [in, out] = std::ranges::set_difference(toAdd, existing, results.begin());
+	//	results.erase(out, results.end());
+
+	//	return results;
+	//}
+
 	/**
 	 * \brief By returning the index, we can avoid issues with iterator/pointer invalidation.
 	 * Uses unsigned int because size_t is just a waste of space here.
@@ -367,11 +390,10 @@ namespace sds
 	 * \param mappingsList List of controller button to action mappings.
 	 * \return Vector of indices at which mappings which map to the controller button VK can be located.
 	 */
+	[[nodiscard]]
 	constexpr
 	auto GetVkMatchIndices(const int vk, const std::vector<CBActionMap>& mappingsList) -> std::vector<std::uint32_t>
 	{
-		using std::ranges::for_each;
-
 		std::vector<std::uint32_t> buf;
 		for (std::uint32_t i{}; i < mappingsList.size(); ++i)
 		{

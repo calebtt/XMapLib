@@ -9,6 +9,7 @@
 #include "ControllerButtonToActionMap.h"
 #include "KeyboardPollerController.h"
 #include "../XMapLib_Utils/nanotime.h"
+#include "../XMapLib_Utils/SendMouseInput.h"
 
 inline
 auto GetEpochTimestamp()
@@ -17,9 +18,14 @@ auto GetEpochTimestamp()
     return std::chrono::duration_cast<std::chrono::seconds>(currentTime.time_since_epoch());
 }
 
-auto GetDriverMappings()
+auto GetDriverButtonMappings()
 {
     using std::vector, sds::CBActionMap, std::cout;
+    using namespace std::chrono_literals;
+    sds::Utilities::SendMouseInput smi;
+    constexpr auto FirstDelay = 1ns; // mouse move delays
+    constexpr auto RepeatDelay = 1ns;
+    constexpr int MouseExGroup = 102;
     vector mapBuffer
     {
         CBActionMap{
@@ -31,7 +37,7 @@ auto GetDriverMappings()
             .OnRepeat = []() { std::cout << std::format("[PAD_A]=[REPEAT] @{}\n", GetEpochTimestamp()); },
             //.OnReset = []() { std::cout << std::format("[PAD_A]=[RESET] @{}\n", GetEpochTimestamp()); }
             //.CustomRepeatDelay = std::chrono::seconds{1},
-            .DelayBeforeFirstRepeat = std::chrono::milliseconds{500},
+            .DelayBeforeFirstRepeat = 500ms
         },
         CBActionMap{
             .Vk = VK_PAD_B,
@@ -42,7 +48,29 @@ auto GetDriverMappings()
             .OnUp = []() { std::cout << std::format("[PAD_B]=[UP] @{}\n", GetEpochTimestamp()); },
             .OnRepeat = []() { std::cout << std::format("[PAD_B]=[REPEAT] @{}\n", GetEpochTimestamp()); },
             .OnReset = []() { std::cout << std::format("[PAD_B]=[RESET] @{}\n", GetEpochTimestamp()); },
-            .DelayBeforeFirstRepeat = std::chrono::seconds{2}
+            .DelayBeforeFirstRepeat = 2s
+        },
+    	CBActionMap{
+            .Vk = VK_PAD_X,
+            .UsesInfiniteRepeat = false,
+            .SendsFirstRepeatOnly = true,
+            .ExclusivityGrouping = 111,
+            .OnDown = []() { std::cout << std::format("[PAD_X]=[DOWN] @{}\n", GetEpochTimestamp()); },
+            .OnUp = []() { std::cout << std::format("[PAD_X]=[UP] @{}\n", GetEpochTimestamp()); },
+            .OnRepeat = []() { std::cout << std::format("[PAD_X]=[REPEAT] @{}\n", GetEpochTimestamp()); },
+            .OnReset = []() { std::cout << std::format("[PAD_X]=[RESET] @{}\n", GetEpochTimestamp()); },
+            .DelayBeforeFirstRepeat = 2s
+        },
+        CBActionMap{
+            .Vk = VK_PAD_Y,
+            .UsesInfiniteRepeat = false,
+            .SendsFirstRepeatOnly = true,
+            .ExclusivityGrouping = 111,
+            .OnDown = []() { std::cout << std::format("[PAD_Y]=[DOWN] @{}\n", GetEpochTimestamp()); },
+            .OnUp = []() { std::cout << std::format("[PAD_Y]=[UP] @{}\n", GetEpochTimestamp()); },
+            .OnRepeat = []() { std::cout << std::format("[PAD_Y]=[REPEAT] @{}\n", GetEpochTimestamp()); },
+            .OnReset = []() { std::cout << std::format("[PAD_Y]=[RESET] @{}\n", GetEpochTimestamp()); },
+            .DelayBeforeFirstRepeat = 2s
         },
         CBActionMap{
             .Vk = VK_PAD_LTHUMB_UP,
@@ -80,7 +108,156 @@ auto GetDriverMappings()
             .Vk = VK_PAD_RSHOULDER,
             .UsesInfiniteRepeat = false,
             .OnDown = []() { system("cls"); std::cout << "Cleared.\n"; }
+        },
+        CBActionMap{
+            .Vk = VK_PAD_LTRIGGER,
+            .UsesInfiniteRepeat = true,
+            .ExclusivityGrouping = 101,
+            .OnDown = []() { std::cout << std::format("[LTRIGGER]=[DOWN] @{}\n", GetEpochTimestamp()); },
+            .OnUp = []() { std::cout << std::format("[LTRIGGER]=[UP] @{}\n", GetEpochTimestamp()); },
+        },
+    	CBActionMap{
+            .Vk = VK_PAD_RTRIGGER,
+            .UsesInfiniteRepeat = true,
+            .ExclusivityGrouping = 101,
+            .OnDown = []() { std::cout << std::format("[RTRIGGER]=[DOWN] @{}\n", GetEpochTimestamp()); },
+            .OnUp = []() { std::cout << std::format("[RTRIGGER]=[UP] @{}\n", GetEpochTimestamp()); },
         }
+    };
+    return mapBuffer;
+}
+
+auto GetDriverMouseMappings()
+{
+    using std::vector, sds::CBActionMap, std::cout;
+    using namespace std::chrono_literals;
+    sds::Utilities::SendMouseInput smi;
+    constexpr auto FirstDelay = 1ns; // mouse move delays
+    constexpr auto RepeatDelay = 1ns;
+    constexpr int MouseExGroup = 102;
+    vector mapBuffer
+    {
+        // Mouse move stuff
+        CBActionMap{
+            .Vk = VK_PAD_RTHUMB_UP,
+            .UsesInfiniteRepeat = true,
+            .ExclusivityGrouping = MouseExGroup,
+            .OnDown = [smi]() mutable
+            {
+                smi.SendMouseMove(0, -1);
+            },
+            .OnRepeat = [smi]() mutable
+            {
+                smi.SendMouseMove(0, -1);
+            },
+            .DelayBeforeFirstRepeat = FirstDelay,
+            .DelayForRepeats = RepeatDelay
+        },
+        CBActionMap{
+            .Vk = VK_PAD_RTHUMB_DOWN,
+            .UsesInfiniteRepeat = true,
+            .ExclusivityGrouping = MouseExGroup,
+            .OnDown = [smi]() mutable
+            {
+                smi.SendMouseMove(0, 1);
+            },
+            .OnRepeat = [smi]() mutable
+            {
+                smi.SendMouseMove(0, 1);
+            },
+            .DelayBeforeFirstRepeat = FirstDelay,
+            .DelayForRepeats = RepeatDelay
+        },
+        CBActionMap{
+            .Vk = VK_PAD_RTHUMB_LEFT,
+            .UsesInfiniteRepeat = true,
+            .ExclusivityGrouping = MouseExGroup,
+            .OnDown = [smi]() mutable
+            {
+                smi.SendMouseMove(-1, 0);
+            },
+            .OnRepeat = [smi]() mutable
+            {
+                smi.SendMouseMove(-1, 0);
+            },
+            .DelayBeforeFirstRepeat = FirstDelay,
+            .DelayForRepeats = RepeatDelay
+        },
+        CBActionMap{
+            .Vk = VK_PAD_RTHUMB_RIGHT,
+            .UsesInfiniteRepeat = true,
+            .ExclusivityGrouping = MouseExGroup,
+            .OnDown = [smi]() mutable
+            {
+                smi.SendMouseMove(1, 0);
+            },
+            .OnRepeat = [smi]() mutable
+            {
+                smi.SendMouseMove(1, 0);
+            },
+            .DelayBeforeFirstRepeat = FirstDelay,
+            .DelayForRepeats = RepeatDelay
+        },
+        CBActionMap{
+            .Vk = VK_PAD_RTHUMB_UPRIGHT,
+            .UsesInfiniteRepeat = true,
+            .ExclusivityGrouping = MouseExGroup,
+            .OnDown = [smi]() mutable
+            {
+                smi.SendMouseMove(1, -1);
+            },
+            .OnRepeat = [smi]() mutable
+            {
+                smi.SendMouseMove(1, -1);
+            },
+            .DelayBeforeFirstRepeat = FirstDelay,
+            .DelayForRepeats = RepeatDelay
+        },
+        CBActionMap{
+            .Vk = VK_PAD_RTHUMB_UPLEFT,
+            .UsesInfiniteRepeat = true,
+            .ExclusivityGrouping = MouseExGroup,
+            .OnDown = [smi]() mutable
+            {
+                smi.SendMouseMove(-1, -1);
+            },
+            .OnRepeat = [smi]() mutable
+            {
+                smi.SendMouseMove(-1, -1);
+            },
+            .DelayBeforeFirstRepeat = FirstDelay,
+            .DelayForRepeats = RepeatDelay
+        },
+        CBActionMap{
+            .Vk = VK_PAD_RTHUMB_DOWNLEFT,
+            .UsesInfiniteRepeat = true,
+            .ExclusivityGrouping = MouseExGroup,
+            .OnDown = [smi]() mutable
+            {
+                smi.SendMouseMove(-1, 1);
+            },
+            .OnRepeat = [smi]() mutable
+            {
+                smi.SendMouseMove(-1, 1);
+            },
+            .DelayBeforeFirstRepeat = FirstDelay,
+            .DelayForRepeats = RepeatDelay
+        },
+        CBActionMap{
+            .Vk = VK_PAD_RTHUMB_DOWNRIGHT,
+            .UsesInfiniteRepeat = true,
+            .ExclusivityGrouping = MouseExGroup,
+            .OnDown = [smi]() mutable
+            {
+                smi.SendMouseMove(1, 1);
+            },
+            .OnRepeat = [smi]() mutable
+            {
+                smi.SendMouseMove(1, 1);
+            },
+            .DelayBeforeFirstRepeat = FirstDelay,
+            .DelayForRepeats = RepeatDelay
+        },
     };
     return mapBuffer;
 }
@@ -101,8 +278,10 @@ int main()
 {
     using namespace std::chrono_literals;
 
-    auto mapBuffer = GetDriverMappings();
+    auto mapBuffer = GetDriverButtonMappings();
+    auto mouseMapBuffer = GetDriverMouseMappings();
     sds::KeyboardActionTranslator translator(std::move(mapBuffer));
+    sds::KeyboardActionTranslator mouseTranslator(std::move(mouseMapBuffer));
     sds::KeyboardPlayerInfo playerInfo{};
     sds::KeyboardPollerController controllerPoller(playerInfo.player_id);
 
@@ -110,13 +289,19 @@ int main()
     const auto exitFuture = std::async(std::launch::async, [&]() { gec.GetExitSignal(); });
     while(!gec.IsDone)
     {
-        const auto translation = translator(controllerPoller());
+        const auto pollResult = controllerPoller();
+        const auto translation = translator(pollResult);
+        const auto mouseTranslation = mouseTranslator(pollResult);
         translation();
+        mouseTranslation();
         nanotime_sleep(1'000'000);
     }
     std::cout << "Performing cleanup actions...\n";
     const auto cleanupTranslation = translator.GetCleanupActions();
     for (auto& cleanupAction : cleanupTranslation)
+        cleanupAction();
+    const auto mouseCleanupTranslation = mouseTranslator.GetCleanupActions();
+    for (auto& cleanupAction : mouseCleanupTranslation)
         cleanupAction();
 
     exitFuture.wait();

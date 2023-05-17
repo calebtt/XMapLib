@@ -297,6 +297,17 @@ namespace TestKeyboard
             const auto timeMsg = totalMsg + indivMsg;
             Logger::WriteMessage(timeMsg.c_str());
         }
+
+        TEST_METHOD(TestExclusivityGroupsAlgorithm)
+        {
+	        // Tests the function attempting to detect when multiple exclusivity groupings are mapped
+            // to the same key/vk/id.
+            TestMappingProvider tmp;
+            auto mapList = tmp.GetMapping(1, 101);
+            mapList.append_range(tmp.GetMapping(1, 102));
+            const auto testResult = sds::AreExclusivityGroupsUnique(mapList);
+            Assert::IsFalse(testResult, L"Failed to detect multiple exclusivity groupings mapped to same vk.");
+        }
     private:
         static
         void AssertTranslationPackSizes(
