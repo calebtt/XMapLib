@@ -301,9 +301,9 @@ int main()
     using namespace std::chrono_literals;
 
     auto mapBuffer = GetDriverButtonMappings();
-    auto mouseMapBuffer = GetDriverMouseMappings();
+    const auto mouseMapBuffer = GetDriverMouseMappings();
     sds::KeyboardActionTranslator translator(std::move(mapBuffer));
-    sds::KeyboardActionTranslator mouseTranslator(std::move(mouseMapBuffer));
+    sds::KeyboardActionTranslator mouseTranslator(mouseMapBuffer);
     sds::KeyboardPlayerInfo playerInfo{};
     sds::KeyboardPollerController controllerPoller(playerInfo.player_id);
 
