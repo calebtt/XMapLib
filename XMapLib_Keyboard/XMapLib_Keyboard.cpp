@@ -144,11 +144,11 @@ auto GetDriverMouseMappings()
             .ExclusivityGrouping = MouseExGroup,
             .OnDown = [smi]() mutable
             {
-                smi.SendMouseMove(0, -1);
+                smi.SendMouseMove(0, 1);
             },
             .OnRepeat = [smi]() mutable
             {
-                smi.SendMouseMove(0, -1);
+                smi.SendMouseMove(0, 1);
             },
             .DelayBeforeFirstRepeat = FirstDelay,
             .DelayForRepeats = RepeatDelay
@@ -159,11 +159,11 @@ auto GetDriverMouseMappings()
             .ExclusivityGrouping = MouseExGroup,
             .OnDown = [smi]() mutable
             {
-                smi.SendMouseMove(0, 1);
+                smi.SendMouseMove(0, -1);
             },
             .OnRepeat = [smi]() mutable
             {
-                smi.SendMouseMove(0, 1);
+                smi.SendMouseMove(0, -1);
             },
             .DelayBeforeFirstRepeat = FirstDelay,
             .DelayForRepeats = RepeatDelay
@@ -204,11 +204,11 @@ auto GetDriverMouseMappings()
             .ExclusivityGrouping = MouseExGroup,
             .OnDown = [smi]() mutable
             {
-                smi.SendMouseMove(1, -1);
+                smi.SendMouseMove(1, 1);
             },
             .OnRepeat = [smi]() mutable
             {
-                smi.SendMouseMove(1, -1);
+                smi.SendMouseMove(1, 1);
             },
             .DelayBeforeFirstRepeat = FirstDelay,
             .DelayForRepeats = RepeatDelay
@@ -219,11 +219,11 @@ auto GetDriverMouseMappings()
             .ExclusivityGrouping = MouseExGroup,
             .OnDown = [smi]() mutable
             {
-                smi.SendMouseMove(-1, -1);
+                smi.SendMouseMove(-1, 1);
             },
             .OnRepeat = [smi]() mutable
             {
-                smi.SendMouseMove(-1, -1);
+                smi.SendMouseMove(-1, 1);
             },
             .DelayBeforeFirstRepeat = FirstDelay,
             .DelayForRepeats = RepeatDelay
@@ -234,11 +234,11 @@ auto GetDriverMouseMappings()
             .ExclusivityGrouping = MouseExGroup,
             .OnDown = [smi]() mutable
             {
-                smi.SendMouseMove(-1, 1);
+                smi.SendMouseMove(-1, -1);
             },
             .OnRepeat = [smi]() mutable
             {
-                smi.SendMouseMove(-1, 1);
+                smi.SendMouseMove(-1, -1);
             },
             .DelayBeforeFirstRepeat = FirstDelay,
             .DelayForRepeats = RepeatDelay
@@ -249,11 +249,11 @@ auto GetDriverMouseMappings()
             .ExclusivityGrouping = MouseExGroup,
             .OnDown = [smi]() mutable
             {
-                smi.SendMouseMove(1, 1);
+                smi.SendMouseMove(1, -1);
             },
             .OnRepeat = [smi]() mutable
             {
-                smi.SendMouseMove(1, 1);
+                smi.SendMouseMove(1, -1);
             },
             .DelayBeforeFirstRepeat = FirstDelay,
             .DelayForRepeats = RepeatDelay
