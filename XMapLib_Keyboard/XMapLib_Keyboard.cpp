@@ -22,107 +22,128 @@ auto GetDriverButtonMappings()
 {
     using std::vector, sds::CBActionMap, std::cout;
     using namespace std::chrono_literals;
-    sds::Utilities::SendMouseInput smi;
-    constexpr auto FirstDelay = 1ns; // mouse move delays
-    constexpr auto RepeatDelay = 1ns;
-    constexpr int MouseExGroup = 102;
+    constexpr int PadButtonsGroup = 111; // Buttons exclusivity grouping.
+    constexpr int LeftThumbGroup = 101; // Left thumbstick exclusivity grouping.
+    const auto PrintMessageAndTime = [](std::string_view msg)
+    {
+        cout << msg << " @" << GetEpochTimestamp() << '\n';
+    };
+    const auto GetDownLambdaForKeyNamed = [=](std::string keyName)
+	{
+        return [=]() { PrintMessageAndTime(keyName + "=[DOWN]"); };
+    };
+    const auto GetUpLambdaForKeyNamed = [=](std::string keyName)
+    {
+        return [=]() { PrintMessageAndTime(keyName + "=[UP]"); };
+    };
+    const auto GetRepeatLambdaForKeyNamed = [=](std::string keyName)
+    {
+        return [=]() { PrintMessageAndTime(keyName + "=[REPEAT]"); };
+    };
+    const auto GetResetLambdaForKeyNamed = [=](std::string keyName)
+    {
+        return [=]() { PrintMessageAndTime(keyName + "=[RESET]"); };
+    };
     vector mapBuffer
     {
         CBActionMap{
             .Vk = VK_PAD_A,
             .UsesInfiniteRepeat = true,
-            .ExclusivityGrouping = 111,
-            .OnDown = []() { std::cout << std::format("[PAD_A]=[DOWN] @{}\n",GetEpochTimestamp()); },
-            .OnUp = []() { std::cout << std::format("[PAD_A]=[UP] @{}\n", GetEpochTimestamp()); },
-            .OnRepeat = []() { std::cout << std::format("[PAD_A]=[REPEAT] @{}\n", GetEpochTimestamp()); },
-            //.OnReset = []() { std::cout << std::format("[PAD_A]=[RESET] @{}\n", GetEpochTimestamp()); }
-            //.CustomRepeatDelay = std::chrono::seconds{1},
+            .ExclusivityGrouping = PadButtonsGroup,
+            .OnDown = GetDownLambdaForKeyNamed("[PAD_A]"),
+            .OnUp = GetUpLambdaForKeyNamed("[PAD_A]"),
+            .OnRepeat = GetRepeatLambdaForKeyNamed("[PAD_A]"),
             .DelayBeforeFirstRepeat = 500ms
         },
         CBActionMap{
             .Vk = VK_PAD_B,
             .UsesInfiniteRepeat = false,
             .SendsFirstRepeatOnly = true,
-            .ExclusivityGrouping = 111,
-            .OnDown = []() { std::cout << std::format("[PAD_B]=[DOWN] @{}\n", GetEpochTimestamp()); },
-            .OnUp = []() { std::cout << std::format("[PAD_B]=[UP] @{}\n", GetEpochTimestamp()); },
-            .OnRepeat = []() { std::cout << std::format("[PAD_B]=[REPEAT] @{}\n", GetEpochTimestamp()); },
-            .OnReset = []() { std::cout << std::format("[PAD_B]=[RESET] @{}\n", GetEpochTimestamp()); },
+            .ExclusivityGrouping = PadButtonsGroup,
+            .OnDown = GetDownLambdaForKeyNamed("[PAD_B]"),
+            .OnUp = GetUpLambdaForKeyNamed("[PAD_B]"),
+            .OnRepeat = GetRepeatLambdaForKeyNamed("[PAD_B]"),
+            .OnReset = GetResetLambdaForKeyNamed("[PAD_B]"),
             .DelayBeforeFirstRepeat = 2s
         },
     	CBActionMap{
             .Vk = VK_PAD_X,
             .UsesInfiniteRepeat = false,
             .SendsFirstRepeatOnly = true,
-            .ExclusivityGrouping = 111,
-            .OnDown = []() { std::cout << std::format("[PAD_X]=[DOWN] @{}\n", GetEpochTimestamp()); },
-            .OnUp = []() { std::cout << std::format("[PAD_X]=[UP] @{}\n", GetEpochTimestamp()); },
-            .OnRepeat = []() { std::cout << std::format("[PAD_X]=[REPEAT] @{}\n", GetEpochTimestamp()); },
-            .OnReset = []() { std::cout << std::format("[PAD_X]=[RESET] @{}\n", GetEpochTimestamp()); },
+            .ExclusivityGrouping = PadButtonsGroup,
+            .OnDown = GetDownLambdaForKeyNamed("[PAD_X]"),
+            .OnUp = GetUpLambdaForKeyNamed("[PAD_X]"),
+            .OnRepeat = GetRepeatLambdaForKeyNamed("[PAD_X]"),
+            .OnReset = GetResetLambdaForKeyNamed("[PAD_X]"),
             .DelayBeforeFirstRepeat = 2s
         },
         CBActionMap{
             .Vk = VK_PAD_Y,
             .UsesInfiniteRepeat = false,
             .SendsFirstRepeatOnly = true,
-            .ExclusivityGrouping = 111,
-            .OnDown = []() { std::cout << std::format("[PAD_Y]=[DOWN] @{}\n", GetEpochTimestamp()); },
-            .OnUp = []() { std::cout << std::format("[PAD_Y]=[UP] @{}\n", GetEpochTimestamp()); },
-            .OnRepeat = []() { std::cout << std::format("[PAD_Y]=[REPEAT] @{}\n", GetEpochTimestamp()); },
-            .OnReset = []() { std::cout << std::format("[PAD_Y]=[RESET] @{}\n", GetEpochTimestamp()); },
+            .ExclusivityGrouping = PadButtonsGroup,
+            .OnDown = GetDownLambdaForKeyNamed("[PAD_Y]"),
+            .OnUp = GetUpLambdaForKeyNamed("[PAD_Y]"),
+            .OnRepeat = GetRepeatLambdaForKeyNamed("[PAD_Y]"),
+            .OnReset = GetResetLambdaForKeyNamed("[PAD_Y]"),
             .DelayBeforeFirstRepeat = 2s
         },
+        // Left thumbstick directional stuff
         CBActionMap{
             .Vk = VK_PAD_LTHUMB_UP,
             .UsesInfiniteRepeat = true,
-            .ExclusivityGrouping = 101,
-            .OnDown = []() { std::cout << std::format("[LTHUMB_UP]=[DOWN] @{}\n", GetEpochTimestamp()); },
-            .OnUp = []() { std::cout << std::format("[LTHUMB_UP]=[UP] @{}\n", GetEpochTimestamp()); },
-            .OnRepeat = []() { std::cout << std::format("[LTHUMB_UP]=[REPEAT] @{}\n", GetEpochTimestamp()); }
+            .ExclusivityGrouping = LeftThumbGroup,
+            .OnDown = GetDownLambdaForKeyNamed("[LTHUMB_UP]"),
+            .OnUp = GetUpLambdaForKeyNamed("[LTHUMB_UP]"),
+            .OnRepeat = GetRepeatLambdaForKeyNamed("[LTHUMB_UP]"),
+            .OnReset = GetResetLambdaForKeyNamed("[LTHUMB_UP]"),
         },
         CBActionMap{
             .Vk = VK_PAD_LTHUMB_DOWN,
             .UsesInfiniteRepeat = true,
-            .ExclusivityGrouping = 101,
-            .OnDown = []() { std::cout << std::format("[LTHUMB_DOWN]=[DOWN] @{}\n", GetEpochTimestamp()); },
-            .OnUp = []() { std::cout << std::format("[LTHUMB_DOWN]=[UP] @{}\n", GetEpochTimestamp()); },
-            .OnRepeat = []() { std::cout << std::format("[LTHUMB_DOWN]=[REPEAT] @{}\n", GetEpochTimestamp()); }
+            .ExclusivityGrouping = LeftThumbGroup,
+            .OnDown = GetDownLambdaForKeyNamed("[LTHUMB_DOWN]"),
+            .OnUp = GetUpLambdaForKeyNamed("[LTHUMB_DOWN]"),
+            .OnRepeat = GetRepeatLambdaForKeyNamed("[LTHUMB_DOWN]"),
+            .OnReset = GetResetLambdaForKeyNamed("[LTHUMB_DOWN]"),
         },
         CBActionMap{
             .Vk = VK_PAD_LTHUMB_RIGHT,
             .UsesInfiniteRepeat = true,
-            .ExclusivityGrouping = 101,
-            .OnDown = []() { std::cout << std::format("[LTHUMB_RIGHT]=[DOWN] @{}\n", GetEpochTimestamp()); },
-            .OnUp = []() { std::cout << std::format("[LTHUMB_RIGHT]=[UP] @{}\n", GetEpochTimestamp()); },
-            .OnRepeat = []() { std::cout << std::format("[LTHUMB_RIGHT]=[REPEAT] @{}\n", GetEpochTimestamp()); }
+            .ExclusivityGrouping = LeftThumbGroup,
+            .OnDown = GetDownLambdaForKeyNamed("[LTHUMB_RIGHT]"),
+            .OnUp = GetUpLambdaForKeyNamed("[LTHUMB_RIGHT]"),
+            .OnRepeat = GetRepeatLambdaForKeyNamed("[LTHUMB_RIGHT]"),
+            .OnReset = GetResetLambdaForKeyNamed("[LTHUMB_RIGHT]"),
         },
         CBActionMap{
             .Vk = VK_PAD_LTHUMB_LEFT,
             .UsesInfiniteRepeat = true,
-            .ExclusivityGrouping = 101,
-            .OnDown = []() { std::cout << std::format("[LTHUMB_LEFT]=[DOWN] @{}\n", GetEpochTimestamp()); },
-            .OnUp = []() { std::cout << std::format("[LTHUMB_LEFT]=[UP] @{}\n", GetEpochTimestamp()); },
-            .OnRepeat = []() { std::cout << std::format("[LTHUMB_LEFT]=[REPEAT] @{}\n", GetEpochTimestamp()); }
+            .ExclusivityGrouping = LeftThumbGroup,
+            .OnDown = GetDownLambdaForKeyNamed("[LTHUMB_LEFT]"),
+            .OnUp = GetUpLambdaForKeyNamed("[LTHUMB_LEFT]"),
+            .OnRepeat = GetRepeatLambdaForKeyNamed("[LTHUMB_LEFT]"),
+            .OnReset = GetResetLambdaForKeyNamed("[LTHUMB_LEFT]"),
+        },
+        CBActionMap{
+            .Vk = VK_PAD_LTRIGGER,
+            .UsesInfiniteRepeat = true,
+            .ExclusivityGrouping = LeftThumbGroup,
+            .OnDown = GetDownLambdaForKeyNamed("[LTRIGGER]"),
+            .OnUp = GetUpLambdaForKeyNamed("[LTRIGGER]"),
+        },
+    	CBActionMap{
+            .Vk = VK_PAD_RTRIGGER,
+            .UsesInfiniteRepeat = true,
+            .ExclusivityGrouping = LeftThumbGroup,
+            .OnDown = GetDownLambdaForKeyNamed("[RTRIGGER]"),
+            .OnUp = GetUpLambdaForKeyNamed("[RTRIGGER]"),
         },
         CBActionMap{
             .Vk = VK_PAD_RSHOULDER,
             .UsesInfiniteRepeat = false,
             .OnDown = []() { system("cls"); std::cout << "Cleared.\n"; }
         },
-        CBActionMap{
-            .Vk = VK_PAD_LTRIGGER,
-            .UsesInfiniteRepeat = true,
-            .ExclusivityGrouping = 101,
-            .OnDown = []() { std::cout << std::format("[LTRIGGER]=[DOWN] @{}\n", GetEpochTimestamp()); },
-            .OnUp = []() { std::cout << std::format("[LTRIGGER]=[UP] @{}\n", GetEpochTimestamp()); },
-        },
-    	CBActionMap{
-            .Vk = VK_PAD_RTRIGGER,
-            .UsesInfiniteRepeat = true,
-            .ExclusivityGrouping = 101,
-            .OnDown = []() { std::cout << std::format("[RTRIGGER]=[DOWN] @{}\n", GetEpochTimestamp()); },
-            .OnUp = []() { std::cout << std::format("[RTRIGGER]=[UP] @{}\n", GetEpochTimestamp()); },
-        }
     };
     return mapBuffer;
 }
@@ -273,6 +294,7 @@ struct GetterExitCallable
         IsDone = true;
     }
 };
+
 // Test driver program for keyboard mapping
 int main()
 {
