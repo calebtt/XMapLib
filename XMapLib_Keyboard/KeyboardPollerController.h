@@ -22,7 +22,7 @@ namespace sds
 		int m_playerId{};
 	public:
 		KeyboardPollerController() = default;
-		KeyboardPollerController(const int pid) : m_playerId(pid) { }
+		explicit KeyboardPollerController(const int pid) : m_playerId(pid) { }
 	public:
 		/**
 		 * \brief Returns an updated ControllerStateWrapper containing information gathered about a controller keypress.
