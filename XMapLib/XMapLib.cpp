@@ -2,7 +2,6 @@
 //Caleb Taylor
 //Keep in mind need to run the .exe in administrator mode to work with programs running in admin mode.
 #include "stdafx.h"
-#include "../XMapLib_Keyboard/KeyboardMapper.h"
 #include "../XMapLib_Keyboard/KeyboardPollerController.h"
 #include "../XMapLib_Keyboard/KeyboardActionTranslator.h"
 

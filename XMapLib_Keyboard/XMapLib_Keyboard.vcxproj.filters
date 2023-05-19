@@ -38,9 +38,6 @@
     <ClInclude Include="KeyboardSettingsPack.h">
       <Filter>Header Files\Keyboard\SettingsAndConfig</Filter>
     </ClInclude>
-    <ClInclude Include="KeyboardMapper.h">
-      <Filter>Header Files\Keyboard</Filter>
-    </ClInclude>
     <ClInclude Include="KeyboardPollerController.h">
       <Filter>Header Files\Keyboard</Filter>
     </ClInclude>

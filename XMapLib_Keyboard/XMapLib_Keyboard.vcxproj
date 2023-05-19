@@ -148,7 +148,6 @@
     <ClInclude Include="ControllerButtonToActionMap.h" />
     <ClInclude Include="ControllerStateWrapper.h" />
     <ClInclude Include="CustomTypes.h" />
-    <ClInclude Include="KeyboardMapper.h" />
     <ClInclude Include="KeyboardPollerController.h" />
     <ClInclude Include="KeyboardSettingsPack.h" />
     <ClInclude Include="KeyboardActionTranslator.h" />
