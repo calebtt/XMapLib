@@ -27,7 +27,7 @@ namespace sds
 		/**
 		 * \brief	This delay is mostly used for in-between key-repeats, but could also be in between other state transitions.
 		 */
-		DelayManagement::DelayManager LastSentTime{ std::chrono::microseconds{m_keyDefaults.MICROSECONDS_DELAY_KEYREPEAT} };
+		DelayManagement::DelayManager LastSentTime{ m_keyDefaults.KeyRepeatDelay };
 		/**
 		 * \brief	This is the delay before the first repeat is sent whilst holding the button down.
 		 */

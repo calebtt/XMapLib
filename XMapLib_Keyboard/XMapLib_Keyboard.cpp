@@ -324,7 +324,7 @@ int main()
         const auto mouseTranslation = mouseTranslator(pollResult);
         translation();
         mouseTranslation();
-        nanotime_sleep(1'000'000);
+        nanotime_sleep(sds::KeyboardSettings::PollingLoopDelay.count());
     }
     std::cout << "Performing cleanup actions...\n";
     const auto cleanupTranslation = translator.GetCleanupActions();

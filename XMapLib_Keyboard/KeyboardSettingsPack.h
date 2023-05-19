@@ -17,10 +17,11 @@ namespace sds
 	 */
 	struct KeyboardSettings
 	{
-		//Input Poller thread delay, in milliseconds.
-		static constexpr int THREAD_DELAY_POLLER{ 10 };
-		//Microseconds Delay Keyrepeat is the time delay a button has in between activations.
-		static constexpr std::chrono::microseconds MICROSECONDS_DELAY_KEYREPEAT{ 100'000 };
+		// Delay each iteration of a polling loop, short enough to not miss information,
+		// long enough to not waste CPU cycles.
+		static constexpr detail::Delay_t PollingLoopDelay{ std::chrono::milliseconds{1} };
+		//Key Repeat Delay is the time delay a button has in-between activations.
+		static constexpr detail::Delay_t KeyRepeatDelay{ std::chrono::microseconds{100'000} };
 	};
 
 	/**
