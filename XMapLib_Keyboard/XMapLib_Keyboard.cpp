@@ -309,9 +309,9 @@ int main()
     using namespace std::chrono_literals;
 
     auto mapBuffer = GetDriverButtonMappings();
-    const auto mouseMapBuffer = GetDriverMouseMappings();
+    mapBuffer.append_range(GetDriverMouseMappings());
+    // Unit test covers testing both translator constructors.
     sds::KeyboardActionTranslator translator(std::move(mapBuffer));
-    sds::KeyboardActionTranslator mouseTranslator(mouseMapBuffer);
     sds::KeyboardPlayerInfo playerInfo{};
     sds::KeyboardPollerController controllerPoller(playerInfo.player_id);
 
@@ -321,17 +321,12 @@ int main()
     {
         const auto pollResult = controllerPoller();
         const auto translation = translator(pollResult);
-        const auto mouseTranslation = mouseTranslator(pollResult);
         translation();
-        mouseTranslation();
         nanotime_sleep(sds::KeyboardSettings::PollingLoopDelay.count());
     }
     std::cout << "Performing cleanup actions...\n";
     const auto cleanupTranslation = translator.GetCleanupActions();
     for (auto& cleanupAction : cleanupTranslation)
-        cleanupAction();
-    const auto mouseCleanupTranslation = mouseTranslator.GetCleanupActions();
-    for (auto& cleanupAction : mouseCleanupTranslation)
         cleanupAction();
 
     exitFuture.wait();
