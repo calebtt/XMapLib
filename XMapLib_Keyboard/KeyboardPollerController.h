@@ -4,6 +4,13 @@
 
 namespace sds
 {
+	template<typename Poller_t>
+	concept IsInputPoller = requires(Poller_t & t)
+	{
+		{ t.GetUpdatedState() };
+		{ t.GetUpdatedState() } -> std::convertible_to<ControllerStateWrapper>;
+	};
+
 	/**
 	 * \brief Encapsulates the logic for querying the OS to gather information about a controller keypress event.
 	 * \remarks NOTE if the controller state info API you are using does not have a "repeat" state event, then you will
@@ -47,6 +54,9 @@ namespace sds
 		}
 	};
 
+	// Compile-time asserts for the type above, copyable, moveable.
 	static_assert(std::is_copy_constructible_v<KeyboardPollerController>);
 	static_assert(std::is_copy_assignable_v<KeyboardPollerController>);
+	static_assert(std::is_move_constructible_v<KeyboardPollerController>);
+	static_assert(std::is_move_assignable_v<KeyboardPollerController>);
 }

@@ -7,13 +7,6 @@
 
 namespace sds
 {
-	template<typename Poller_t>
-	concept IsInputPoller = requires(Poller_t & t)
-	{
-		{ t.GetUpdatedState(0) };
-		{ t.GetUpdatedState(0) } -> std::convertible_to<ControllerStateWrapper>;
-	};
-
 	/**
 	 * \brief Function used to "perform" the action suggested by the TranslationResult and then update the
 	 * mapping object's "LastState" member.
