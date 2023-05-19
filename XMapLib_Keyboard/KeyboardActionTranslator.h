@@ -88,7 +88,7 @@ namespace sds
 		 * \param mappingsList STL container/range of CBActionMap controller button to action mappings.
 		 * \throws std::invalid_argument exception
 		 */
-		KeyboardActionTranslator(const MappingRange_c auto& mappingsList)
+		explicit KeyboardActionTranslator(const MappingRange_c auto& mappingsList)
 		{
 			// TODO add check for sends single repeat and uses repeat in an invalid config.
 			if (!AreExclusivityGroupsUnique(mappingsList))
@@ -96,7 +96,7 @@ namespace sds
 			InitMappingDetails(mappingsList);
 		}
 		// Move-ctor for mappings list.
-		KeyboardActionTranslator(std::vector<CBActionMap>&& mappingsList)
+		explicit KeyboardActionTranslator(std::vector<CBActionMap>&& mappingsList)
 		{
 			if (!AreExclusivityGroupsUnique(mappingsList))
 				throw std::invalid_argument(ExclusivityGroupError.data());

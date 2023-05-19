@@ -144,6 +144,14 @@ auto GetDriverButtonMappings()
             .UsesInfiniteRepeat = false,
             .OnDown = []() { system("cls"); std::cout << "Cleared.\n"; }
         },
+    	CBActionMap{
+            .Vk = VK_PAD_LSHOULDER,
+            .UsesInfiniteRepeat = false,
+            .OnDown = []()
+            {
+
+            }
+        },
     };
     return mapBuffer;
 }

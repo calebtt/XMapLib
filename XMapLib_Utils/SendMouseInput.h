@@ -26,7 +26,7 @@ namespace sds::Utilities
 		///	<remarks>Cartesian coordinate plane, starting at 0,0</remarks>
 		/// <param name="x">number of pixels in X</param>
 		/// <param name="y">number of pixels in Y</param>
-		void SendMouseMove(const int x, const int y)
+		void SendMouseMove(const int x, const int y) noexcept
 		{
 			m_mouseMoveInput.mi.dx = static_cast<LONG>(x);
 			m_mouseMoveInput.mi.dy = -static_cast<LONG>(y);

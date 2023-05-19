@@ -297,7 +297,6 @@ namespace TestKeyboard
             const auto timeMsg = totalMsg + indivMsg;
             Logger::WriteMessage(timeMsg.c_str());
         }
-
         TEST_METHOD(TestExclusivityGroupsAlgorithm)
         {
 	        // Tests the function attempting to detect when multiple exclusivity groupings are mapped
@@ -307,6 +306,74 @@ namespace TestKeyboard
             mapList.append_range(tmp.GetMapping(1, 102));
             const auto testResult = sds::AreExclusivityGroupsUnique(mapList);
             Assert::IsFalse(testResult, L"Failed to detect multiple exclusivity groupings mapped to same vk.");
+        }
+        TEST_METHOD(TestTranslatorConstructors)
+        {
+            /* Here we are going to test that translator objects constructed by either Ctor
+             * both produce the same result.
+             */
+            using namespace sds;
+            using namespace std::chrono_literals;
+            // Test data provider objs
+            TestMappingProvider testMaps{ VirtKey };
+            TestPollProvider testPoll{ VirtKey };
+            const auto copyMappings = testMaps.GetMappings();
+            auto moveMappings = testMaps.GetMappings();
+
+            // Construct both translator objects, either copying or moving test mappings.
+            KeyboardActionTranslator copyTranslator{ copyMappings };
+            KeyboardActionTranslator moveTranslator{ std::move(moveMappings) };
+
+            // Pass a polled state for each phase into the translator, store the result
+            auto copyDownPack = copyTranslator(testPoll.GetDownState());
+            auto moveDownPack = moveTranslator(testPoll.GetDownState());
+
+        	Assert::IsTrue(copyDownPack.NextStateRequests.size() == 1);
+            Assert::IsTrue(moveDownPack.NextStateRequests.size() == copyDownPack.NextStateRequests.size());
+
+            // Grab only the first elements (should only be 1 result per call)
+            auto& copyDownResult = copyDownPack.NextStateRequests.front();
+            auto& moveDownResult = moveDownPack.NextStateRequests.front();
+
+        	// Advance the pointed-to mapping in the translationresult to the next state
+            CallAndUpdateTranslationResult(copyDownResult);
+            CallAndUpdateTranslationResult(moveDownResult);
+
+            std::this_thread::sleep_for(1s);
+
+            auto copyRepeatPack = copyTranslator(testPoll.GetRepeatState());
+            auto moveRepeatPack = moveTranslator(testPoll.GetRepeatState());
+
+            Assert::IsTrue(copyRepeatPack.RepeatRequests.size() == 1);
+            Assert::IsTrue(moveRepeatPack.RepeatRequests.size() == copyRepeatPack.RepeatRequests.size());
+
+            auto& copyRepeatResult = copyRepeatPack.RepeatRequests.front();
+            auto& moveRepeatResult = moveRepeatPack.RepeatRequests.front();
+            CallAndUpdateTranslationResult(copyRepeatResult);
+            CallAndUpdateTranslationResult(moveRepeatResult);
+
+            std::this_thread::sleep_for(1s);
+
+            auto copyUpPack = copyTranslator(testPoll.GetUpState());
+            auto moveUpPack = moveTranslator(testPoll.GetUpState());
+
+            Assert::IsTrue(copyUpPack.NextStateRequests.size() == 1);
+            Assert::IsTrue(moveUpPack.NextStateRequests.size() == copyUpPack.NextStateRequests.size());
+
+            auto& copyUpResult = copyUpPack.NextStateRequests.front();
+            auto& moveUpResult = moveUpPack.NextStateRequests.front();
+            CallAndUpdateTranslationResult(copyUpResult);
+            CallAndUpdateTranslationResult(moveUpResult);
+
+            const auto copyNoResultPack = copyTranslator(testPoll.GetNoState());
+            const auto moveNoResultPack = moveTranslator(testPoll.GetNoState());
+
+            Assert::IsTrue(copyDownResult.DoState == ActionState::KEYDOWN, L"Translation for polled key-down wasn't down.");
+            Assert::IsTrue(copyRepeatResult.DoState == ActionState::KEYREPEAT, L"Translation for polled key-repeat wasn't repeat.");
+            Assert::IsTrue(copyUpResult.DoState == ActionState::KEYUP, L"Translation for polled key-up wasn't up.");
+            Assert::IsTrue(moveDownResult.DoState == ActionState::KEYDOWN, L"Translation for polled key-down wasn't down.");
+            Assert::IsTrue(moveRepeatResult.DoState == ActionState::KEYREPEAT, L"Translation for polled key-repeat wasn't repeat.");
+            Assert::IsTrue(moveUpResult.DoState == ActionState::KEYUP, L"Translation for polled key-up wasn't up.");
         }
     private:
         static
