@@ -303,8 +303,40 @@ struct GetterExitCallable
     }
 };
 
-// Test driver program for keyboard mapping
-int main()
+inline
+auto WritePollResult(std::ofstream& outFile, const sds::ControllerStateWrapper& polledState)
+{
+    outFile << polledState.VirtualKey << '\n';
+    outFile << polledState.KeyDown << '\n';
+    outFile << polledState.KeyUp << '\n';
+    outFile << polledState.KeyRepeat << '\n';
+}
+
+// The purpose of this is to record every polled event occurring during a manual test driver run.
+// In order to be re-created in a unit test and benchmarked.
+inline
+auto RunRecordingLoop()
+{
+    using namespace std::chrono_literals;
+
+    std::ofstream outFile("recording.txt", std::ios::binary);
+    sds::KeyboardPlayerInfo playerInfo{};
+    sds::KeyboardPollerController controllerPoller(playerInfo.player_id);
+
+    GetterExitCallable gec;
+    const auto exitFuture = std::async(std::launch::async, [&]() { gec.GetExitSignal(); });
+    while (!gec.IsDone)
+    {
+        const auto pollResult = controllerPoller();
+        WritePollResult(outFile, pollResult);
+        nanotime_sleep(sds::KeyboardSettings::PollingLoopDelay.count());
+    }
+
+    exitFuture.wait();
+}
+
+inline
+auto RunTestDriverLoop()
 {
     using namespace std::chrono_literals;
 
@@ -317,7 +349,7 @@ int main()
 
     GetterExitCallable gec;
     const auto exitFuture = std::async(std::launch::async, [&]() { gec.GetExitSignal(); });
-    while(!gec.IsDone)
+    while (!gec.IsDone)
     {
         const auto pollResult = controllerPoller();
         const auto translation = translator(pollResult);
@@ -330,4 +362,11 @@ int main()
         cleanupAction();
 
     exitFuture.wait();
+}
+
+// Test driver program for keyboard mapping
+int main()
+{
+    //RunRecordingLoop();
+    RunTestDriverLoop();
 }

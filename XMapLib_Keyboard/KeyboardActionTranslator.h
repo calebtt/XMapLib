@@ -42,24 +42,57 @@ namespace sds
 	[[nodiscard]] auto GetKeyUpTranslationResult(CBActionMap& currentMapping) -> TranslationResult;
 	[[nodiscard]] auto GetInitialKeyDownTranslationResult(CBActionMap& currentMapping) -> TranslationResult;
 
-	//// Hopefully behavior not too specific so as to become unusable
-	//// for someone trying to add a customization. Customization class for exclusivity group
-	//// behavior.
-	//class OvertakingBehavior
-	//{
-	//	std::span<CBActionMap> m_mappings;
-	//	std::map<int, std::vector<CBActionMap*>> m_exGroupMap;
-	//public:
-	//	// TODO complete this
-	// // TODO might extract exclusivity grouping code into an object used by the translator, could be a template param
-	//	OvertakingBehavior(std::span<CBActionMap> mappingsList) : m_mappings(mappingsList)
-	//	{
-	//	}
-	//	auto GetOvertakenTranslationResultsFor(const std::uint32_t currentIndex) -> std::vector<TranslationResult>
-	//	{
-	//		return {};
-	//	}
-	//};
+	// Hopefully behavior not too specific so as to become unusable
+	// for someone trying to add a customization. Customization class for exclusivity group
+	// behavior.
+	class OvertakingBehavior
+	{
+		std::map<int, std::vector<std::uint32_t>> m_exGroupMap;
+		bool m_firstCall{ true };
+	public:
+		// TODO complete this
+		// TODO might extract exclusivity grouping code into an object used by the translator, could be a template param
+
+		// This function accepts the index of keys being key-down'd and will produce the appropriate vector of TranslationResult
+		// for the Exclusivity Group handling, key-up in this implementation.
+		auto GetOvertakenTranslationResultsFor(std::span<CBActionMap> mappingsList, const std::uint32_t currentIndex) -> std::vector<TranslationResult>
+		{
+			using std::ranges::find_if;
+
+			if(m_firstCall)
+			{
+				// Build the map of ex. group integer to vector of pointers to the mapping(s).
+				for(std::size_t i{}; i < mappingsList.size(); ++i)
+				{
+					auto& elem = mappingsList[i];
+					// If has an exclusivity grouping, add to map
+					if (elem.ExclusivityGrouping)
+						m_exGroupMap[*elem.ExclusivityGrouping].emplace_back((std::uint32_t)i);
+				}
+				m_firstCall = false;
+			}
+			// Iterate through each matching mapping and find ones with an exclusivity grouping, and then add the rest of the grouping to the results with key-up
+			const auto& currentMap = mappingsList[currentIndex];
+			if (currentMap.ExclusivityGrouping)
+			{
+				std::vector<TranslationResult> results;
+				const auto& exGroupVecForCurrent = m_exGroupMap[*currentMap.ExclusivityGrouping];
+				for (const auto elemIndex: exGroupVecForCurrent)
+				{
+					if (elemIndex != currentIndex)
+					{
+						auto& testElem = mappingsList[elemIndex];
+						if (testElem.LastAction.IsDown() || testElem.LastAction.IsRepeating())
+						{
+							results.emplace_back(GetOvertakenTranslationResult(testElem));
+						}
+					}
+				}
+				return results;
+			}
+			return {};
+		}
+	};
 
 	/**
 	 * \brief This translator is responsible for managing the state of
@@ -75,12 +108,13 @@ namespace sds
 	 * 1. initial -> down -> repeat -> up
 	 * 2. initial -> down -> up
 	 */
+	template<class ExclusivityBehavior_t = OvertakingBehavior>
 	class KeyboardActionTranslator
 	{
 		static constexpr std::string_view ExclusivityGroupError{ "Mapping list contained multiple exclusivity groupings for a single controller button." };
 	private:
 		std::vector<CBActionMap> m_mappings;
-		std::map<int, std::vector<CBActionMap*>> m_exGroupMap;
+		ExclusivityBehavior_t m_overtakingBehavior;
 	public:
 		/**
 		 * \brief COPIES the mappings into the internal vector.
@@ -145,7 +179,7 @@ namespace sds
 			{
 				for (const auto cur : uniqueMatches)
 				{
-					tPack.OvertakenRequests.append_range(GetOvertakenTranslationResultsFor(cur));
+					tPack.OvertakenRequests.append_range(m_overtakingBehavior.GetOvertakenTranslationResultsFor(m_mappings, cur));
 				}
 			}
 			// Adds maps with timer being reset (updated)
@@ -187,29 +221,6 @@ namespace sds
 		{
 			return m_mappings.at(index);
 		}
-		auto GetOvertakenTranslationResultsFor(const std::uint32_t currentIndex) -> std::vector<TranslationResult>
-		{
-			using std::ranges::find_if;
-			// Iterate through each matching mapping and find ones with an exclusivity grouping, and then add the rest of the grouping to the results with key-up
-			const auto& currentMap = MappingAt(currentIndex);
-			if (currentMap.ExclusivityGrouping)
-			{
-				std::vector<TranslationResult> results;
-				const auto& exGroupVecForCurrent = m_exGroupMap[*currentMap.ExclusivityGrouping];
-				for (CBActionMap* p : exGroupVecForCurrent)
-				{
-					if (p != &currentMap)
-					{
-						if (p->LastAction.IsDown() || p->LastAction.IsRepeating())
-						{
-							results.emplace_back(GetOvertakenTranslationResult(*p));
-						}
-					}
-				}
-				return results;
-			}
-			return {};
-		}
 		void GetDirectTranslations(
 			const ControllerStateWrapper& buttonInfo, 
 			std::vector<TranslationResult>& results, 
@@ -243,9 +254,6 @@ namespace sds
 				m_mappings.emplace_back(elem);
 				auto& tempBack = m_mappings.back();
 				InitCustomTimers(tempBack);
-				// If has an exclusivity grouping, add to map
-				if (tempBack.ExclusivityGrouping)
-					m_exGroupMap[*tempBack.ExclusivityGrouping].emplace_back(&tempBack);
 			}
 		}
 		void InitMappingDetails(std::vector<CBActionMap>&& mappingsList)
@@ -254,18 +262,15 @@ namespace sds
 			for(auto& elem: m_mappings)
 			{
 				InitCustomTimers(elem);
-				// If has an exclusivity grouping, add to map
-				if (elem.ExclusivityGrouping)
-					m_exGroupMap[*elem.ExclusivityGrouping].emplace_back(&elem);
 			}
 		}
 	};
 
 	// Compile-time asserts for the type above, copyable, moveable.
-	static_assert(std::is_copy_constructible_v<KeyboardActionTranslator>);
-	static_assert(std::is_copy_assignable_v<KeyboardActionTranslator>);
-	static_assert(std::is_move_constructible_v<KeyboardActionTranslator>);
-	static_assert(std::is_move_assignable_v<KeyboardActionTranslator>);
+	static_assert(std::is_copy_constructible_v<KeyboardActionTranslator<>>);
+	static_assert(std::is_copy_assignable_v<KeyboardActionTranslator<>>);
+	static_assert(std::is_move_constructible_v<KeyboardActionTranslator<>>);
+	static_assert(std::is_move_assignable_v<KeyboardActionTranslator<>>);
 
 	/**
 	 * \brief	Checks a list of mappings for having multiple exclusivity groupings mapped to a single controller button.

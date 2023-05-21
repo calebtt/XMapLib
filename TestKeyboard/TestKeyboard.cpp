@@ -2,7 +2,7 @@
 #include "CppUnitTest.h"
 #include "TestMappingProvider.h"
 #include "TestPollProvider.h"
-
+#include <filesystem>
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace TestKeyboard
@@ -285,6 +285,8 @@ namespace TestKeyboard
             const auto beginTime = chron::steady_clock::now();
             for(std::size_t i{}; i < TestIterations; ++i)
             {
+                // TODO measure the time it takes to call Xinput's get state differently.
+                // Perhaps in the test driver.
                 translator(keyPoller())();
             }
             const auto endTime = chron::steady_clock::now() - beginTime;
@@ -375,6 +377,48 @@ namespace TestKeyboard
             Assert::IsTrue(moveRepeatResult.DoState == ActionState::KEYREPEAT, L"Translation for polled key-repeat wasn't repeat.");
             Assert::IsTrue(moveUpResult.DoState == ActionState::KEYUP, L"Translation for polled key-up wasn't up.");
         }
+        TEST_METHOD(TestBenchmarkFromRecording)
+        {
+            using namespace sds;
+            using namespace std::chrono_literals;
+            namespace chron = std::chrono;
+
+            Logger::WriteMessage("Beginning timed test of recorded input polled data.\n");
+            TestMappingProvider testMaps{ VirtKey };
+            const auto pollBuffer = LoadPollRecording();
+            Assert::IsFalse(pollBuffer.empty());
+            Logger::WriteMessage(std::format("\nLoaded {} recorded poll inputs.\n", pollBuffer.size()).c_str());
+
+            // Note that these mappings write to the test logger, might add some latency.
+            std::vector<CBActionMap> mappings;
+            mappings.append_range(testMaps.GetMapping(VK_PAD_A));
+            mappings.append_range(testMaps.GetMapping(VK_PAD_B));
+            mappings.append_range(testMaps.GetMapping(VK_PAD_X));
+            mappings.append_range(testMaps.GetMapping(VK_PAD_Y));
+            mappings.append_range(testMaps.GetMapping(VK_GAMEPAD_LEFT_THUMBSTICK_UP, 101));
+            mappings.append_range(testMaps.GetMapping(VK_GAMEPAD_LEFT_THUMBSTICK_DOWN, 101));
+            mappings.append_range(testMaps.GetMapping(VK_GAMEPAD_LEFT_THUMBSTICK_LEFT, 101));
+            mappings.append_range(testMaps.GetMapping(VK_GAMEPAD_LEFT_THUMBSTICK_RIGHT, 101));
+
+            // Construct a translator object, which encapsulates some test mappings
+            KeyboardActionTranslator translator{ std::move(mappings) };
+
+            const auto beginTime = chron::steady_clock::now();
+            for(std::size_t i{}; i < pollBuffer.size(); ++i)
+            {
+                const auto translationResult = translator(pollBuffer[i]);
+                translationResult();
+            }
+            const auto endTime = chron::steady_clock::now() - beginTime;
+            const auto indivTime = chron::nanoseconds(endTime.count() / pollBuffer.size());
+            const auto indivTimeUs = chron::duration_cast<chron::microseconds>(indivTime);
+            const auto indivTimeMs = chron::duration_cast<chron::milliseconds>(indivTime);
+
+            const auto totalMsg = std::format("\nTotal time for {} test iterations is: {}\n", pollBuffer.size(), endTime);
+            const auto indivMsg = std::format("Avg. time for each test iteration is: {} -or- {} -or- {}\n", indivTime, indivTimeUs, indivTimeMs);
+            const auto timeMsg = totalMsg + indivMsg;
+            Logger::WriteMessage(timeMsg.c_str());
+        }
     private:
         static
         void AssertTranslationPackSizes(
@@ -411,5 +455,32 @@ namespace TestKeyboard
             SharedTUnit_t threadUnit = std::make_shared<TUnit_t>();
             return threadUnit;
         }
+        auto LoadPollRecording() const -> std::vector<sds::ControllerStateWrapper>
+		{
+            const auto currentPath = std::filesystem::current_path();
+            Logger::WriteMessage(currentPath.c_str());
+            std::vector<sds::ControllerStateWrapper> pollBuffer;
+            std::ifstream inFile("../../TestKeyboard/TestData/recording.txt", std::ios::binary);
+            while(inFile)
+            {
+                sds::ControllerStateWrapper current{};
+                std::string tempBuffer;
+                std::stringstream ss;
+
+            	std::getline(inFile, tempBuffer);
+                ss << tempBuffer << " ";
+                std::getline(inFile, tempBuffer);
+                ss << tempBuffer << " ";
+                std::getline(inFile, tempBuffer);
+                ss << tempBuffer << " ";
+                std::getline(inFile, tempBuffer);
+                ss << tempBuffer << " ";
+
+                ss >> current.VirtualKey >> current.KeyDown >> current.KeyUp >> current.KeyRepeat;
+                //ss >> current.KeyRepeat >> current.KeyUp >> current.KeyDown >> current.VirtualKey;
+                pollBuffer.emplace_back(current);
+            }
+            return pollBuffer;
+		}
 	};
 }
