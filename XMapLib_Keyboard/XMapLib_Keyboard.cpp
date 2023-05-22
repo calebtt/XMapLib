@@ -1,9 +1,6 @@
 // XMapLib_Keyboard.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 #include "LibIncludes.h"
-#include <iostream>
-#include <string>
-#include <format>
 
 #include "KeyboardActionTranslator.h"
 #include "ControllerButtonToActionMap.h"
@@ -161,8 +158,8 @@ auto GetDriverMouseMappings()
     using std::vector, sds::CBActionMap, std::cout;
     using namespace std::chrono_literals;
     sds::Utilities::SendMouseInput smi;
-    constexpr auto FirstDelay = 1ns; // mouse move delays
-    constexpr auto RepeatDelay = 1ns;
+    constexpr auto FirstDelay = 0ns; // mouse move delays
+    constexpr auto RepeatDelay = 0ns;
     constexpr int MouseExGroup = 102;
     vector mapBuffer
     {
