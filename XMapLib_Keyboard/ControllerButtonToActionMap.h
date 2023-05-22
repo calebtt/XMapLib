@@ -76,8 +76,8 @@ namespace sds
 		detail::Fn_t OnUp; // Key-up
 		detail::Fn_t OnRepeat; // Key-repeat
 		detail::Fn_t OnReset; // Reset after key-up prior to another key-down
-		detail::OptDelay_t DelayBeforeFirstRepeat; // optional custom delay before first key-repeat
-		detail::OptDelay_t DelayForRepeats; // optional custom delay between key-repeats
+		detail::OptNanosDelay_t DelayBeforeFirstRepeat; // optional custom delay before first key-repeat
+		detail::OptNanosDelay_t DelayForRepeats; // optional custom delay between key-repeats
 		MappingStateManager LastAction; // Last action performed, with get/set methods.
 	};
 }
