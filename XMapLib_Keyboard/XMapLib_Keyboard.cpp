@@ -124,17 +124,21 @@ auto GetDriverButtonMappings()
         },
         CBActionMap{
             .Vk = VK_PAD_LTRIGGER,
-            .UsesInfiniteRepeat = true,
+            .UsesInfiniteRepeat = false,
             .ExclusivityGrouping = LeftThumbGroup,
             .OnDown = GetDownLambdaForKeyNamed("[LTRIGGER]"),
             .OnUp = GetUpLambdaForKeyNamed("[LTRIGGER]"),
+            .DelayBeforeFirstRepeat = 1ns,
+            .DelayForRepeats = 1ns
         },
     	CBActionMap{
             .Vk = VK_PAD_RTRIGGER,
-            .UsesInfiniteRepeat = true,
+            .UsesInfiniteRepeat = false,
             .ExclusivityGrouping = LeftThumbGroup,
             .OnDown = GetDownLambdaForKeyNamed("[RTRIGGER]"),
             .OnUp = GetUpLambdaForKeyNamed("[RTRIGGER]"),
+            .DelayBeforeFirstRepeat = 1ns,
+            .DelayForRepeats = 1ns
         },
         CBActionMap{
             .Vk = VK_PAD_RSHOULDER,

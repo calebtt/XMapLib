@@ -212,6 +212,10 @@ namespace sds
 				{
 					results.emplace_back(GetKeyUpTranslationResult(elem));
 				}
+				if(elem.LastAction.IsUp())
+				{
+					results.emplace_back(GetUpdateTranslationResult(elem));
+				}
 			}
 			return results;
 		}

@@ -146,6 +146,101 @@ namespace TestKeyboard
             //PrintResultsWithMessage(firstDownVec, "Dumping first down key buffer...");
             //PrintResultsWithMessage(secondDownVec, "Dumping overtaking actions buffer...");
         }
+        TEST_METHOD(TestOvertakingRepeated)
+        {
+            // This test is intended to test the case wherein, for example,
+            // ltrigger down, rtrigger down overtakes and puts ltrigger up, then user releases and presses ltrigger again
+            // This is a test for a case found manually by using the test driver.
+            using namespace sds;
+            using namespace std::chrono_literals;
+            using std::ranges::for_each, std::stringstream;
+            
+            TestMappingProvider testMaps{ VirtKey };
+            TestPollProvider testPoll{ VirtKey };
+
+            // Constructing two mappings with different vk, same ex. group
+            auto mappings = testMaps.GetMapping(VirtKey, 101);
+            mappings.append_range(testMaps.GetMapping(VirtKey + 1, 101));
+
+            // Translator obj and subject of test
+            KeyboardActionTranslator translator{ mappings };
+            std::this_thread::sleep_for(500ms);
+
+            const auto setVk1Down = [&]()
+            {
+                // Set vk1 down
+                const auto firstDownVec = translator(testPoll.GetDownState(VirtKey));
+                Assert::IsTrue(firstDownVec.NextStateRequests.size() == 1);
+                firstDownVec();
+            };
+            const auto setVk1Up = [&]()
+            {
+                // Set vk1 up
+                const auto firstUpVec = translator(testPoll.GetUpState(VirtKey));
+                Assert::IsTrue(firstUpVec.NextStateRequests.size() == 1);
+                firstUpVec();
+            };
+            const auto setVk2Down = [&]()
+            {
+                // Set vk2 down
+                const auto secondDownVec = translator(testPoll.GetDownState(VirtKey + 1));
+                Assert::IsTrue(secondDownVec.NextStateRequests.size() == 1, L"call to translate should hold the key-down");
+                secondDownVec();
+            };
+            const auto setVk2Up = [&]()
+            {
+                // Set vk2 up
+                const auto secondUpVec = translator(testPoll.GetUpState(VirtKey + 1));
+                Assert::IsTrue(secondUpVec.NextStateRequests.size() == 1, L"call to translate should hold the key-down");
+                secondUpVec();
+            };
+            const auto updateLoop = [&]()
+            {
+                // Update
+                const auto updateVec = translator(testPoll.GetNoState());
+                updateVec();
+            };
+            const auto doCleanup = [&]()
+            {
+                const auto cleanupActions1 = translator.GetCleanupActions();
+                for (const auto& e : cleanupActions1)
+                    e();
+                const auto repeatTest = translator(testPoll.GetNoState());
+                Assert::IsTrue(repeatTest.RepeatRequests.empty());
+            };
+            Logger::WriteMessage("Beginning vk1down while vk2 down/up in a loop.\n");
+            // Start by testing vk1 down while vk2 down/up in a loop
+            setVk1Down();
+            std::this_thread::sleep_for(500ms);
+
+            for (int i = 0; i < 3; i++)
+            {
+                std::this_thread::sleep_for(500ms);
+                setVk2Down();
+                std::this_thread::sleep_for(500ms);
+                setVk2Up();
+                std::this_thread::sleep_for(500ms);
+                updateLoop();
+            }
+            Logger::WriteMessage("Beginning cleanup.\n");
+            // Cleanup
+            doCleanup();
+            Logger::WriteMessage("Beginning vk2down while vk1 down/up in a loop.\n");
+            // Test vk2 down while vk1 down/up in a loop
+            setVk2Down();
+            std::this_thread::sleep_for(500ms);
+            updateLoop(); // TODO an exclusivity group match will not reset! Might be a problem with the real poller.
+            
+            for (int i = 0; i < 3; i++)
+            {
+                std::this_thread::sleep_for(500ms);
+                setVk1Down();
+                std::this_thread::sleep_for(500ms);
+                setVk1Up();
+                std::this_thread::sleep_for(500ms);
+                updateLoop();
+            }
+        }
         TEST_METHOD(TestNotOvertaking)
         {
             using namespace sds;
