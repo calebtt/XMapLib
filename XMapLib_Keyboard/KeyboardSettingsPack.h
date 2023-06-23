@@ -1,5 +1,5 @@
 #pragma once
-#include "LibIncludes.h"
+#include "CustomTypes.h"
 
 namespace sds
 {
@@ -17,11 +17,37 @@ namespace sds
 	 */
 	struct KeyboardSettings
 	{
-		// Delay each iteration of a polling loop, short enough to not miss information,
-		// long enough to not waste CPU cycles.
+		/**
+		 * \brief Delay each iteration of a polling loop, short enough to not miss information, long enough to not waste CPU cycles.
+		 */
 		static constexpr detail::NanosDelay_t PollingLoopDelay{ std::chrono::milliseconds{1} };
-		//Key Repeat Delay is the time delay a button has in-between activations.
+		/**
+		 * \brief Key Repeat Delay is the time delay a button has in-between activations.
+		 */
 		static constexpr detail::NanosDelay_t KeyRepeatDelay{ std::chrono::microseconds{100'000} };
+		/**
+		 * \brief The button virtual keycodes as a flat array.
+		 */
+		static constexpr std::array<detail::VirtualKey_t, 14> ButtonCodeArray
+		{
+			XINPUT_GAMEPAD_DPAD_UP,
+			XINPUT_GAMEPAD_DPAD_DOWN,
+			XINPUT_GAMEPAD_DPAD_LEFT,
+			XINPUT_GAMEPAD_DPAD_RIGHT,
+			XINPUT_GAMEPAD_START,
+			XINPUT_GAMEPAD_BACK,
+			XINPUT_GAMEPAD_LEFT_THUMB,
+			XINPUT_GAMEPAD_RIGHT_THUMB,
+			XINPUT_GAMEPAD_LEFT_SHOULDER,
+			XINPUT_GAMEPAD_RIGHT_SHOULDER,
+			XINPUT_GAMEPAD_A,
+			XINPUT_GAMEPAD_B,
+			XINPUT_GAMEPAD_X,
+			XINPUT_GAMEPAD_Y
+		};
+
+		static constexpr detail::TriggerValue_t LeftTriggerThreshold{XINPUT_GAMEPAD_TRIGGER_THRESHOLD};
+		static constexpr detail::TriggerValue_t RightTriggerThreshold{XINPUT_GAMEPAD_TRIGGER_THRESHOLD};
 	};
 
 	/**

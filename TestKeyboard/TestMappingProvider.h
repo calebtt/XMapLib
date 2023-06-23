@@ -18,7 +18,7 @@ namespace TestKeyboard
             const std::string resetMessage = "Action:[Reset] " + vkString;
             std::vector<CBActionMap> mappings;
             CBActionMap tm{
-                .Vk = Vk,
+                .ButtonVirtualKeycode = Vk,
                 .UsesInfiniteRepeat = true,
                 .ExclusivityGrouping = {},
                 .OnDown = [=]() { Logger::WriteMessage(downMessage.c_str()); },
@@ -41,7 +41,7 @@ namespace TestKeyboard
 
             std::vector<CBActionMap> mappings;
             CBActionMap tm{
-                .Vk = newVk,
+                .ButtonVirtualKeycode = newVk,
                 .UsesInfiniteRepeat = true,
                 .ExclusivityGrouping = exGroup,
                 .OnDown = [=](){ Logger::WriteMessage(downMessage.c_str()); },

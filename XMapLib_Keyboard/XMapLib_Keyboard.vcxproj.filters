@@ -53,6 +53,9 @@
     <ClInclude Include="KeyboardTranslationResult.h">
       <Filter>Header Files\Keyboard</Filter>
     </ClInclude>
+    <ClInclude Include="LegacyApiFunctions.h">
+      <Filter>Header Files\Keyboard</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="KeyboardClassDiagram.cd" />

@@ -1,7 +1,6 @@
 #pragma once
 #include "LibIncludes.h"
 #include "ControllerButtonToActionMap.h"
-#include "KeyboardPollerController.h"
 #include "KeyboardTranslationResult.h"
 
 #include <iostream>
@@ -42,239 +41,242 @@ namespace sds
 	[[nodiscard]] auto GetKeyUpTranslationResult(CBActionMap& currentMapping) -> TranslationResult;
 	[[nodiscard]] auto GetInitialKeyDownTranslationResult(CBActionMap& currentMapping) -> TranslationResult;
 
-	// Hopefully behavior not too specific so as to become unusable
-	// for someone trying to add a customization. Customization class for exclusivity group
-	// behavior.
-	class OvertakingBehavior
-	{
-		std::map<int, std::vector<std::uint32_t>> m_exGroupMap;
-		bool m_firstCall{ true };
-	public:
-		// TODO complete this
-		// TODO might extract exclusivity grouping code into an object used by the translator, could be a template param
+	// TODO might not need this
 
-		// This function accepts the index of keys being key-down'd and will produce the appropriate vector of TranslationResult
-		// for the Exclusivity Group handling, key-up in this implementation.
-		auto GetOvertakenTranslationResultsFor(std::span<CBActionMap> mappingsList, const std::uint32_t currentIndex) -> std::vector<TranslationResult>
-		{
-			using std::ranges::find_if;
+	//// Hopefully behavior not too specific so as to become unusable
+	//// for someone trying to add a customization. Customization class for exclusivity group
+	//// behavior.
+	//class OvertakingBehavior
+	//{
+	//	std::map<int, std::vector<std::uint32_t>> m_exGroupMap;
+	//	bool m_firstCall{ true };
+	//public:
+	//	// TODO complete this
+	//	// TODO might extract exclusivity grouping code into an object used by the translator, could be a template param
 
-			if(m_firstCall)
-			{
-				// Build the map of ex. group integer to vector of pointers to the mapping(s).
-				for(std::size_t i{}; i < mappingsList.size(); ++i)
-				{
-					auto& elem = mappingsList[i];
-					// If has an exclusivity grouping, add to map
-					if (elem.ExclusivityGrouping)
-						m_exGroupMap[*elem.ExclusivityGrouping].emplace_back((std::uint32_t)i);
-				}
-				m_firstCall = false;
-			}
-			// Iterate through each matching mapping and find ones with an exclusivity grouping, and then add the rest of the grouping to the results with key-up
-			const auto& currentMap = mappingsList[currentIndex];
-			if (currentMap.ExclusivityGrouping)
-			{
-				std::vector<TranslationResult> results;
-				const auto& exGroupVecForCurrent = m_exGroupMap[*currentMap.ExclusivityGrouping];
-				for (const auto elemIndex: exGroupVecForCurrent)
-				{
-					if (elemIndex != currentIndex)
-					{
-						auto& testElem = mappingsList[elemIndex];
-						if (testElem.LastAction.IsDown() || testElem.LastAction.IsRepeating())
-						{
-							results.emplace_back(GetOvertakenTranslationResult(testElem));
-						}
-					}
-				}
-				return results;
-			}
-			return {};
-		}
-	};
+	//	// This function accepts the index of keys being key-down'd and will produce the appropriate vector of TranslationResult
+	//	// for the Exclusivity Group handling, key-up in this implementation.
+	//	auto GetOvertakenTranslationResultsFor(std::span<CBActionMap> mappingsList, const std::uint32_t currentIndex) -> std::vector<TranslationResult>
+	//	{
+	//		using std::ranges::find_if;
 
-	/**
-	 * \brief This translator is responsible for managing the state of
-	 * 1. exclusivity groupings,
-	 * 2. the last action of the mapping,
-	 * 3. the decision to do a repeat if the mapping has enabled repeat behavior,
-	 * 4. the key-repeat and key-update timer loops
-	 * 5. *Note that this translator doesn't make the updates to the mapping, only notifies when they should occur.
-	 *
-	 * To perform these tasks, it needs an internal working copy of every mapping in use, it encapsulates the mapping array.
-	 * \remarks Construct a new instance to encapsulate a new or altered set of mappings.
-	 * Key mappings only traverse states in these paths, note they begin at "initial":
-	 * 1. initial -> down -> repeat -> up
-	 * 2. initial -> down -> up
-	 */
-	template<class ExclusivityBehavior_t = OvertakingBehavior>
-	class KeyboardActionTranslator
-	{
-		static constexpr std::string_view ExclusivityGroupError{ "Mapping list contained multiple exclusivity groupings for a single controller button." };
-	private:
-		std::vector<CBActionMap> m_mappings;
-		ExclusivityBehavior_t m_overtakingBehavior;
-	public:
-		/**
-		 * \brief COPIES the mappings into the internal vector.
-		 * Throwing constructor, will not leave a partially constructed zombie object in the event of error.
-		 * \param mappingsList STL container/range of CBActionMap controller button to action mappings.
-		 * \throws std::invalid_argument exception
-		 */
-		explicit KeyboardActionTranslator(const MappingRange_c auto& mappingsList)
-		{
-			// TODO add check for sends single repeat and uses repeat in an invalid config.
-			if (!AreExclusivityGroupsUnique(mappingsList))
-				throw std::invalid_argument(ExclusivityGroupError.data());
-			InitMappingDetails(mappingsList);
-		}
-		// Move-ctor for mappings list.
-		explicit KeyboardActionTranslator(std::vector<CBActionMap>&& mappingsList)
-		{
-			if (!AreExclusivityGroupsUnique(mappingsList))
-				throw std::invalid_argument(ExclusivityGroupError.data());
-			InitMappingDetails(std::move(mappingsList));
-		}
-	public:
-		// Gets state update actions, typical usage of the type.
-		auto operator()(const ControllerStateWrapper& state) -> TranslationPack
-		{
-			return GetStateUpdateActions(state);
-		}
-		/**
-		 * \brief The returned translationresult updates are in-order,
-		 * 1. Mappings being reset
-		 * 2. Mappings being key-repeat'd
-		 * 3. Mappings being overtaken by the next key-down
-		 * 4. Mappings being sent a (initial) key-down
-		 * 5. Mappings being sent a key-up
-		 * 6. todo
-		 */
-		auto GetStateUpdateActions(const ControllerStateWrapper& buttonInfo)
-		-> TranslationPack
-		{
-			using std::ranges::find_if, std::erase_if, std::ranges::begin, std::ranges::end, std::ranges::cbegin, std::ranges::cend;
-			using std::ranges::find, std::ranges::transform;
+	//		if(m_firstCall)
+	//		{
+	//			// Build the map of ex. group integer to vector of pointers to the mapping(s).
+	//			for(std::size_t i{}; i < mappingsList.size(); ++i)
+	//			{
+	//				auto& elem = mappingsList[i];
+	//				// If has an exclusivity grouping, add to map
+	//				if (elem.ExclusivityGrouping)
+	//					m_exGroupMap[*elem.ExclusivityGrouping].emplace_back((std::uint32_t)i);
+	//			}
+	//			m_firstCall = false;
+	//		}
+	//		// Iterate through each matching mapping and find ones with an exclusivity grouping, and then add the rest of the grouping to the results with key-up
+	//		const auto& currentMap = mappingsList[currentIndex];
+	//		if (currentMap.ExclusivityGrouping)
+	//		{
+	//			std::vector<TranslationResult> results;
+	//			const auto& exGroupVecForCurrent = m_exGroupMap[*currentMap.ExclusivityGrouping];
+	//			for (const auto elemIndex: exGroupVecForCurrent)
+	//			{
+	//				if (elemIndex != currentIndex)
+	//				{
+	//					auto& testElem = mappingsList[elemIndex];
+	//					if (testElem.LastAction.IsDown() || testElem.LastAction.IsRepeating())
+	//					{
+	//						results.emplace_back(GetOvertakenTranslationResult(testElem));
+	//						// TODO this is returning a bad overtaken result for ltrigger down then pressing rtrigger, don't think it's the poller!
+	//					}
+	//				}
+	//			}
+	//			return results;
+	//		}
+	//		return {};
+	//	}
+	//};
 
-			// Get update, repeat, direct match, etc. indices lists
-			const auto matchingIndices = GetVkMatchIndices(buttonInfo.VirtualKey, m_mappings); // Gets all indices matching VK
-			
-			const auto updateIndices = GetUpdateIndices(m_mappings); // Gets update/reset indices
-			auto repeatIndices = GetRepeatIndices(m_mappings); // Gets key-repeat indices
-			// Remove from the repeat indices all of the ones matching the VK when buttonInfo is key-up (progression)
-			if (buttonInfo.KeyUp)
-			{
-				erase_if(repeatIndices, [&](const auto e)
-				{
-					return MappingAt(e).Vk == buttonInfo.VirtualKey;
-				});
-			}
+	///**
+	// * \brief This translator is responsible for managing the state of
+	// * 1. exclusivity groupings,
+	// * 2. the last action of the mapping,
+	// * 3. the decision to do a repeat if the mapping has enabled repeat behavior,
+	// * 4. the key-repeat and key-update timer loops
+	// * 5. *Note that this translator doesn't make the updates to the mapping, only notifies when they should occur.
+	// *
+	// * To perform these tasks, it needs an internal working copy of every mapping in use, it encapsulates the mapping array.
+	// * \remarks Construct a new instance to encapsulate a new or altered set of mappings.
+	// * Key mappings only traverse states in these paths, note they begin at "initial":
+	// * 1. initial -> down -> repeat -> up
+	// * 2. initial -> down -> up
+	// */
+	//template<class ExclusivityBehavior_t = OvertakingBehavior>
+	//class KeyboardActionTranslator
+	//{
+	//	static constexpr std::string_view ExclusivityGroupError{ "Mapping list contained multiple exclusivity groupings for a single controller button." };
+	//private:
+	//	std::vector<CBActionMap> m_mappings;
+	//	ExclusivityBehavior_t m_overtakingBehavior;
+	//public:
+	//	/**
+	//	 * \brief COPIES the mappings into the internal vector.
+	//	 * Throwing constructor, will not leave a partially constructed zombie object in the event of error.
+	//	 * \param mappingsList STL container/range of CBActionMap controller button to action mappings.
+	//	 * \throws std::invalid_argument exception
+	//	 */
+	//	explicit KeyboardActionTranslator(const MappingRange_c auto& mappingsList)
+	//	{
+	//		// TODO add check for sends single repeat and uses repeat in an invalid config.
+	//		if (!AreExclusivityGroupsUnique(mappingsList))
+	//			throw std::invalid_argument(ExclusivityGroupError.data());
+	//		InitMappingDetails(mappingsList);
+	//	}
+	//	// Move-ctor for mappings list.
+	//	explicit KeyboardActionTranslator(std::vector<CBActionMap>&& mappingsList)
+	//	{
+	//		if (!AreExclusivityGroupsUnique(mappingsList))
+	//			throw std::invalid_argument(ExclusivityGroupError.data());
+	//		InitMappingDetails(std::move(mappingsList));
+	//	}
+	//public:
+	//	// Gets state update actions, typical usage of the type.
+	//	auto operator()(const ControllerStateWrapper& state) -> TranslationPack
+	//	{
+	//		return GetStateUpdateActions(state);
+	//	}
+	//	/**
+	//	 * \brief The returned translationresult updates are in-order,
+	//	 * 1. Mappings being reset
+	//	 * 2. Mappings being key-repeat'd
+	//	 * 3. Mappings being overtaken by the next key-down
+	//	 * 4. Mappings being sent a (initial) key-down
+	//	 * 5. Mappings being sent a key-up
+	//	 * 6. todo
+	//	 */
+	//	auto GetStateUpdateActions(const ControllerStateWrapper& buttonInfo)
+	//	-> TranslationPack
+	//	{
+	//		using std::ranges::find_if, std::erase_if, std::ranges::begin, std::ranges::end, std::ranges::cbegin, std::ranges::cend;
+	//		using std::ranges::find, std::ranges::transform;
 
-			const auto uniqueMatches = GetUniqueMatches(repeatIndices, matchingIndices); // Filters out the key-repeat indices
+	//		// Get update, repeat, direct match, etc. indices lists
+	//		const auto matchingIndices = GetVkMatchIndices(buttonInfo.VirtualKey, m_mappings); // Gets all indices matching VK
+	//		
+	//		const auto updateIndices = GetUpdateIndices(m_mappings); // Gets update/reset indices
+	//		auto repeatIndices = GetRepeatIndices(m_mappings); // Gets key-repeat indices
+	//		// Remove from the repeat indices all of the ones matching the VK when buttonInfo is key-up (progression)
+	//		if (buttonInfo.KeyUp)
+	//		{
+	//			erase_if(repeatIndices, [&](const auto e)
+	//			{
+	//				return MappingAt(e).ButtonVirtualKeycode == buttonInfo.VirtualKey;
+	//			});
+	//		}
 
-			TranslationPack tPack;
-			// Get exclusivity group overtaken, but not on a key-up
-			if (!buttonInfo.KeyUp)
-			{
-				for (const auto cur : uniqueMatches)
-				{
-					tPack.OvertakenRequests.append_range(m_overtakingBehavior.GetOvertakenTranslationResultsFor(m_mappings, cur));
-				}
-			}
-			// Adds maps with timer being reset (updated)
-			transform(updateIndices, std::back_inserter(tPack.UpdateRequests), [&](const auto n)
-			{
-				return GetUpdateTranslationResult(MappingAt(n));
-			});
-			// Adds maps being key-repeat'd
-			transform(repeatIndices, std::back_inserter(tPack.RepeatRequests), [&](const auto n)
-			{
-				return GetRepeatTranslationResult(MappingAt(n));
-			});
-			// Add direct translations for each unique
-			for(const auto matchInd : uniqueMatches)
-			{
-				GetDirectTranslations(buttonInfo, tPack.NextStateRequests, matchInd);
-			}
+	//		const auto uniqueMatches = GetUniqueMatches(repeatIndices, matchingIndices); // Filters out the key-repeat indices
 
-			return tPack;
-		}
-		/**
-		 * \brief Intended to provide an array of key-up actions necessary to return the mappings back to an initial state.
-		 */
-		auto GetCleanupActions() -> std::vector<TranslationResult>
-		{
-			std::vector<TranslationResult> results;
-			for(auto& elem: m_mappings)
-			{
-				if(elem.LastAction.IsDown() || elem.LastAction.IsRepeating())
-				{
-					results.emplace_back(GetKeyUpTranslationResult(elem));
-				}
-				if(elem.LastAction.IsUp())
-				{
-					results.emplace_back(GetUpdateTranslationResult(elem));
-				}
-			}
-			return results;
-		}
-	private:
-		constexpr
-		auto MappingAt(const std::uint32_t index) noexcept -> CBActionMap&
-		{
-			return m_mappings.at(index);
-		}
-		void GetDirectTranslations(
-			const ControllerStateWrapper& buttonInfo, 
-			std::vector<TranslationResult>& results, 
-			const std::uint32_t matchInd)
-		{
-			auto& currentMapping = MappingAt(matchInd);
-			const bool isMapInit = currentMapping.LastAction.IsInitialState();
-			const bool isMapDown = currentMapping.LastAction.IsDown();
-			const bool isMapRepeat = currentMapping.LastAction.IsRepeating();
-			const bool isButtonDown = buttonInfo.KeyDown;
-			const bool isButtonUp = buttonInfo.KeyUp;
+	//		TranslationPack tPack;
+	//		// Get exclusivity group overtaken, but not on a key-up
+	//		if (!buttonInfo.KeyUp)
+	//		{
+	//			for (const auto cur : uniqueMatches)
+	//			{
+	//				tPack.OvertakenRequests.append_range(m_overtakingBehavior.GetOvertakenTranslationResultsFor(m_mappings, cur));
+	//			}
+	//		}
+	//		// Adds maps with timer being reset (updated)
+	//		transform(updateIndices, std::back_inserter(tPack.UpdateRequests), [&](const auto n)
+	//		{
+	//			return GetUpdateTranslationResult(MappingAt(n));
+	//		});
+	//		// Adds maps being key-repeat'd
+	//		transform(repeatIndices, std::back_inserter(tPack.RepeatRequests), [&](const auto n)
+	//		{
+	//			return GetRepeatTranslationResult(MappingAt(n));
+	//		});
+	//		// Add direct translations for each unique
+	//		for(const auto matchInd : uniqueMatches)
+	//		{
+	//			GetDirectTranslations(buttonInfo, tPack.NextStateRequests, matchInd);
+	//		}
 
-			// Initial key-down case
-			if (isButtonDown && isMapInit)
-			{
-				results.emplace_back(GetInitialKeyDownTranslationResult(currentMapping));
-			}
-			// Key-up case
-			if (isButtonUp && (isMapDown || isMapRepeat))
-			{
-				// Key-up doesn't require timer elapsed.
-				results.emplace_back(GetKeyUpTranslationResult(currentMapping));
-			}
-		}
-		void InitMappingDetails(const MappingRange_c auto& mappingsList)
-		{
-			m_mappings.reserve(std::size(mappingsList));
-			for (const CBActionMap& elem : mappingsList)
-			{
-				// Add to internal vector, possibly with custom repeat delay.
-				m_mappings.emplace_back(elem);
-				auto& tempBack = m_mappings.back();
-				InitCustomTimers(tempBack);
-			}
-		}
-		void InitMappingDetails(std::vector<CBActionMap>&& mappingsList)
-		{
-			m_mappings = std::move(mappingsList);
-			for(auto& elem: m_mappings)
-			{
-				InitCustomTimers(elem);
-			}
-		}
-	};
+	//		return tPack;
+	//	}
+	//	/**
+	//	 * \brief Intended to provide an array of key-up actions necessary to return the mappings back to an initial state.
+	//	 */
+	//	auto GetCleanupActions() -> std::vector<TranslationResult>
+	//	{
+	//		std::vector<TranslationResult> results;
+	//		for(auto& elem: m_mappings)
+	//		{
+	//			if(elem.LastAction.IsDown() || elem.LastAction.IsRepeating())
+	//			{
+	//				results.emplace_back(GetKeyUpTranslationResult(elem));
+	//			}
+	//			if(elem.LastAction.IsUp())
+	//			{
+	//				results.emplace_back(GetUpdateTranslationResult(elem));
+	//			}
+	//		}
+	//		return results;
+	//	}
+	//private:
+	//	constexpr
+	//	auto MappingAt(const std::uint32_t index) noexcept -> CBActionMap&
+	//	{
+	//		return m_mappings.at(index);
+	//	}
+	//	void GetDirectTranslations(
+	//		const ControllerStateWrapper& buttonInfo, 
+	//		std::vector<TranslationResult>& results, 
+	//		const std::uint32_t matchInd)
+	//	{
+	//		auto& currentMapping = MappingAt(matchInd);
+	//		const bool isMapInit = currentMapping.LastAction.IsInitialState();
+	//		const bool isMapDown = currentMapping.LastAction.IsDown();
+	//		const bool isMapRepeat = currentMapping.LastAction.IsRepeating();
+	//		const bool isButtonDown = buttonInfo.KeyDown;
+	//		const bool isButtonUp = buttonInfo.KeyUp;
+
+	//		// Initial key-down case
+	//		if (isButtonDown && isMapInit)
+	//		{
+	//			results.emplace_back(GetInitialKeyDownTranslationResult(currentMapping));
+	//		}
+	//		// Key-up case
+	//		if (isButtonUp && (isMapDown || isMapRepeat))
+	//		{
+	//			// Key-up doesn't require timer elapsed.
+	//			results.emplace_back(GetKeyUpTranslationResult(currentMapping));
+	//		}
+	//	}
+	//	void InitMappingDetails(const MappingRange_c auto& mappingsList)
+	//	{
+	//		m_mappings.reserve(std::size(mappingsList));
+	//		for (const CBActionMap& elem : mappingsList)
+	//		{
+	//			// Add to internal vector, possibly with custom repeat delay.
+	//			m_mappings.emplace_back(elem);
+	//			auto& tempBack = m_mappings.back();
+	//			InitCustomTimers(tempBack);
+	//		}
+	//	}
+	//	void InitMappingDetails(std::vector<CBActionMap>&& mappingsList)
+	//	{
+	//		m_mappings = std::move(mappingsList);
+	//		for(auto& elem: m_mappings)
+	//		{
+	//			InitCustomTimers(elem);
+	//		}
+	//	}
+	//};
 
 	// Compile-time asserts for the type above, copyable, moveable.
-	static_assert(std::is_copy_constructible_v<KeyboardActionTranslator<>>);
-	static_assert(std::is_copy_assignable_v<KeyboardActionTranslator<>>);
-	static_assert(std::is_move_constructible_v<KeyboardActionTranslator<>>);
-	static_assert(std::is_move_assignable_v<KeyboardActionTranslator<>>);
+	//static_assert(std::is_copy_constructible_v<KeyboardActionTranslator<>>);
+	//static_assert(std::is_copy_assignable_v<KeyboardActionTranslator<>>);
+	//static_assert(std::is_move_constructible_v<KeyboardActionTranslator<>>);
+	//static_assert(std::is_move_assignable_v<KeyboardActionTranslator<>>);
 
 	/**
 	 * \brief	Checks a list of mappings for having multiple exclusivity groupings mapped to a single controller button.
@@ -289,7 +291,7 @@ namespace sds
 		for (const auto& e : mappingsList)
 		{
 			// If an exclusivity group is set, we must verify no duplicate ex groups are set to the same vk
-			const auto& vk = e.Vk;
+			const auto& vk = e.ButtonVirtualKeycode;
 			const auto& currentMappingGroupOpt = e.ExclusivityGrouping;
 			const auto& existingGroupOpt = groupMap[vk];
 			if (currentMappingGroupOpt.has_value() && existingGroupOpt.has_value())
@@ -407,7 +409,7 @@ namespace sds
 		for (std::uint32_t i{}; i < mappingsList.size(); ++i)
 		{
 			const auto& elem = mappingsList[i];
-			if (elem.Vk == vk)
+			if (elem.ButtonVirtualKeycode == vk)
 				buf.emplace_back(i);
 		}
 		return buf;

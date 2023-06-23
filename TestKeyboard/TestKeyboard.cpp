@@ -41,7 +41,7 @@ namespace TestKeyboard
                 Assert::IsTrue(static_cast<bool>(e.OnUp));
                 Assert::IsTrue(static_cast<bool>(e.OnRepeat));
                 Assert::IsTrue(static_cast<bool>(e.OnReset));
-                Assert::IsTrue(e.Vk == VirtKey);
+                Assert::IsTrue(e.ButtonVirtualKeycode == VirtKey);
             }
 		}
         TEST_METHOD(TestProgression)

@@ -1,7 +1,5 @@
 #pragma once
 #include "LibIncludes.h"
-#include <syncstream>
-#include <typeindex>
 #include "KeyboardSettingsPack.h"
 
 namespace sds
@@ -54,7 +52,7 @@ namespace sds
 		/**
 		 * \brief	Controller button Virtual Keycode. Can be platform dependent or custom mapping, depends on input poller behavior.
 		 */
-		int Vk{};
+		detail::VirtualKey_t ButtonVirtualKeycode{};
 		/**
 		 * \brief	If 'true', upon the button being held down, will translate to the key-repeat function activating repeatedly
 		 *	using a delay in between repeats.

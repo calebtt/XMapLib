@@ -1,5 +1,6 @@
 #pragma once
 #include "LibIncludes.h"
+#include "CustomTypes.h"
 
 #include <iostream>
 #include <chrono>

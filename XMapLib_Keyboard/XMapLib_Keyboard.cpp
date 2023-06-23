@@ -8,7 +8,22 @@
 #include "../XMapLib_Utils/nanotime.h"
 #include "../XMapLib_Utils/SendMouseInput.h"
 
-inline
+#include <iostream>
+#include <fstream>
+
+
+// Crude mechanism to keep the loop running until [enter] is pressed.
+struct GetterExitCallable
+{
+    std::atomic<bool> IsDone{ false };
+    void GetExitSignal()
+    {
+        std::string buf;
+        std::getline(std::cin, buf);
+        IsDone = true;
+    }
+};
+
 auto GetEpochTimestamp()
 {
     const auto currentTime = std::chrono::steady_clock::now();
@@ -44,7 +59,7 @@ auto GetDriverButtonMappings()
     vector mapBuffer
     {
         CBActionMap{
-            .Vk = VK_PAD_A,
+            .ButtonVirtualKeycode = VK_PAD_A,
             .UsesInfiniteRepeat = true,
             .ExclusivityGrouping = PadButtonsGroup,
             .OnDown = GetDownLambdaForKeyNamed("[PAD_A]"),
@@ -53,7 +68,7 @@ auto GetDriverButtonMappings()
             .DelayBeforeFirstRepeat = 500ms
         },
         CBActionMap{
-            .Vk = VK_PAD_B,
+            .ButtonVirtualKeycode = VK_PAD_B,
             .UsesInfiniteRepeat = false,
             .SendsFirstRepeatOnly = true,
             .ExclusivityGrouping = PadButtonsGroup,
@@ -64,7 +79,7 @@ auto GetDriverButtonMappings()
             .DelayBeforeFirstRepeat = 2s
         },
     	CBActionMap{
-            .Vk = VK_PAD_X,
+            .ButtonVirtualKeycode = VK_PAD_X,
             .UsesInfiniteRepeat = false,
             .SendsFirstRepeatOnly = true,
             .ExclusivityGrouping = PadButtonsGroup,
@@ -75,7 +90,7 @@ auto GetDriverButtonMappings()
             .DelayBeforeFirstRepeat = 2s
         },
         CBActionMap{
-            .Vk = VK_PAD_Y,
+            .ButtonVirtualKeycode = VK_PAD_Y,
             .UsesInfiniteRepeat = false,
             .SendsFirstRepeatOnly = true,
             .ExclusivityGrouping = PadButtonsGroup,
@@ -87,7 +102,7 @@ auto GetDriverButtonMappings()
         },
         // Left thumbstick directional stuff
         CBActionMap{
-            .Vk = VK_PAD_LTHUMB_UP,
+            .ButtonVirtualKeycode = VK_PAD_LTHUMB_UP,
             .UsesInfiniteRepeat = true,
             .ExclusivityGrouping = LeftThumbGroup,
             .OnDown = GetDownLambdaForKeyNamed("[LTHUMB_UP]"),
@@ -96,7 +111,7 @@ auto GetDriverButtonMappings()
             .OnReset = GetResetLambdaForKeyNamed("[LTHUMB_UP]"),
         },
         CBActionMap{
-            .Vk = VK_PAD_LTHUMB_DOWN,
+            .ButtonVirtualKeycode = VK_PAD_LTHUMB_DOWN,
             .UsesInfiniteRepeat = true,
             .ExclusivityGrouping = LeftThumbGroup,
             .OnDown = GetDownLambdaForKeyNamed("[LTHUMB_DOWN]"),
@@ -105,7 +120,7 @@ auto GetDriverButtonMappings()
             .OnReset = GetResetLambdaForKeyNamed("[LTHUMB_DOWN]"),
         },
         CBActionMap{
-            .Vk = VK_PAD_LTHUMB_RIGHT,
+            .ButtonVirtualKeycode = VK_PAD_LTHUMB_RIGHT,
             .UsesInfiniteRepeat = true,
             .ExclusivityGrouping = LeftThumbGroup,
             .OnDown = GetDownLambdaForKeyNamed("[LTHUMB_RIGHT]"),
@@ -114,7 +129,7 @@ auto GetDriverButtonMappings()
             .OnReset = GetResetLambdaForKeyNamed("[LTHUMB_RIGHT]"),
         },
         CBActionMap{
-            .Vk = VK_PAD_LTHUMB_LEFT,
+            .ButtonVirtualKeycode = VK_PAD_LTHUMB_LEFT,
             .UsesInfiniteRepeat = true,
             .ExclusivityGrouping = LeftThumbGroup,
             .OnDown = GetDownLambdaForKeyNamed("[LTHUMB_LEFT]"),
@@ -123,7 +138,7 @@ auto GetDriverButtonMappings()
             .OnReset = GetResetLambdaForKeyNamed("[LTHUMB_LEFT]"),
         },
         CBActionMap{
-            .Vk = VK_PAD_LTRIGGER,
+            .ButtonVirtualKeycode = VK_PAD_LTRIGGER,
             .UsesInfiniteRepeat = false,
             .ExclusivityGrouping = LeftThumbGroup,
             .OnDown = GetDownLambdaForKeyNamed("[LTRIGGER]"),
@@ -132,7 +147,7 @@ auto GetDriverButtonMappings()
             .DelayForRepeats = 1ns
         },
     	CBActionMap{
-            .Vk = VK_PAD_RTRIGGER,
+            .ButtonVirtualKeycode = VK_PAD_RTRIGGER,
             .UsesInfiniteRepeat = false,
             .ExclusivityGrouping = LeftThumbGroup,
             .OnDown = GetDownLambdaForKeyNamed("[RTRIGGER]"),
@@ -141,12 +156,12 @@ auto GetDriverButtonMappings()
             .DelayForRepeats = 1ns
         },
         CBActionMap{
-            .Vk = VK_PAD_RSHOULDER,
+            .ButtonVirtualKeycode = VK_PAD_RSHOULDER,
             .UsesInfiniteRepeat = false,
             .OnDown = []() { system("cls"); std::cout << "Cleared.\n"; }
         },
     	CBActionMap{
-            .Vk = VK_PAD_LSHOULDER,
+            .ButtonVirtualKeycode = VK_PAD_LSHOULDER,
             .UsesInfiniteRepeat = false,
             .OnDown = []()
             {
@@ -169,7 +184,7 @@ auto GetDriverMouseMappings()
     {
         // Mouse move stuff
         CBActionMap{
-            .Vk = VK_PAD_RTHUMB_UP,
+            .ButtonVirtualKeycode = VK_PAD_RTHUMB_UP,
             .UsesInfiniteRepeat = true,
             .ExclusivityGrouping = MouseExGroup,
             .OnDown = [smi]() mutable
@@ -184,7 +199,7 @@ auto GetDriverMouseMappings()
             .DelayForRepeats = RepeatDelay
         },
         CBActionMap{
-            .Vk = VK_PAD_RTHUMB_DOWN,
+            .ButtonVirtualKeycode = VK_PAD_RTHUMB_DOWN,
             .UsesInfiniteRepeat = true,
             .ExclusivityGrouping = MouseExGroup,
             .OnDown = [smi]() mutable
@@ -199,7 +214,7 @@ auto GetDriverMouseMappings()
             .DelayForRepeats = RepeatDelay
         },
         CBActionMap{
-            .Vk = VK_PAD_RTHUMB_LEFT,
+            .ButtonVirtualKeycode = VK_PAD_RTHUMB_LEFT,
             .UsesInfiniteRepeat = true,
             .ExclusivityGrouping = MouseExGroup,
             .OnDown = [smi]() mutable
@@ -214,7 +229,7 @@ auto GetDriverMouseMappings()
             .DelayForRepeats = RepeatDelay
         },
         CBActionMap{
-            .Vk = VK_PAD_RTHUMB_RIGHT,
+            .ButtonVirtualKeycode = VK_PAD_RTHUMB_RIGHT,
             .UsesInfiniteRepeat = true,
             .ExclusivityGrouping = MouseExGroup,
             .OnDown = [smi]() mutable
@@ -229,7 +244,7 @@ auto GetDriverMouseMappings()
             .DelayForRepeats = RepeatDelay
         },
         CBActionMap{
-            .Vk = VK_PAD_RTHUMB_UPRIGHT,
+            .ButtonVirtualKeycode = VK_PAD_RTHUMB_UPRIGHT,
             .UsesInfiniteRepeat = true,
             .ExclusivityGrouping = MouseExGroup,
             .OnDown = [smi]() mutable
@@ -244,7 +259,7 @@ auto GetDriverMouseMappings()
             .DelayForRepeats = RepeatDelay
         },
         CBActionMap{
-            .Vk = VK_PAD_RTHUMB_UPLEFT,
+            .ButtonVirtualKeycode = VK_PAD_RTHUMB_UPLEFT,
             .UsesInfiniteRepeat = true,
             .ExclusivityGrouping = MouseExGroup,
             .OnDown = [smi]() mutable
@@ -259,7 +274,7 @@ auto GetDriverMouseMappings()
             .DelayForRepeats = RepeatDelay
         },
         CBActionMap{
-            .Vk = VK_PAD_RTHUMB_DOWNLEFT,
+            .ButtonVirtualKeycode = VK_PAD_RTHUMB_DOWNLEFT,
             .UsesInfiniteRepeat = true,
             .ExclusivityGrouping = MouseExGroup,
             .OnDown = [smi]() mutable
@@ -274,7 +289,7 @@ auto GetDriverMouseMappings()
             .DelayForRepeats = RepeatDelay
         },
         CBActionMap{
-            .Vk = VK_PAD_RTHUMB_DOWNRIGHT,
+            .ButtonVirtualKeycode = VK_PAD_RTHUMB_DOWNRIGHT,
             .UsesInfiniteRepeat = true,
             .ExclusivityGrouping = MouseExGroup,
             .OnDown = [smi]() mutable
@@ -292,20 +307,7 @@ auto GetDriverMouseMappings()
     return mapBuffer;
 }
 
-// Crude mechanism to keep the loop running until [enter] is pressed.
-struct GetterExitCallable
-{
-    std::atomic<bool> IsDone{ false };
-    void GetExitSignal()
-    {
-        std::string buf;
-        std::getline(std::cin, buf);
-        IsDone = true;
-    }
-};
-
-inline
-auto WritePollResult(std::ofstream& outFile, const sds::ControllerStateWrapper& polledState)
+void WritePollResult(std::fstream& outFile, const sds::ControllerStateWrapper& polledState)
 {
     outFile << polledState.VirtualKey << '\n';
     outFile << polledState.KeyDown << '\n';
@@ -315,13 +317,11 @@ auto WritePollResult(std::ofstream& outFile, const sds::ControllerStateWrapper& 
 
 // The purpose of this is to record every polled event occurring during a manual test driver run.
 // In order to be re-created in a unit test and benchmarked.
-inline
-auto RunRecordingLoop()
+void RunRecordingLoop()
 {
-    using namespace std::chrono_literals;
-
-    std::ofstream outFile("recording.txt", std::ios::binary);
-    sds::KeyboardPlayerInfo playerInfo{};
+    //using namespace std::chrono_literals;
+    std::fstream outFile("recording.txt", std::ios::out | std::ios::binary);
+    constexpr sds::KeyboardPlayerInfo playerInfo{};
     sds::KeyboardPollerController controllerPoller(playerInfo.player_id);
 
     GetterExitCallable gec;
@@ -336,7 +336,6 @@ auto RunRecordingLoop()
     exitFuture.wait();
 }
 
-inline
 auto RunTestDriverLoop()
 {
     using namespace std::chrono_literals;
@@ -365,9 +364,40 @@ auto RunTestDriverLoop()
     exitFuture.wait();
 }
 
+void RunTriggerTestLoop()
+{
+    using namespace std::chrono_literals;
+
+    auto mapBuffer = GetDriverButtonMappings();
+    // Unit test covers testing both translator constructors.
+    sds::KeyboardActionTranslator translator(std::move(mapBuffer));
+    sds::KeyboardPlayerInfo playerInfo{};
+    sds::KeyboardPollerController controllerPoller(playerInfo.player_id);
+
+    GetterExitCallable gec;
+    const auto exitFuture = std::async(std::launch::async, [&]() { gec.GetExitSignal(); });
+    while (!gec.IsDone)
+    {
+        const auto pollResult = controllerPoller();
+        std::cout << pollResult << '\n';
+        //const auto translation = translator(pollResult);
+        //translation();
+        constexpr auto timeCount = std::chrono::milliseconds(1000);
+        constexpr auto nanosCount = std::chrono::nanoseconds(timeCount);
+        nanotime_sleep(nanosCount.count());
+    }
+    std::cout << "Performing cleanup actions...\n";
+    const auto cleanupTranslation = translator.GetCleanupActions();
+    for (auto& cleanupAction : cleanupTranslation)
+        cleanupAction();
+
+    exitFuture.wait();
+}
+
 // Test driver program for keyboard mapping
 int main()
 {
     //RunRecordingLoop();
-    RunTestDriverLoop();
+    //RunTestDriverLoop();
+    RunTriggerTestLoop();
 }

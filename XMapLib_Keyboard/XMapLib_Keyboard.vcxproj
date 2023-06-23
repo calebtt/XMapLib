@@ -152,6 +152,7 @@
     <ClInclude Include="KeyboardSettingsPack.h" />
     <ClInclude Include="KeyboardActionTranslator.h" />
     <ClInclude Include="KeyboardTranslationResult.h" />
+    <ClInclude Include="LegacyApiFunctions.h" />
     <ClInclude Include="LibIncludes.h" />
   </ItemGroup>
   <ItemGroup>
