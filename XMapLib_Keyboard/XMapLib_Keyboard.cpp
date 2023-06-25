@@ -307,97 +307,97 @@ auto GetDriverMouseMappings()
     return mapBuffer;
 }
 
-void WritePollResult(std::fstream& outFile, const sds::ControllerStateWrapper& polledState)
-{
-    outFile << polledState.VirtualKey << '\n';
-    outFile << polledState.KeyDown << '\n';
-    outFile << polledState.KeyUp << '\n';
-    outFile << polledState.KeyRepeat << '\n';
-}
-
-// The purpose of this is to record every polled event occurring during a manual test driver run.
-// In order to be re-created in a unit test and benchmarked.
-void RunRecordingLoop()
-{
-    //using namespace std::chrono_literals;
-    std::fstream outFile("recording.txt", std::ios::out | std::ios::binary);
-    constexpr sds::KeyboardPlayerInfo playerInfo{};
-    sds::KeyboardPollerController controllerPoller(playerInfo.player_id);
-
-    GetterExitCallable gec;
-    const auto exitFuture = std::async(std::launch::async, [&]() { gec.GetExitSignal(); });
-    while (!gec.IsDone)
-    {
-        const auto pollResult = controllerPoller();
-        WritePollResult(outFile, pollResult);
-        nanotime_sleep(sds::KeyboardSettings::PollingLoopDelay.count());
-    }
-
-    exitFuture.wait();
-}
-
-auto RunTestDriverLoop()
-{
-    using namespace std::chrono_literals;
-
-    auto mapBuffer = GetDriverButtonMappings();
-    mapBuffer.append_range(GetDriverMouseMappings());
-    // Unit test covers testing both translator constructors.
-    sds::KeyboardActionTranslator translator(std::move(mapBuffer));
-    sds::KeyboardPlayerInfo playerInfo{};
-    sds::KeyboardPollerController controllerPoller(playerInfo.player_id);
-
-    GetterExitCallable gec;
-    const auto exitFuture = std::async(std::launch::async, [&]() { gec.GetExitSignal(); });
-    while (!gec.IsDone)
-    {
-        const auto pollResult = controllerPoller();
-        const auto translation = translator(pollResult);
-        translation();
-        nanotime_sleep(sds::KeyboardSettings::PollingLoopDelay.count());
-    }
-    std::cout << "Performing cleanup actions...\n";
-    const auto cleanupTranslation = translator.GetCleanupActions();
-    for (auto& cleanupAction : cleanupTranslation)
-        cleanupAction();
-
-    exitFuture.wait();
-}
-
-void RunTriggerTestLoop()
-{
-    using namespace std::chrono_literals;
-
-    auto mapBuffer = GetDriverButtonMappings();
-    // Unit test covers testing both translator constructors.
-    sds::KeyboardActionTranslator translator(std::move(mapBuffer));
-    sds::KeyboardPlayerInfo playerInfo{};
-    sds::KeyboardPollerController controllerPoller(playerInfo.player_id);
-
-    GetterExitCallable gec;
-    const auto exitFuture = std::async(std::launch::async, [&]() { gec.GetExitSignal(); });
-    while (!gec.IsDone)
-    {
-        const auto pollResult = controllerPoller();
-        std::cout << pollResult << '\n';
-        //const auto translation = translator(pollResult);
-        //translation();
-        constexpr auto timeCount = std::chrono::milliseconds(1000);
-        constexpr auto nanosCount = std::chrono::nanoseconds(timeCount);
-        nanotime_sleep(nanosCount.count());
-    }
-    std::cout << "Performing cleanup actions...\n";
-    const auto cleanupTranslation = translator.GetCleanupActions();
-    for (auto& cleanupAction : cleanupTranslation)
-        cleanupAction();
-
-    exitFuture.wait();
-}
+//void WritePollResult(std::fstream& outFile, const sds::ControllerStateUpdateWrapper& polledState)
+//{
+//    outFile << polledState.VirtualKey << '\n';
+//    outFile << polledState.KeyDown << '\n';
+//    outFile << polledState.KeyUp << '\n';
+//    outFile << polledState.KeyRepeat << '\n';
+//}
+//
+//// The purpose of this is to record every polled event occurring during a manual test driver run.
+//// In order to be re-created in a unit test and benchmarked.
+//void RunRecordingLoop()
+//{
+//    //using namespace std::chrono_literals;
+//    std::fstream outFile("recording.txt", std::ios::out | std::ios::binary);
+//    constexpr sds::KeyboardPlayerInfo playerInfo{};
+//    sds::KeyboardPollerController controllerPoller(playerInfo.player_id);
+//
+//    GetterExitCallable gec;
+//    const auto exitFuture = std::async(std::launch::async, [&]() { gec.GetExitSignal(); });
+//    while (!gec.IsDone)
+//    {
+//        const auto pollResult = controllerPoller();
+//        WritePollResult(outFile, pollResult);
+//        nanotime_sleep(sds::KeyboardSettings::PollingLoopDelay.count());
+//    }
+//
+//    exitFuture.wait();
+//}
+//
+//auto RunTestDriverLoop()
+//{
+//    using namespace std::chrono_literals;
+//
+//    auto mapBuffer = GetDriverButtonMappings();
+//    mapBuffer.append_range(GetDriverMouseMappings());
+//    // Unit test covers testing both translator constructors.
+//    sds::KeyboardActionTranslator translator(std::move(mapBuffer));
+//    sds::KeyboardPlayerInfo playerInfo{};
+//    sds::KeyboardPollerController controllerPoller(playerInfo.player_id);
+//
+//    GetterExitCallable gec;
+//    const auto exitFuture = std::async(std::launch::async, [&]() { gec.GetExitSignal(); });
+//    while (!gec.IsDone)
+//    {
+//        const auto pollResult = controllerPoller();
+//        const auto translation = translator(pollResult);
+//        translation();
+//        nanotime_sleep(sds::KeyboardSettings::PollingLoopDelay.count());
+//    }
+//    std::cout << "Performing cleanup actions...\n";
+//    const auto cleanupTranslation = translator.GetCleanupActions();
+//    for (auto& cleanupAction : cleanupTranslation)
+//        cleanupAction();
+//
+//    exitFuture.wait();
+//}
+//
+//void RunTriggerTestLoop()
+//{
+//    using namespace std::chrono_literals;
+//
+//    auto mapBuffer = GetDriverButtonMappings();
+//    // Unit test covers testing both translator constructors.
+//    sds::KeyboardActionTranslator translator(std::move(mapBuffer));
+//    sds::KeyboardPlayerInfo playerInfo{};
+//    sds::KeyboardPollerController controllerPoller(playerInfo.player_id);
+//
+//    GetterExitCallable gec;
+//    const auto exitFuture = std::async(std::launch::async, [&]() { gec.GetExitSignal(); });
+//    while (!gec.IsDone)
+//    {
+//        const auto pollResult = controllerPoller();
+//        std::cout << pollResult << '\n';
+//        //const auto translation = translator(pollResult);
+//        //translation();
+//        constexpr auto timeCount = std::chrono::milliseconds(1000);
+//        constexpr auto nanosCount = std::chrono::nanoseconds(timeCount);
+//        nanotime_sleep(nanosCount.count());
+//    }
+//    std::cout << "Performing cleanup actions...\n";
+//    const auto cleanupTranslation = translator.GetCleanupActions();
+//    for (auto& cleanupAction : cleanupTranslation)
+//        cleanupAction();
+//
+//    exitFuture.wait();
+//}
 
 // Test driver program for keyboard mapping
 int main()
 {
     //RunRecordingLoop();
     //RunTestDriverLoop();
-    RunTriggerTestLoop();
+    //RunTriggerTestLoop();
 }

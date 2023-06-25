@@ -60,7 +60,7 @@ namespace sds
 		bool UsesInfiniteRepeat{ true };
 		/**
 		 * \brief	If 'true', upon the button being held down, will send a single repeat, will not continue translating to repeat after the single repeat.
-		 * \remarks Note that UsesRepeatBehavior is expected to be set to 'false' for this to have a meaningful impact.
+		 * \remarks Note that UsesInfiniteRepeat is expected to be set to 'false' for this to have a meaningful impact.
 		 */
 		bool SendsFirstRepeatOnly{ false };
 		/**

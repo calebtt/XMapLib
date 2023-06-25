@@ -19,4 +19,20 @@ namespace sds
 			return controllerState;
 		return {};
 	}
+
+	/**
+	 * \brief WARNING: Single Threaded! Values of 1 in the returned buffer mean set.
+	 * \param playerId Most commonly 0 for a single device connected.
+	 * \return The button buffer type specified in KeyboardSettings, values of 0 mean not-set, while 1 means set.
+	 */
+	[[nodiscard]]
+	inline
+	auto GetWrappedLegacyApiStateUpdate(const int playerId = 0) noexcept -> std::optional<ControllerStateUpdateWrapper<>>
+	{
+		if (const auto controllerStateUpdate = GetLegacyApiStateUpdate(playerId))
+		{
+			return ControllerStateUpdateWrapper<>{*controllerStateUpdate};
+		}
+		return {};
+	}
 }

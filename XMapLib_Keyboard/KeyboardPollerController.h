@@ -2,7 +2,7 @@
 #include "LibIncludes.h"
 #include "CustomTypes.h"
 
-#include "ControllerStateWrapper.h"
+#include "ControllerStateUpdateWrapper.h"
 #include "KeyboardTranslationResult.h"
 #include "KeyboardActionTranslator.h"
 #include "LegacyApiFunctions.h"
@@ -17,163 +17,153 @@ namespace sds
 	concept IsInputPoller = requires(Poller_t & t)
 	{
 		{ t.GetUpdatedState() };
-		{ t.GetUpdatedState() } -> std::convertible_to<ControllerStateWrapper>;
+		{ t.GetUpdatedState() } -> std::convertible_to<ControllerStateUpdateWrapper<>>;
 	};
 
-	[[nodiscard]] constexpr bool IsCodeMaskedForAnyTrigger(const detail::VirtualKey_t state) noexcept
-	{
-		constexpr auto rightValue{ VK_PAD_RTRIGGER };
-		constexpr auto leftValue{ VK_PAD_LTRIGGER };
-		return state & leftValue || state & rightValue;
-	}
-	[[nodiscard]] constexpr bool IsCodeMaskedForLeftTrigger(const detail::VirtualKey_t virtualKeycode) noexcept
-	{
-		constexpr auto leftValue{ VK_PAD_LTRIGGER };
-		return virtualKeycode & leftValue;
-	}
-	[[nodiscard]] constexpr bool IsCodeMaskedForRightTrigger(const detail::VirtualKey_t virtualKeycode) noexcept
-	{
-		constexpr auto rightValue{ VK_PAD_RTRIGGER };
-		return virtualKeycode & rightValue;
-	}
-	[[nodiscard]] constexpr bool IsLeftTriggerBeyondThreshold(const detail::TriggerValue_t triggerValue, const detail::TriggerValue_t triggerThreshold = XINPUT_GAMEPAD_TRIGGER_THRESHOLD) noexcept
-	{
-		return triggerValue > triggerThreshold;
-	}
-	[[nodiscard]] constexpr bool IsRightTriggerBeyondThreshold(const detail::TriggerValue_t triggerValue, const detail::TriggerValue_t triggerThreshold = XINPUT_GAMEPAD_TRIGGER_THRESHOLD) noexcept
-	{
-		return triggerValue > triggerThreshold;
-	}
+	/*
+	 *	NOTE: Testing these functions may be quite easy, pass a single CBActionMap in various states to each of these functions,
+	 *	and if more than one TranslationResult is produced (aside from the reset translation), then it would obviously be in error.
+	 */
 
-	// If the mapping state is at 'initial', call this to update it.
+	/**
+	 * \brief For a single mapping, search the controller state update buffer and produce a TranslationResult appropriate to the current mapping state and controller state.
+	 * \param updatesWrapper Wrapper class containing the results of a controller state update polling.
+	 * \param singleButton The mapping type for a single virtual key of the controller.
+	 * \returns Optional, <c>TranslationResult</c>
+	 */
+	[[nodiscard]]
 	inline
-	auto UpdateButtonStateForInitial(KeyboardSettings& settings, CBActionMap& singleButton, const XINPUT_STATE& controllerState) -> detail::StaticVector_t<TranslationResult>
+	auto GetButtonTranslationForInitialToDown(const ControllerStateUpdateWrapper<>& updatesWrapper, CBActionMap& singleButton) noexcept -> std::optional<TranslationResult>
 	{
-		detail::StaticVector_t<TranslationResult> translatedUpdates;
-		const auto virtualCodeMask = controllerState.Gamepad.wButtons;
-
-		// Triggers...
-		const bool isLeftTrigger = IsCodeMaskedForLeftTrigger(virtualCodeMask);
-		const bool isRightTrigger = IsCodeMaskedForRightTrigger(virtualCodeMask);
-		if(isLeftTrigger || isRightTrigger)
+		using std::ranges::find, std::ranges::end;
+		if (singleButton.LastAction.IsInitialState())
 		{
-			const std::function thresholdTester = isLeftTrigger ? IsLeftTriggerBeyondThreshold : IsRightTriggerBeyondThreshold;
-			const auto activationValue = isLeftTrigger ? settings.LeftTriggerThreshold : settings.RightTriggerThreshold;
-			if (thresholdTester(controllerState.Gamepad.bLeftTrigger, activationValue))
-			{
-				translatedUpdates.emplace_back(GetInitialKeyDownTranslationResult(singleButton));
-			}
+			const auto downResults = updatesWrapper.GetDownVirtualKeycodesRange();
+			const auto findResult = find(downResults, singleButton.ButtonVirtualKeycode);
+			// If VK *is* found in the down list, create the down translation.
+			if(findResult != end(downResults))
+				return GetInitialKeyDownTranslationResult(singleButton);
 		}
-
-		// Buttons...
-		const bool isButtonDown = virtualCodeMask & singleButton.ButtonVirtualKeycode;
-		if(isButtonDown)
-		{
-			translatedUpdates.emplace_back(GetInitialKeyDownTranslationResult(singleButton));
-		}
-
-		// Thumbstick directions...
-		// TODO look at old code, take the part that recognizes thumbsticks being beyond dz.
-
-		// TODO also, it may be useful still to extract the XINPUT_STATE bitmask buttons into a vector of wrappers. Could use them in the ControllerStateWrapper buffer class and not depend on the OS API type.
-
-		return translatedUpdates;
+		return {};
 	}
 
-	//inline
-	//auto SetButtonUpdatesFromLegacyPlatformApi(ControllerStateWrapper<>& stateBuffer, const XINPUT_STATE& controllerState)
-	//{
-	//	for(auto& button : stateBuffer.Buttons)
-	//	{
+	[[nodiscard]]
+	inline
+	auto GetButtonTranslationForDownToRepeat(const ControllerStateUpdateWrapper<>& updatesWrapper, CBActionMap& singleButton) noexcept -> std::optional<TranslationResult>
+	{
+		using std::ranges::find, std::ranges::end;
+		const bool isDownAndUsesRepeat = singleButton.LastAction.IsDown() && (singleButton.UsesInfiniteRepeat || singleButton.SendsFirstRepeatOnly);
+		if (isDownAndUsesRepeat && singleButton.LastAction.DelayBeforeFirstRepeat.IsElapsed())
+		{
+			const auto downResults = updatesWrapper.GetDownVirtualKeycodesRange();
+			const auto findResult = find(downResults, singleButton.ButtonVirtualKeycode);
+			// If VK *is* found in the down list, create the repeat translation.
+			if (findResult != end(downResults))
+				return GetRepeatTranslationResult(singleButton);
+		}
+		return {};
+	}
 
-	//		if(button.ButtonVirtualKeycode & controllerState.Gamepad.wButtons)
-	//		{
-	//		}
-	//	}
-	//}
-	//[[nodiscard]]
-	//inline
-	//auto GetWrappedStateFromLegacyPlatformApi(const XINPUT_STATE& controllerState) noexcept -> ControllerStateWrapper
-	//{
-	//	PlatformControllerApiWrapper tempWrapper;
-	//	for(auto& buttonStatus : )
-	//}
+	[[nodiscard]]
+	inline
+	auto GetButtonTranslationForRepeatToRepeat(const ControllerStateUpdateWrapper<>& updatesWrapper, CBActionMap& singleButton) noexcept -> std::optional<TranslationResult>
+	{
+		using std::ranges::find, std::ranges::end;
+		const bool isRepeatAndUsesInfinite = singleButton.LastAction.IsRepeating() && singleButton.UsesInfiniteRepeat;
+		if (isRepeatAndUsesInfinite && singleButton.LastAction.LastSentTime.IsElapsed())
+		{
+			const auto downResults = updatesWrapper.GetDownVirtualKeycodesRange();
+			const auto findResult = find(downResults, singleButton.ButtonVirtualKeycode);
+			// If VK *is* found in the down list, create the repeat translation.
+			if (findResult != end(downResults))
+				return GetRepeatTranslationResult(singleButton);
+		}
+		return {};
+	}
 
+	[[nodiscard]]
+	inline
+	auto GetButtonTranslationForDownOrRepeatToUp(const ControllerStateUpdateWrapper<>& updatesWrapper, CBActionMap& singleButton) noexcept -> std::optional<TranslationResult>
+	{
+		using std::ranges::find, std::ranges::end;
+		if (singleButton.LastAction.IsDown() || singleButton.LastAction.IsRepeating())
+		{
+			const auto downResults = updatesWrapper.GetDownVirtualKeycodesRange();
+			const auto findResult = find(downResults, singleButton.ButtonVirtualKeycode);
+			// If VK is not found in the down list, create the up translation.
+			if(findResult == end(downResults))
+				return GetKeyUpTranslationResult(singleButton);
+		}
+		return {};
+	}
+
+	// This is the reset translation
+	[[nodiscard]]
+	inline
+	auto GetButtonTranslationForUpToInitial(CBActionMap& singleButton) noexcept -> std::optional<TranslationResult>
+	{
+		using std::ranges::find, std::ranges::end;
+		// if the timer has elapsed, update back to the initial state.
+		if(singleButton.LastAction.IsUp() && singleButton.LastAction.LastSentTime.IsElapsed())
+		{
+			return GetResetTranslationResult(singleButton);
+		}
+		return {};
+	}
+
+	// Poller builds the translation results with the mapping functionality.
 	class KeyboardPollerControllerLegacy
 	{
-		enum class KeyStates : int
-		{
-			INITIAL,
-			DOWN,
-			REPEAT
-		};
-	private:
-		int m_playerId;
-		ControllerStateWrapper<> m_controllerStates;
+		using MappingVector_t = std::vector<CBActionMap>;
+		std::vector<CBActionMap> m_mappings;
 	public:
-
 		KeyboardPollerControllerLegacy() = delete;
-		explicit KeyboardPollerControllerLegacy(const int pid) : m_playerId(pid) { }
+
+		explicit KeyboardPollerControllerLegacy(MappingVector_t&& keyMappings )
+		: m_mappings(std::move(keyMappings))
+		{ }
+		explicit KeyboardPollerControllerLegacy(const MappingVector_t& keyMappings)
+			: m_mappings(keyMappings)
+		{ }
 	public:
-		/**
-		 * \brief Returns an updated ControllerStateWrapper containing information gathered about a controller keypress.
-		 */
 		[[nodiscard]]
-		auto operator()() noexcept -> ControllerStateWrapper
+		auto operator()(const ControllerStateUpdateWrapper<>& stateUpdate) noexcept -> std::vector<TranslationResult>
 		{
-			return GetUpdatedState();
+			return GetUpdatedState(stateUpdate);
 		}
-
-		/**
-		 * \brief Returns an updated ControllerStateWrapper containing information gathered about a controller keypress.
-		 */
 		[[nodiscard]]
-		auto GetUpdatedState() noexcept -> ControllerStateWrapper
+		auto GetUpdatedState(const ControllerStateUpdateWrapper<>& stateUpdate) noexcept -> std::vector<TranslationResult>
 		{
-			const auto newResult = GetLegacyApiStateUpdate(m_playerId);
-			if (newResult.has_value())
+			std::vector<TranslationResult> translations;
+			for (auto& mapping : m_mappings)
 			{
-				if (IsVirtualKeyForATrigger(*newResult))
+				if (const auto upToInitial = GetButtonTranslationForUpToInitial(mapping))
 				{
-					// If it's for a trigger then we call the old API to get a state for the triggers.
-					const auto oldErr = XInputGetState(m_playerId, &m_oldState);
-					const auto newTriggerDown = GetVkForDownTrigger();
-					const auto newTriggerUp = GetVkForUpTrigger();
-					const auto newTriggerRepeat = GetVkForRepeatTrigger();
-					if (newTriggerDown)
-					{
-						return ControllerStateWrapper{
-							.VirtualKey = static_cast<unsigned short>(newTriggerDown.value()),
-							.KeyDown = true,
-							.KeyUp = false,
-							.KeyRepeat = false
-						};
-					}
-					if (newTriggerUp)
-					{
-						return ControllerStateWrapper{
-							.VirtualKey = static_cast<unsigned short>(newTriggerUp.value()),
-							.KeyDown = false,
-							.KeyUp = true,
-							.KeyRepeat = false
-						};
-					}
-					if (newTriggerRepeat)
-					{
-						return ControllerStateWrapper{
-							.VirtualKey = static_cast<unsigned short>(newTriggerRepeat.value()),
-							.KeyDown = false,
-							.KeyUp = false,
-							.KeyRepeat = true
-						};
-					}
+					translations.emplace_back(*upToInitial);
+					continue;
 				}
-				return *newResult;
+				if (const auto initialToDown = GetButtonTranslationForInitialToDown(stateUpdate, mapping))
+				{
+					translations.emplace_back(*initialToDown);
+					continue;
+				}
+				if (const auto downToFirstRepeat = GetButtonTranslationForDownToRepeat(stateUpdate, mapping))
+				{
+					translations.emplace_back(*downToFirstRepeat);
+					continue;
+				}
+				if (const auto repeatToRepeat = GetButtonTranslationForRepeatToRepeat(stateUpdate, mapping))
+				{
+					translations.emplace_back(*repeatToRepeat);
+					continue;
+				}
+				if (const auto repeatToUp = GetButtonTranslationForDownOrRepeatToUp(stateUpdate, mapping))
+				{
+					translations.emplace_back(*repeatToUp);
+				}
 			}
-
-			return {};
+			return translations;
 		}
 	};
-
 
 }

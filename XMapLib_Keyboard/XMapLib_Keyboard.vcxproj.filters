@@ -32,7 +32,7 @@
     <ClInclude Include="ControllerButtonToActionMap.h">
       <Filter>Header Files\Keyboard\KeyInfoWrappers</Filter>
     </ClInclude>
-    <ClInclude Include="ControllerStateWrapper.h">
+    <ClInclude Include="ControllerStateUpdateWrapper.h">
       <Filter>Header Files\Keyboard\KeyInfoWrappers</Filter>
     </ClInclude>
     <ClInclude Include="KeyboardSettingsPack.h">

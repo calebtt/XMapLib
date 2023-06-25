@@ -11,6 +11,7 @@ namespace sds::detail
 	using OptGrp_t = std::optional<GrpVal_t>;
 	using VirtualKey_t = int32_t;
 	using TriggerValue_t = uint8_t;
+	using ThumbstickValue_t = int16_t;
 
 	template<typename T>
 	using StaticVector_t = boost::container::static_vector<T, 64>;

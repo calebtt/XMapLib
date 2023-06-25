@@ -13,7 +13,8 @@ namespace sds
 	};
 
 	/**
-	 * \brief Some constants that might someday be configurable.
+	 * \brief Some constants that will someday be configurable. If these are used with config file loaded values,
+	 * this type should do that upon construction, with a non-configurable XML file name.
 	 */
 	struct KeyboardSettings
 	{
@@ -46,8 +47,18 @@ namespace sds
 			XINPUT_GAMEPAD_Y
 		};
 
+		// used internally to denote left or right triggers, similar to the button VKs though they may
+		// not be used by the OS API state updates in the same way--we virtualize them.
+		static constexpr detail::VirtualKey_t LeftTriggerVk{VK_GAMEPAD_LEFT_TRIGGER};
+		static constexpr detail::VirtualKey_t RightTriggerVk{VK_GAMEPAD_RIGHT_TRIGGER};
+
+		static constexpr detail::ThumbstickValue_t LeftStickDeadzone{XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE};
+		static constexpr detail::ThumbstickValue_t RightStickDeadzone{XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE};
+
 		static constexpr detail::TriggerValue_t LeftTriggerThreshold{XINPUT_GAMEPAD_TRIGGER_THRESHOLD};
 		static constexpr detail::TriggerValue_t RightTriggerThreshold{XINPUT_GAMEPAD_TRIGGER_THRESHOLD};
+		// The type of the button buffer without const/volatile/reference.
+		using ButtonBuffer_t = std::remove_reference_t< std::remove_cv_t<decltype(ButtonCodeArray)> >;
 	};
 
 	/**

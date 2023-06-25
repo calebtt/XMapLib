@@ -19,6 +19,7 @@
 
 #include "../XMapLib_Keyboard/KeyboardActionTranslator.h"
 #include "../XMapLib_Keyboard/ControllerButtonToActionMap.h"
+#include "../XMapLib_Keyboard/KeyboardPollerController.h"
 #include "../impcool_sol/immutable_thread_pool/ThreadUnitPlusPlus.h"
 
 #endif //PCH_H
