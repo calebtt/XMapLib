@@ -14,5 +14,5 @@ namespace sds::detail
 	using ThumbstickValue_t = int16_t;
 
 	template<typename T>
-	using StaticVector_t = boost::container::static_vector<T, 64>;
+	using StaticVector_t = std::vector<T>;
 }

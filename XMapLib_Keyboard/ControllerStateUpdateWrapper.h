@@ -75,7 +75,7 @@ namespace sds
 		}
 
 		[[nodiscard]] constexpr bool IsLeftTriggerDown() const noexcept { return IsLeftTriggerBeyondThreshold(m_controllerStates.Gamepad.bLeftTrigger, m_settings.LeftTriggerThreshold); }
-		[[nodiscard]] constexpr bool IsRightTriggerDown() const noexcept { return IsRightTriggerBeyondThreshold(m_controllerStates.Gamepad.bLeftTrigger, m_settings.RightTriggerThreshold); }
+		[[nodiscard]] constexpr bool IsRightTriggerDown() const noexcept { return IsRightTriggerBeyondThreshold(m_controllerStates.Gamepad.bRightTrigger, m_settings.RightTriggerThreshold); }
 
 		[[nodiscard]] constexpr bool IsLeftThumbstickLeftDown() const noexcept { return m_controllerStates.Gamepad.sThumbLX > m_settings.LeftStickDeadzone; }
 		[[nodiscard]] constexpr bool IsLeftThumbstickRightDown() const noexcept { return m_controllerStates.Gamepad.sThumbLX < -m_settings.LeftStickDeadzone; }
@@ -89,7 +89,7 @@ namespace sds
 
 		[[nodiscard]] constexpr auto GetDownVirtualKeycodesRange() const noexcept
 		{
-			detail::StaticVector_t<int> allKeys;
+			detail::StaticVector_t<int> allKeys{};
 			for(const auto elem: m_settings.ButtonCodeArray)
 			{
 				if(elem & m_controllerStates.Gamepad.wButtons)
@@ -103,23 +103,22 @@ namespace sds
 				allKeys.emplace_back(m_settings.RightTriggerVk);
 
 			if (IsLeftThumbstickLeftDown())
-				allKeys.emplace_back(VK_GAMEPAD_LEFT_THUMBSTICK_LEFT);
+				allKeys.emplace_back(m_settings.LeftThumbstickLeft);
 			if (IsLeftThumbstickRightDown())
-				allKeys.emplace_back(VK_GAMEPAD_LEFT_THUMBSTICK_RIGHT);
+				allKeys.emplace_back(m_settings.LeftThumbstickRight);
 			if (IsLeftThumbstickUpDown())
-				allKeys.emplace_back(VK_GAMEPAD_LEFT_THUMBSTICK_UP);
+				allKeys.emplace_back(m_settings.LeftThumbstickUp);
 			if (IsLeftThumbstickDownDown())
-				allKeys.emplace_back(VK_GAMEPAD_LEFT_THUMBSTICK_DOWN);
+				allKeys.emplace_back(m_settings.LeftThumbstickDown);
 
 			if (IsRightThumbstickLeftDown())
-				allKeys.emplace_back(VK_GAMEPAD_RIGHT_THUMBSTICK_LEFT);
+				allKeys.emplace_back(m_settings.RightThumbstickLeft);
 			if (IsRightThumbstickRightDown())
-				allKeys.emplace_back(VK_GAMEPAD_RIGHT_THUMBSTICK_RIGHT);
+				allKeys.emplace_back(m_settings.RightThumbstickRight);
 			if (IsRightThumbstickUpDown())
-				allKeys.emplace_back(VK_GAMEPAD_RIGHT_THUMBSTICK_UP);
+				allKeys.emplace_back(m_settings.RightThumbstickUp);
 			if (IsRightThumbstickDownDown())
-				allKeys.emplace_back(VK_GAMEPAD_RIGHT_THUMBSTICK_DOWN);
-
+				allKeys.emplace_back(m_settings.RightThumbstickDown);
 			return allKeys;
 		}
 

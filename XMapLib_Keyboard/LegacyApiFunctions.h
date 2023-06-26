@@ -4,16 +4,15 @@
 namespace sds
 {
 	/**
-	 * \brief WARNING: Single Threaded!
+	 * \brief Calls the OS API function(s).
 	 * \param playerId Most commonly 0 for a single device connected.
 	 * \return Platform/API specific state structure.
 	 */
 	[[nodiscard]]
 	inline
-	auto GetLegacyApiStateUpdate(const int playerId = 0) noexcept -> std::optional<XINPUT_STATE>
+	auto GetLegacyApiStateUpdate(const int playerId = 0) noexcept -> XINPUT_STATE
 	{
-		static XINPUT_STATE controllerState;
-		controllerState = {};
+		XINPUT_STATE controllerState{};
 		const auto resultCode = XInputGetState(playerId, &controllerState);
 		if (resultCode == ERROR_SUCCESS)
 			return controllerState;
@@ -21,18 +20,15 @@ namespace sds
 	}
 
 	/**
-	 * \brief WARNING: Single Threaded! Values of 1 in the returned buffer mean set.
+	 * \brief Values of 1 in the returned buffer mean set.
 	 * \param playerId Most commonly 0 for a single device connected.
-	 * \return The button buffer type specified in KeyboardSettings, values of 0 mean not-set, while 1 means set.
+	 * \return Wrapper for the controller state buffer.
 	 */
 	[[nodiscard]]
 	inline
-	auto GetWrappedLegacyApiStateUpdate(const int playerId = 0) noexcept -> std::optional<ControllerStateUpdateWrapper<>>
+	auto GetWrappedLegacyApiStateUpdate(const int playerId = 0) noexcept -> ControllerStateUpdateWrapper<>
 	{
-		if (const auto controllerStateUpdate = GetLegacyApiStateUpdate(playerId))
-		{
-			return ControllerStateUpdateWrapper<>{*controllerStateUpdate};
-		}
-		return {};
+		const auto controllerStateUpdate = GetLegacyApiStateUpdate(playerId);
+		return ControllerStateUpdateWrapper<>{controllerStateUpdate};
 	}
 }

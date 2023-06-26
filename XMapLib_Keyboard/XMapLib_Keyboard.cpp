@@ -34,6 +34,8 @@ auto GetDriverButtonMappings()
 {
     using std::vector, sds::CBActionMap, std::cout;
     using namespace std::chrono_literals;
+    using namespace sds;
+
     constexpr int PadButtonsGroup = 111; // Buttons exclusivity grouping.
     constexpr int LeftThumbGroup = 101; // Left thumbstick exclusivity grouping.
     const auto PrintMessageAndTime = [](std::string_view msg)
@@ -56,10 +58,42 @@ auto GetDriverButtonMappings()
     {
         return [=]() { PrintMessageAndTime(keyName + "=[RESET]"); };
     };
+    // These are a good idea in case someone wants this to work for XINPUT_KEYSTROKE instead, just change these to the VK_ ones.
+    constexpr detail::VirtualKey_t ButtonA{XINPUT_GAMEPAD_A};
+    constexpr detail::VirtualKey_t ButtonB{XINPUT_GAMEPAD_B};
+    constexpr detail::VirtualKey_t ButtonX{XINPUT_GAMEPAD_X};
+    constexpr detail::VirtualKey_t ButtonY{XINPUT_GAMEPAD_Y};
+
+    constexpr detail::VirtualKey_t ButtonStart{XINPUT_GAMEPAD_START};
+    constexpr detail::VirtualKey_t ButtonBack{XINPUT_GAMEPAD_BACK};
+    constexpr detail::VirtualKey_t ButtonShoulderLeft{XINPUT_GAMEPAD_LEFT_SHOULDER};
+    constexpr detail::VirtualKey_t ButtonShoulderRight{XINPUT_GAMEPAD_RIGHT_SHOULDER};
+
+	constexpr detail::VirtualKey_t DpadUp{XINPUT_GAMEPAD_DPAD_UP};
+    constexpr detail::VirtualKey_t DpadDown{XINPUT_GAMEPAD_DPAD_DOWN};
+    constexpr detail::VirtualKey_t DpadLeft{XINPUT_GAMEPAD_DPAD_LEFT};
+    constexpr detail::VirtualKey_t DpadRight{XINPUT_GAMEPAD_DPAD_RIGHT};
+
+    constexpr detail::VirtualKey_t ThumbLeftClick{XINPUT_GAMEPAD_LEFT_THUMB};
+    constexpr detail::VirtualKey_t ThumbRightClick{XINPUT_GAMEPAD_RIGHT_THUMB};
+
+    static constexpr detail::VirtualKey_t LeftThumbstickLeft{VK_GAMEPAD_LEFT_THUMBSTICK_LEFT};
+    static constexpr detail::VirtualKey_t LeftThumbstickRight{VK_GAMEPAD_LEFT_THUMBSTICK_RIGHT};
+    static constexpr detail::VirtualKey_t LeftThumbstickUp{VK_GAMEPAD_LEFT_THUMBSTICK_UP};
+    static constexpr detail::VirtualKey_t LeftThumbstickDown{VK_GAMEPAD_LEFT_THUMBSTICK_DOWN};
+
+    static constexpr detail::VirtualKey_t RightThumbstickLeft{VK_GAMEPAD_RIGHT_THUMBSTICK_LEFT};
+    static constexpr detail::VirtualKey_t RightThumbstickRight{VK_GAMEPAD_RIGHT_THUMBSTICK_RIGHT};
+    static constexpr detail::VirtualKey_t RightThumbstickUp{VK_GAMEPAD_RIGHT_THUMBSTICK_UP};
+    static constexpr detail::VirtualKey_t RightThumbstickDown{VK_GAMEPAD_RIGHT_THUMBSTICK_DOWN};
+
+    static constexpr detail::VirtualKey_t TriggerLeft{VK_GAMEPAD_LEFT_TRIGGER};
+    static constexpr detail::VirtualKey_t TriggerRight{VK_GAMEPAD_RIGHT_TRIGGER};
+
     vector mapBuffer
     {
         CBActionMap{
-            .ButtonVirtualKeycode = VK_PAD_A,
+            .ButtonVirtualKeycode = ButtonA,
             .UsesInfiniteRepeat = true,
             .ExclusivityGrouping = PadButtonsGroup,
             .OnDown = GetDownLambdaForKeyNamed("[PAD_A]"),
@@ -68,7 +102,7 @@ auto GetDriverButtonMappings()
             .DelayBeforeFirstRepeat = 500ms
         },
         CBActionMap{
-            .ButtonVirtualKeycode = VK_PAD_B,
+            .ButtonVirtualKeycode = ButtonB,
             .UsesInfiniteRepeat = false,
             .SendsFirstRepeatOnly = true,
             .ExclusivityGrouping = PadButtonsGroup,
@@ -79,7 +113,7 @@ auto GetDriverButtonMappings()
             .DelayBeforeFirstRepeat = 2s
         },
     	CBActionMap{
-            .ButtonVirtualKeycode = VK_PAD_X,
+            .ButtonVirtualKeycode = ButtonX,
             .UsesInfiniteRepeat = false,
             .SendsFirstRepeatOnly = true,
             .ExclusivityGrouping = PadButtonsGroup,
@@ -90,7 +124,7 @@ auto GetDriverButtonMappings()
             .DelayBeforeFirstRepeat = 2s
         },
         CBActionMap{
-            .ButtonVirtualKeycode = VK_PAD_Y,
+            .ButtonVirtualKeycode = ButtonY,
             .UsesInfiniteRepeat = false,
             .SendsFirstRepeatOnly = true,
             .ExclusivityGrouping = PadButtonsGroup,
@@ -102,7 +136,7 @@ auto GetDriverButtonMappings()
         },
         // Left thumbstick directional stuff
         CBActionMap{
-            .ButtonVirtualKeycode = VK_PAD_LTHUMB_UP,
+            .ButtonVirtualKeycode = LeftThumbstickUp,
             .UsesInfiniteRepeat = true,
             .ExclusivityGrouping = LeftThumbGroup,
             .OnDown = GetDownLambdaForKeyNamed("[LTHUMB_UP]"),
@@ -111,7 +145,7 @@ auto GetDriverButtonMappings()
             .OnReset = GetResetLambdaForKeyNamed("[LTHUMB_UP]"),
         },
         CBActionMap{
-            .ButtonVirtualKeycode = VK_PAD_LTHUMB_DOWN,
+            .ButtonVirtualKeycode = LeftThumbstickDown,
             .UsesInfiniteRepeat = true,
             .ExclusivityGrouping = LeftThumbGroup,
             .OnDown = GetDownLambdaForKeyNamed("[LTHUMB_DOWN]"),
@@ -120,7 +154,7 @@ auto GetDriverButtonMappings()
             .OnReset = GetResetLambdaForKeyNamed("[LTHUMB_DOWN]"),
         },
         CBActionMap{
-            .ButtonVirtualKeycode = VK_PAD_LTHUMB_RIGHT,
+            .ButtonVirtualKeycode = LeftThumbstickRight,
             .UsesInfiniteRepeat = true,
             .ExclusivityGrouping = LeftThumbGroup,
             .OnDown = GetDownLambdaForKeyNamed("[LTHUMB_RIGHT]"),
@@ -129,7 +163,7 @@ auto GetDriverButtonMappings()
             .OnReset = GetResetLambdaForKeyNamed("[LTHUMB_RIGHT]"),
         },
         CBActionMap{
-            .ButtonVirtualKeycode = VK_PAD_LTHUMB_LEFT,
+            .ButtonVirtualKeycode = LeftThumbstickLeft,
             .UsesInfiniteRepeat = true,
             .ExclusivityGrouping = LeftThumbGroup,
             .OnDown = GetDownLambdaForKeyNamed("[LTHUMB_LEFT]"),
@@ -138,7 +172,7 @@ auto GetDriverButtonMappings()
             .OnReset = GetResetLambdaForKeyNamed("[LTHUMB_LEFT]"),
         },
         CBActionMap{
-            .ButtonVirtualKeycode = VK_PAD_LTRIGGER,
+            .ButtonVirtualKeycode = TriggerLeft,
             .UsesInfiniteRepeat = false,
             .ExclusivityGrouping = LeftThumbGroup,
             .OnDown = GetDownLambdaForKeyNamed("[LTRIGGER]"),
@@ -147,7 +181,7 @@ auto GetDriverButtonMappings()
             .DelayForRepeats = 1ns
         },
     	CBActionMap{
-            .ButtonVirtualKeycode = VK_PAD_RTRIGGER,
+            .ButtonVirtualKeycode = TriggerRight,
             .UsesInfiniteRepeat = false,
             .ExclusivityGrouping = LeftThumbGroup,
             .OnDown = GetDownLambdaForKeyNamed("[RTRIGGER]"),
@@ -156,12 +190,12 @@ auto GetDriverButtonMappings()
             .DelayForRepeats = 1ns
         },
         CBActionMap{
-            .ButtonVirtualKeycode = VK_PAD_RSHOULDER,
+            .ButtonVirtualKeycode = ButtonShoulderRight,
             .UsesInfiniteRepeat = false,
             .OnDown = []() { system("cls"); std::cout << "Cleared.\n"; }
         },
     	CBActionMap{
-            .ButtonVirtualKeycode = VK_PAD_LSHOULDER,
+            .ButtonVirtualKeycode = ButtonShoulderLeft,
             .UsesInfiniteRepeat = false,
             .OnDown = []()
             {
@@ -307,6 +341,32 @@ auto GetDriverMouseMappings()
     return mapBuffer;
 }
 
+auto RunTestDriverLoop()
+{
+    using namespace std::chrono_literals;
+
+    auto mapBuffer = GetDriverButtonMappings();
+    // Unit test covers testing both translator constructors.
+    sds::KeyboardPlayerInfo playerInfo{};
+    sds::KeyboardPollerControllerLegacy poller{std::move(mapBuffer)};
+
+    GetterExitCallable gec;
+    const auto exitFuture = std::async(std::launch::async, [&]() { gec.GetExitSignal(); });
+    while (!gec.IsDone)
+    {
+        const auto stateUpdate = sds::GetWrappedLegacyApiStateUpdate(playerInfo.player_id);
+        const auto translation = poller(sds::ControllerStateUpdateWrapper<>{stateUpdate});
+        translation();
+        nanotime_sleep(sds::KeyboardSettings::PollingLoopDelay.count());
+    }
+    std::cout << "Performing cleanup actions...\n";
+    //const auto cleanupTranslation = translator.GetCleanupActions();
+    //for (auto& cleanupAction : cleanupTranslation)
+    //    cleanupAction();
+
+    exitFuture.wait();
+}
+
 //void WritePollResult(std::fstream& outFile, const sds::ControllerStateUpdateWrapper& polledState)
 //{
 //    outFile << polledState.VirtualKey << '\n';
@@ -335,35 +395,7 @@ auto GetDriverMouseMappings()
 //
 //    exitFuture.wait();
 //}
-//
-//auto RunTestDriverLoop()
-//{
-//    using namespace std::chrono_literals;
-//
-//    auto mapBuffer = GetDriverButtonMappings();
-//    mapBuffer.append_range(GetDriverMouseMappings());
-//    // Unit test covers testing both translator constructors.
-//    sds::KeyboardActionTranslator translator(std::move(mapBuffer));
-//    sds::KeyboardPlayerInfo playerInfo{};
-//    sds::KeyboardPollerController controllerPoller(playerInfo.player_id);
-//
-//    GetterExitCallable gec;
-//    const auto exitFuture = std::async(std::launch::async, [&]() { gec.GetExitSignal(); });
-//    while (!gec.IsDone)
-//    {
-//        const auto pollResult = controllerPoller();
-//        const auto translation = translator(pollResult);
-//        translation();
-//        nanotime_sleep(sds::KeyboardSettings::PollingLoopDelay.count());
-//    }
-//    std::cout << "Performing cleanup actions...\n";
-//    const auto cleanupTranslation = translator.GetCleanupActions();
-//    for (auto& cleanupAction : cleanupTranslation)
-//        cleanupAction();
-//
-//    exitFuture.wait();
-//}
-//
+
 //void RunTriggerTestLoop()
 //{
 //    using namespace std::chrono_literals;
@@ -398,6 +430,6 @@ auto GetDriverMouseMappings()
 int main()
 {
     //RunRecordingLoop();
-    //RunTestDriverLoop();
+    RunTestDriverLoop();
     //RunTriggerTestLoop();
 }

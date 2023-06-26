@@ -14,7 +14,7 @@ namespace sds
 
 	/**
 	 * \brief Some constants that will someday be configurable. If these are used with config file loaded values,
-	 * this type should do that upon construction, with a non-configurable XML file name.
+	 * this type should do that upon default construction, with a non-configurable XML file name.
 	 */
 	struct KeyboardSettings
 	{
@@ -46,6 +46,17 @@ namespace sds
 			XINPUT_GAMEPAD_X,
 			XINPUT_GAMEPAD_Y
 		};
+
+		static constexpr detail::VirtualKey_t LeftThumbstickLeft{VK_GAMEPAD_LEFT_THUMBSTICK_LEFT};
+		static constexpr detail::VirtualKey_t LeftThumbstickRight{VK_GAMEPAD_LEFT_THUMBSTICK_RIGHT};
+		static constexpr detail::VirtualKey_t LeftThumbstickUp{VK_GAMEPAD_LEFT_THUMBSTICK_UP};
+		static constexpr detail::VirtualKey_t LeftThumbstickDown{VK_GAMEPAD_LEFT_THUMBSTICK_DOWN};
+
+		static constexpr detail::VirtualKey_t RightThumbstickLeft{VK_GAMEPAD_RIGHT_THUMBSTICK_LEFT};
+		static constexpr detail::VirtualKey_t RightThumbstickRight{VK_GAMEPAD_RIGHT_THUMBSTICK_RIGHT};
+		static constexpr detail::VirtualKey_t RightThumbstickUp{VK_GAMEPAD_RIGHT_THUMBSTICK_UP};
+		static constexpr detail::VirtualKey_t RightThumbstickDown{VK_GAMEPAD_RIGHT_THUMBSTICK_DOWN};
+
 
 		// used internally to denote left or right triggers, similar to the button VKs though they may
 		// not be used by the OS API state updates in the same way--we virtualize them.

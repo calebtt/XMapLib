@@ -65,9 +65,9 @@ namespace TestKeyboard
             maps2.append_range(maps1);
             sds::KeyboardPollerControllerLegacy poller{ maps2 };
             const auto translations1 = poller(stateUpdate);
-            Assert::IsTrue(translations1.size() == 2, L"Translation count not 2.");
-            translations1[0]();
-            translations1[1]();
+            Assert::IsTrue(translations1.NextStateRequests.size() == 2, L"Translation count not 2.");
+            translations1.NextStateRequests[0]();
+            translations1.NextStateRequests[1]();
 
             std::this_thread::sleep_for(500ms);
 
@@ -75,9 +75,9 @@ namespace TestKeyboard
             sds::ControllerStateUpdateWrapper<> stateUpdate2{emptyState};
             Assert::IsFalse(stateUpdate2.IsButtonDown(buttonA));
             const auto translations2 = poller(stateUpdate2);
-            Assert::IsTrue(translations2.size(), L"Empty state not creating 2 translations after down.");
-            translations2[0]();
-            translations2[1]();
+            Assert::IsTrue(translations2.NextStateRequests.size(), L"Empty state not creating 2 translations after down.");
+            translations2.NextStateRequests[0]();
+            translations2.NextStateRequests[1]();
 		}
 	};
 

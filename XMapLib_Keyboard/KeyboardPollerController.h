@@ -115,7 +115,7 @@ namespace sds
 	class KeyboardPollerControllerLegacy
 	{
 		using MappingVector_t = std::vector<CBActionMap>;
-		std::vector<CBActionMap> m_mappings;
+		MappingVector_t m_mappings;
 	public:
 		KeyboardPollerControllerLegacy() = delete;
 
@@ -127,39 +127,39 @@ namespace sds
 		{ }
 	public:
 		[[nodiscard]]
-		auto operator()(const ControllerStateUpdateWrapper<>& stateUpdate) noexcept -> std::vector<TranslationResult>
+		auto operator()(const ControllerStateUpdateWrapper<>& stateUpdate) noexcept -> TranslationPack
 		{
 			return GetUpdatedState(stateUpdate);
 		}
 		[[nodiscard]]
-		auto GetUpdatedState(const ControllerStateUpdateWrapper<>& stateUpdate) noexcept -> std::vector<TranslationResult>
+		auto GetUpdatedState(const ControllerStateUpdateWrapper<>& stateUpdate) noexcept -> TranslationPack
 		{
-			std::vector<TranslationResult> translations;
+			TranslationPack translations;
 			for (auto& mapping : m_mappings)
 			{
 				if (const auto upToInitial = GetButtonTranslationForUpToInitial(mapping))
 				{
-					translations.emplace_back(*upToInitial);
+					translations.UpdateRequests.emplace_back(*upToInitial);
 					continue;
 				}
 				if (const auto initialToDown = GetButtonTranslationForInitialToDown(stateUpdate, mapping))
 				{
-					translations.emplace_back(*initialToDown);
+					translations.NextStateRequests.emplace_back(*initialToDown);
 					continue;
 				}
 				if (const auto downToFirstRepeat = GetButtonTranslationForDownToRepeat(stateUpdate, mapping))
 				{
-					translations.emplace_back(*downToFirstRepeat);
+					translations.NextStateRequests.emplace_back(*downToFirstRepeat);
 					continue;
 				}
 				if (const auto repeatToRepeat = GetButtonTranslationForRepeatToRepeat(stateUpdate, mapping))
 				{
-					translations.emplace_back(*repeatToRepeat);
+					translations.RepeatRequests.emplace_back(*repeatToRepeat);
 					continue;
 				}
 				if (const auto repeatToUp = GetButtonTranslationForDownOrRepeatToUp(stateUpdate, mapping))
 				{
-					translations.emplace_back(*repeatToUp);
+					translations.NextStateRequests.emplace_back(*repeatToUp);
 				}
 			}
 			return translations;
