@@ -177,6 +177,7 @@ auto GetDriverButtonMappings()
             .ExclusivityGrouping = LeftThumbGroup,
             .OnDown = GetDownLambdaForKeyNamed("[LTRIGGER]"),
             .OnUp = GetUpLambdaForKeyNamed("[LTRIGGER]"),
+            .OnReset = GetResetLambdaForKeyNamed("[LTRIGGER]"),
             .DelayBeforeFirstRepeat = 1ns,
             .DelayForRepeats = 1ns
         },
@@ -186,6 +187,7 @@ auto GetDriverButtonMappings()
             .ExclusivityGrouping = LeftThumbGroup,
             .OnDown = GetDownLambdaForKeyNamed("[RTRIGGER]"),
             .OnUp = GetUpLambdaForKeyNamed("[RTRIGGER]"),
+            .OnReset = GetResetLambdaForKeyNamed("[RTRIGGER]"),
             .DelayBeforeFirstRepeat = 1ns,
             .DelayForRepeats = 1ns
         },
@@ -360,9 +362,9 @@ auto RunTestDriverLoop()
         nanotime_sleep(sds::KeyboardSettings::PollingLoopDelay.count());
     }
     std::cout << "Performing cleanup actions...\n";
-    //const auto cleanupTranslation = translator.GetCleanupActions();
-    //for (auto& cleanupAction : cleanupTranslation)
-    //    cleanupAction();
+    const auto cleanupTranslation = poller.GetCleanupActions();
+    for (auto& cleanupAction : cleanupTranslation)
+        cleanupAction();
 
     exitFuture.wait();
 }

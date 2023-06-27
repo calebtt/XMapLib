@@ -16,13 +16,12 @@ namespace sds
 	template<typename Poller_t>
 	concept IsInputPoller = requires(Poller_t & t)
 	{
-		{ t.GetUpdatedState() };
-		{ t.GetUpdatedState() } -> std::convertible_to<ControllerStateUpdateWrapper<>>;
+		{ t.GetUpdatedState(ControllerStateUpdateWrapper<>{{}}) } -> std::convertible_to<TranslationPack>;
 	};
 
 	/*
-	 *	NOTE: Testing these functions may be quite easy, pass a single CBActionMap in various states to each of these functions,
-	 *	and if more than one TranslationResult is produced (aside from the reset translation), then it would obviously be in error.
+	 *	NOTE: Testing these functions may be quite easy, pass a single CBActionMap in a certain state to all of these functions,
+	 *	and if more than one TranslationResult is produced (aside from perhaps the reset translation), then it would obviously be in error.
 	 */
 
 	/**
@@ -102,7 +101,6 @@ namespace sds
 	inline
 	auto GetButtonTranslationForUpToInitial(CBActionMap& singleButton) noexcept -> std::optional<TranslationResult>
 	{
-		using std::ranges::find, std::ranges::end;
 		// if the timer has elapsed, update back to the initial state.
 		if(singleButton.LastAction.IsUp() && singleButton.LastAction.LastSentTime.IsElapsed())
 		{
@@ -118,12 +116,11 @@ namespace sds
 		MappingVector_t m_mappings;
 	public:
 		KeyboardPollerControllerLegacy() = delete;
-
 		explicit KeyboardPollerControllerLegacy(MappingVector_t&& keyMappings )
 		: m_mappings(std::move(keyMappings))
 		{ }
 		explicit KeyboardPollerControllerLegacy(const MappingVector_t& keyMappings)
-			: m_mappings(keyMappings)
+		: m_mappings(keyMappings)
 		{ }
 	public:
 		[[nodiscard]]
@@ -160,6 +157,20 @@ namespace sds
 				if (const auto repeatToUp = GetButtonTranslationForDownOrRepeatToUp(stateUpdate, mapping))
 				{
 					translations.NextStateRequests.emplace_back(*repeatToUp);
+				}
+			}
+			return translations;
+		}
+		[[nodiscard]]
+		auto GetCleanupActions() noexcept
+		{
+			detail::SmallVector_t<TranslationResult> translations;
+			for(auto & mapping : m_mappings)
+			{
+				const bool isLastActionDownOrRepeat = mapping.LastAction.IsDown() || mapping.LastAction.IsRepeating();
+				if(isLastActionDownOrRepeat)
+				{
+					translations.emplace_back(GetKeyUpTranslationResult(mapping));
 				}
 			}
 			return translations;
