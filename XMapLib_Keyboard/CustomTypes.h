@@ -15,5 +15,5 @@ namespace sds::detail
 
 	// TODO this might be replaced with std::vector if the user doesn't have boost.
 	template<typename T>
-	using SmallVector_t = boost::container::small_vector<T, 128>;
+	using SmallVector_t = boost::container::small_vector<T, 32>;
 }

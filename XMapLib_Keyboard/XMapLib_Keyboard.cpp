@@ -356,7 +356,7 @@ auto RunTestDriverLoop()
     const auto exitFuture = std::async(std::launch::async, [&]() { gec.GetExitSignal(); });
     while (!gec.IsDone)
     {
-        const auto stateUpdate = sds::GetWrappedLegacyApiStateUpdate(playerInfo.player_id);
+        const auto stateUpdate = sds::GetWrappedLegacyApiStateUpdate(playerInfo.PlayerId);
         const auto translation = poller(stateUpdate);
         translation();
         nanotime_sleep(sds::KeyboardSettings::PollingLoopDelay.count());

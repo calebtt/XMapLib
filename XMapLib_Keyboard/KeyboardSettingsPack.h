@@ -9,7 +9,7 @@ namespace sds
 	 */
 	struct KeyboardPlayerInfo
 	{
-		int player_id{ 0 };
+		int PlayerId{ 0 };
 	};
 
 	/**

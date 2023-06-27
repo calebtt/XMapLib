@@ -18,6 +18,13 @@ namespace sds
 	{
 		{ t.GetUpdatedState(ControllerStateUpdateWrapper<>{{}}) } -> std::convertible_to<TranslationPack>;
 	};
+	// Concept for range of CBActionMap type that at least provides one-time forward-iteration.
+	template<typename T>
+	concept MappingRange_c = requires (T & t)
+	{
+		{ std::same_as<typename T::value_type, CBActionMap> };
+		{ std::ranges::forward_range<T> };
+	};
 
 	/*
 	 *	NOTE: Testing these functions may be quite easy, pass a single CBActionMap in a certain state to all of these functions,
@@ -113,15 +120,22 @@ namespace sds
 	class KeyboardPollerControllerLegacy
 	{
 		using MappingVector_t = std::vector<CBActionMap>;
+		static_assert(MappingRange_c<MappingVector_t>);
 		MappingVector_t m_mappings;
 	public:
 		KeyboardPollerControllerLegacy() = delete;
 		explicit KeyboardPollerControllerLegacy(MappingVector_t&& keyMappings )
 		: m_mappings(std::move(keyMappings))
-		{ }
-		explicit KeyboardPollerControllerLegacy(const MappingVector_t& keyMappings)
+		{
+			for (auto& e : m_mappings)
+				InitCustomTimers(e);
+		}
+		explicit KeyboardPollerControllerLegacy(const MappingRange_c auto& keyMappings)
 		: m_mappings(keyMappings)
-		{ }
+		{
+			for (auto& e : m_mappings)
+				InitCustomTimers(e);
+		}
 	public:
 		[[nodiscard]]
 		auto operator()(const ControllerStateUpdateWrapper<>& stateUpdate) noexcept -> TranslationPack
