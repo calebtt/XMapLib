@@ -77,19 +77,19 @@ namespace sds
 		[[nodiscard]] constexpr bool IsLeftTriggerDown() const noexcept { return IsLeftTriggerBeyondThreshold(m_controllerStates.Gamepad.bLeftTrigger, m_settings.LeftTriggerThreshold); }
 		[[nodiscard]] constexpr bool IsRightTriggerDown() const noexcept { return IsRightTriggerBeyondThreshold(m_controllerStates.Gamepad.bRightTrigger, m_settings.RightTriggerThreshold); }
 
-		[[nodiscard]] constexpr bool IsLeftThumbstickLeftDown() const noexcept { return m_controllerStates.Gamepad.sThumbLX > m_settings.LeftStickDeadzone; }
-		[[nodiscard]] constexpr bool IsLeftThumbstickRightDown() const noexcept { return m_controllerStates.Gamepad.sThumbLX < -m_settings.LeftStickDeadzone; }
-		[[nodiscard]] constexpr bool IsLeftThumbstickUpDown() const noexcept { return m_controllerStates.Gamepad.sThumbLY < -m_settings.LeftStickDeadzone; }
-		[[nodiscard]] constexpr bool IsLeftThumbstickDownDown() const noexcept { return m_controllerStates.Gamepad.sThumbLY > m_settings.LeftStickDeadzone; }
+		[[nodiscard]] constexpr bool IsLeftThumbstickLeftDown() const noexcept { return m_controllerStates.Gamepad.sThumbLX < -m_settings.LeftStickDeadzone; }
+		[[nodiscard]] constexpr bool IsLeftThumbstickRightDown() const noexcept { return m_controllerStates.Gamepad.sThumbLX > m_settings.LeftStickDeadzone; }
+		[[nodiscard]] constexpr bool IsLeftThumbstickUpDown() const noexcept { return m_controllerStates.Gamepad.sThumbLY > m_settings.LeftStickDeadzone; }
+		[[nodiscard]] constexpr bool IsLeftThumbstickDownDown() const noexcept { return m_controllerStates.Gamepad.sThumbLY < -m_settings.LeftStickDeadzone; }
 
-		[[nodiscard]] constexpr bool IsRightThumbstickLeftDown() const noexcept { return m_controllerStates.Gamepad.sThumbRX > m_settings.RightStickDeadzone; }
-		[[nodiscard]] constexpr bool IsRightThumbstickRightDown() const noexcept { return m_controllerStates.Gamepad.sThumbRX < -m_settings.RightStickDeadzone; }
-		[[nodiscard]] constexpr bool IsRightThumbstickUpDown() const noexcept { return m_controllerStates.Gamepad.sThumbRY < -m_settings.RightStickDeadzone; }
-		[[nodiscard]] constexpr bool IsRightThumbstickDownDown() const noexcept { return m_controllerStates.Gamepad.sThumbRY > m_settings.RightStickDeadzone; }
+		[[nodiscard]] constexpr bool IsRightThumbstickLeftDown() const noexcept { return m_controllerStates.Gamepad.sThumbRX < -m_settings.RightStickDeadzone; }
+		[[nodiscard]] constexpr bool IsRightThumbstickRightDown() const noexcept { return m_controllerStates.Gamepad.sThumbRX > m_settings.RightStickDeadzone; }
+		[[nodiscard]] constexpr bool IsRightThumbstickUpDown() const noexcept { return m_controllerStates.Gamepad.sThumbRY > m_settings.RightStickDeadzone; }
+		[[nodiscard]] constexpr bool IsRightThumbstickDownDown() const noexcept { return m_controllerStates.Gamepad.sThumbRY < -m_settings.RightStickDeadzone; }
 
 		[[nodiscard]] constexpr auto GetDownVirtualKeycodesRange() const noexcept
 		{
-			detail::StaticVector_t<int> allKeys{};
+			detail::SmallVector_t<int> allKeys{};
 			for(const auto elem: m_settings.ButtonCodeArray)
 			{
 				if(elem & m_controllerStates.Gamepad.wButtons)

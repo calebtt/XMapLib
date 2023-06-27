@@ -57,4 +57,4 @@
 #include "../XMapLib_Utils/Smarts.h"
 #include "../XMapLib_Utils/GetterExit.h"
 
-#include <boost/container/static_vector.hpp>
+#include <boost/container/small_vector.hpp>

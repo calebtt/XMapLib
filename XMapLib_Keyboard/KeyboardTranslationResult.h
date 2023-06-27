@@ -59,10 +59,10 @@ namespace sds
 				elem();
 		}
 		// TODO might wrap the vectors in a struct with a call operator to have individual call operators for range of TranslationResult.
-		std::vector<TranslationResult> UpdateRequests;
-		std::vector<TranslationResult> RepeatRequests;
-		std::vector<TranslationResult> OvertakenRequests;
-		std::vector<TranslationResult> NextStateRequests;
+		detail::SmallVector_t<TranslationResult> UpdateRequests;
+		detail::SmallVector_t<TranslationResult> RepeatRequests;
+		detail::SmallVector_t<TranslationResult> OvertakenRequests;
+		detail::SmallVector_t<TranslationResult> NextStateRequests;
 	};
 
 }

@@ -13,6 +13,7 @@ namespace sds::detail
 	using TriggerValue_t = uint8_t;
 	using ThumbstickValue_t = int16_t;
 
+	// TODO this might be replaced with std::vector if the user doesn't have boost.
 	template<typename T>
-	using StaticVector_t = std::vector<T>;
+	using SmallVector_t = boost::container::small_vector<T, 128>;
 }
