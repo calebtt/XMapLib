@@ -14,7 +14,7 @@
 namespace sds
 {
 	template<typename Poller_t>
-	concept IsInputPoller = requires(Poller_t & t)
+	concept InputPoller_c = requires(Poller_t & t)
 	{
 		{ t.GetUpdatedState(ControllerStateUpdateWrapper<>{{}}) } -> std::convertible_to<TranslationPack>;
 	};
@@ -116,7 +116,9 @@ namespace sds
 		return {};
 	}
 
-	// Poller builds the translation results with the mapping functionality.
+	/// <summary>
+	/// Encapsulates the mapping buffer, processes wrapped controller state updates, returns translation packs.
+	/// </summary>
 	class KeyboardPollerControllerLegacy
 	{
 		using MappingVector_t = std::vector<CBActionMap>;
@@ -124,17 +126,27 @@ namespace sds
 		MappingVector_t m_mappings;
 	public:
 		KeyboardPollerControllerLegacy() = delete;
+		/// <summary>
+		/// Mapping Vector move Ctor, throws on exclusivity group error, initializes the timers with the custom timer values.
+		/// </summary>
 		explicit KeyboardPollerControllerLegacy(MappingVector_t&& keyMappings )
 		: m_mappings(std::move(keyMappings))
 		{
 			for (auto& e : m_mappings)
 				InitCustomTimers(e);
+			if (!AreExclusivityGroupsUnique(m_mappings))
+				throw std::exception();
 		}
+		/// <summary>
+		/// Mapping Vector copy Ctor, throws on exclusivity group error, initializes the timers with the custom timer values.
+		/// </summary>
 		explicit KeyboardPollerControllerLegacy(const MappingRange_c auto& keyMappings)
 		: m_mappings(keyMappings)
 		{
 			for (auto& e : m_mappings)
 				InitCustomTimers(e);
+			if (!AreExclusivityGroupsUnique(m_mappings))
+				throw std::exception();
 		}
 	public:
 		[[nodiscard]]
@@ -190,5 +202,6 @@ namespace sds
 			return translations;
 		}
 	};
+	static_assert(InputPoller_c<KeyboardPollerControllerLegacy>);
 
 }

@@ -210,17 +210,30 @@ auto GetDriverButtonMappings()
 
 auto GetDriverMouseMappings()
 {
-    using std::vector, sds::CBActionMap, std::cout;
+    using std::vector, std::cout;
     using namespace std::chrono_literals;
+    using namespace sds;
     sds::Utilities::SendMouseInput smi;
     constexpr auto FirstDelay = 0ns; // mouse move delays
     constexpr auto RepeatDelay = 0ns;
     constexpr int MouseExGroup = 102;
+
+    static constexpr detail::VirtualKey_t RightThumbstickLeft{VK_GAMEPAD_RIGHT_THUMBSTICK_LEFT};
+    static constexpr detail::VirtualKey_t RightThumbstickRight{VK_GAMEPAD_RIGHT_THUMBSTICK_RIGHT};
+    static constexpr detail::VirtualKey_t RightThumbstickUp{VK_GAMEPAD_RIGHT_THUMBSTICK_UP};
+    static constexpr detail::VirtualKey_t RightThumbstickDown{VK_GAMEPAD_RIGHT_THUMBSTICK_DOWN};
+
+    // Internal reprsentation of these values, not from OS API though it may use a macro from there.
+    static constexpr detail::VirtualKey_t RightThumbstickUpRight{KeyboardSettings::RightThumbstickUpRight};
+    static constexpr detail::VirtualKey_t RightThumbstickUpLeft{KeyboardSettings::RightThumbstickUpLeft};
+    static constexpr detail::VirtualKey_t RightThumbstickDownRight{KeyboardSettings::RightThumbstickDownRight};
+    static constexpr detail::VirtualKey_t RightThumbstickDownLeft{KeyboardSettings::RightThumbstickDownLeft};
+
     vector mapBuffer
     {
         // Mouse move stuff
         CBActionMap{
-            .ButtonVirtualKeycode = VK_PAD_RTHUMB_UP,
+            .ButtonVirtualKeycode = RightThumbstickUp,
             .UsesInfiniteRepeat = true,
             .ExclusivityGrouping = MouseExGroup,
             .OnDown = [smi]() mutable
@@ -235,7 +248,7 @@ auto GetDriverMouseMappings()
             .DelayForRepeats = RepeatDelay
         },
         CBActionMap{
-            .ButtonVirtualKeycode = VK_PAD_RTHUMB_DOWN,
+            .ButtonVirtualKeycode = RightThumbstickDown,
             .UsesInfiniteRepeat = true,
             .ExclusivityGrouping = MouseExGroup,
             .OnDown = [smi]() mutable
@@ -250,7 +263,7 @@ auto GetDriverMouseMappings()
             .DelayForRepeats = RepeatDelay
         },
         CBActionMap{
-            .ButtonVirtualKeycode = VK_PAD_RTHUMB_LEFT,
+            .ButtonVirtualKeycode = RightThumbstickLeft,
             .UsesInfiniteRepeat = true,
             .ExclusivityGrouping = MouseExGroup,
             .OnDown = [smi]() mutable
@@ -265,7 +278,7 @@ auto GetDriverMouseMappings()
             .DelayForRepeats = RepeatDelay
         },
         CBActionMap{
-            .ButtonVirtualKeycode = VK_PAD_RTHUMB_RIGHT,
+            .ButtonVirtualKeycode = RightThumbstickRight,
             .UsesInfiniteRepeat = true,
             .ExclusivityGrouping = MouseExGroup,
             .OnDown = [smi]() mutable
@@ -280,7 +293,7 @@ auto GetDriverMouseMappings()
             .DelayForRepeats = RepeatDelay
         },
         CBActionMap{
-            .ButtonVirtualKeycode = VK_PAD_RTHUMB_UPRIGHT,
+            .ButtonVirtualKeycode = RightThumbstickUpRight,
             .UsesInfiniteRepeat = true,
             .ExclusivityGrouping = MouseExGroup,
             .OnDown = [smi]() mutable
@@ -295,7 +308,7 @@ auto GetDriverMouseMappings()
             .DelayForRepeats = RepeatDelay
         },
         CBActionMap{
-            .ButtonVirtualKeycode = VK_PAD_RTHUMB_UPLEFT,
+            .ButtonVirtualKeycode = RightThumbstickUpLeft,
             .UsesInfiniteRepeat = true,
             .ExclusivityGrouping = MouseExGroup,
             .OnDown = [smi]() mutable
@@ -310,7 +323,7 @@ auto GetDriverMouseMappings()
             .DelayForRepeats = RepeatDelay
         },
         CBActionMap{
-            .ButtonVirtualKeycode = VK_PAD_RTHUMB_DOWNLEFT,
+            .ButtonVirtualKeycode = RightThumbstickDownLeft,
             .UsesInfiniteRepeat = true,
             .ExclusivityGrouping = MouseExGroup,
             .OnDown = [smi]() mutable
@@ -325,7 +338,7 @@ auto GetDriverMouseMappings()
             .DelayForRepeats = RepeatDelay
         },
         CBActionMap{
-            .ButtonVirtualKeycode = VK_PAD_RTHUMB_DOWNRIGHT,
+            .ButtonVirtualKeycode = RightThumbstickDownRight,
             .UsesInfiniteRepeat = true,
             .ExclusivityGrouping = MouseExGroup,
             .OnDown = [smi]() mutable
@@ -348,6 +361,7 @@ auto RunTestDriverLoop()
     using namespace std::chrono_literals;
 
     auto mapBuffer = GetDriverButtonMappings();
+    mapBuffer.append_range(GetDriverMouseMappings());
     // Unit test covers testing both translator constructors.
     sds::KeyboardPlayerInfo playerInfo{};
     sds::KeyboardPollerControllerLegacy poller{std::move(mapBuffer)};

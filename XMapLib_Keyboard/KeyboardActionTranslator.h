@@ -123,6 +123,31 @@ namespace sds
 		};
 	}
 
+	/**
+	 * \brief	Checks a list of mappings for having multiple exclusivity groupings mapped to a single controller button.
+	 * \param	mappingsList Vector of controller button to action mappings.
+	 * \return	true if good mapping list, false if there is a problem.
+	 */
+	[[nodiscard]]
+	inline
+    bool AreExclusivityGroupsUnique(const std::vector<CBActionMap>& mappingsList) noexcept
+	{
+		std::map<int, std::optional<int>> groupMap;
+		for (const auto& e : mappingsList)
+		{
+			// If an exclusivity group is set, we must verify no duplicate ex groups are set to the same vk
+			const auto& vk = e.ButtonVirtualKeycode;
+			const auto& currentMappingGroupOpt = e.ExclusivityGrouping;
+			const auto& existingGroupOpt = groupMap[vk];
+			if (currentMappingGroupOpt.has_value() && existingGroupOpt.has_value())
+			{
+				if (existingGroupOpt.value() != currentMappingGroupOpt.value())
+					return false;
+			}
+			groupMap[vk] = currentMappingGroupOpt;
+		}
+		return true;
+	}
 
 	// TODO might not need this
 	/**
@@ -144,31 +169,6 @@ namespace sds
 				buf.emplace_back(i);
 		}
 		return buf;
-	}
-	/**
-	 * \brief	Checks a list of mappings for having multiple exclusivity groupings mapped to a single controller button.
-	 * \param	mappingsList Vector of controller button to action mappings.
-	 * \return	true if good mapping list, false if there is a problem.
-	 */
-	[[nodiscard]]
-	inline
-	bool AreExclusivityGroupsUnique(const std::vector<CBActionMap>& mappingsList) noexcept
-	{
-		std::map<int, std::optional<int>> groupMap;
-		for (const auto& e : mappingsList)
-		{
-			// If an exclusivity group is set, we must verify no duplicate ex groups are set to the same vk
-			const auto& vk = e.ButtonVirtualKeycode;
-			const auto& currentMappingGroupOpt = e.ExclusivityGrouping;
-			const auto& existingGroupOpt = groupMap[vk];
-			if (currentMappingGroupOpt.has_value() && existingGroupOpt.has_value())
-			{
-				if (existingGroupOpt.value() != currentMappingGroupOpt.value())
-					return false;
-			}
-			groupMap[vk] = currentMappingGroupOpt;
-		}
-		return true;
 	}
 	/**
 	 * \brief If enough time has passed, the key requests to be reset for use again; provided it uses the key-repeat behavior--
