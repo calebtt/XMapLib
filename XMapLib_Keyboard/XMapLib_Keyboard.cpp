@@ -77,7 +77,7 @@ auto GetDriverButtonMappings()
     constexpr detail::VirtualKey_t ThumbLeftClick{XINPUT_GAMEPAD_LEFT_THUMB};
     constexpr detail::VirtualKey_t ThumbRightClick{XINPUT_GAMEPAD_RIGHT_THUMB};
 
-    static constexpr detail::VirtualKey_t LeftThumbstickLeft{VK_GAMEPAD_LEFT_THUMBSTICK_LEFT};
+    static constexpr detail::VirtualKey_t LeftThumbstickLeft{VK_GAMEPAD_LEFT_THUMBSTICK_LEFT}; // These are represented internally with the VK defines as there is none for the old API.
     static constexpr detail::VirtualKey_t LeftThumbstickRight{VK_GAMEPAD_LEFT_THUMBSTICK_RIGHT};
     static constexpr detail::VirtualKey_t LeftThumbstickUp{VK_GAMEPAD_LEFT_THUMBSTICK_UP};
     static constexpr detail::VirtualKey_t LeftThumbstickDown{VK_GAMEPAD_LEFT_THUMBSTICK_DOWN};
