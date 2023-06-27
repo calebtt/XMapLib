@@ -4,7 +4,7 @@
 
 #include "ControllerStateUpdateWrapper.h"
 #include "KeyboardTranslationResult.h"
-#include "KeyboardActionTranslator.h"
+#include "KeyboardTranslationHelpers.h"
 #include "LegacyApiFunctions.h"
 
 /*

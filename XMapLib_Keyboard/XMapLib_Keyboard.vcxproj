@@ -150,7 +150,7 @@
     <ClInclude Include="CustomTypes.h" />
     <ClInclude Include="KeyboardPollerController.h" />
     <ClInclude Include="KeyboardSettingsPack.h" />
-    <ClInclude Include="KeyboardActionTranslator.h" />
+    <ClInclude Include="KeyboardTranslationHelpers.h" />
     <ClInclude Include="KeyboardTranslationResult.h" />
     <ClInclude Include="LegacyApiFunctions.h" />
     <ClInclude Include="LibIncludes.h" />

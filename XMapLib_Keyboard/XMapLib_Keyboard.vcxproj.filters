@@ -41,7 +41,7 @@
     <ClInclude Include="KeyboardPollerController.h">
       <Filter>Header Files\Keyboard</Filter>
     </ClInclude>
-    <ClInclude Include="KeyboardActionTranslator.h">
+    <ClInclude Include="KeyboardTranslationHelpers.h">
       <Filter>Header Files\Keyboard</Filter>
     </ClInclude>
     <ClInclude Include="LibIncludes.h">

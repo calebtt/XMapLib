@@ -7,16 +7,6 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace TestKeyboard
 {
-    inline
-    auto PrintResultsWithMessage(std::vector<sds::TranslationResult>& trv, std::string_view initMessage) -> void
-    {
-        using std::stringstream, std::ranges::for_each;
-        std::stringstream ss;
-        ss << initMessage << '\n';
-        for_each(trv, [&](const sds::TranslationResult& e) { ss << e << '\n'; });
-        Logger::WriteMessage(ss.str().c_str());
-    }
-
 	TEST_CLASS(TestKeyboard)
 	{
     	auto GetMapping(const unsigned short newVk, std::optional<int> exGroup = {}) const

@@ -53,6 +53,7 @@ namespace sds
 		{ wrapperInstance.IsRightThumbstickRightDown() } -> std::convertible_to<bool>;
 		{ wrapperInstance.IsRightThumbstickUpDown() } -> std::convertible_to<bool>;
 		{ wrapperInstance.IsRightThumbstickDownDown() } -> std::convertible_to<bool>;
+		{ wrapperInstance.GetDownVirtualKeycodesRange() } -> std::convertible_to<detail::SmallVector_t<int>>;
 	};
 
 	/**
@@ -61,6 +62,7 @@ namespace sds
 	template<HasControllerSettings ConfigSettings_t = KeyboardSettings>
 	class ControllerStateUpdateWrapper
 	{
+		static_assert(HasControllerSettings<ConfigSettings_t>);
 		XINPUT_STATE m_controllerStates;
 		ConfigSettings_t m_settings;
 	public:
@@ -123,7 +125,6 @@ namespace sds
 		}
 
 	};
-	static_assert(HasControllerSettings<KeyboardSettings>);
 	static_assert(ControllerStateOperations<ControllerStateUpdateWrapper<KeyboardSettings>>);
 
 }

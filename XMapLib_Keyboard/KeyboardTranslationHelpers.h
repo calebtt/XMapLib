@@ -30,14 +30,12 @@ namespace sds
 		if (mappingElem.DelayBeforeFirstRepeat)
 			mappingElem.LastAction.DelayBeforeFirstRepeat.Reset(mappingElem.DelayBeforeFirstRepeat.value());
 	}
-
 	[[nodiscard]]
 	inline
 	auto GetResetTranslationResult(CBActionMap& currentMapping) noexcept -> TranslationResult
 	{
 		return TranslationResult
 		{
-			.DoState = ActionState::INIT,
 			.OperationToPerform = [&currentMapping]() {
 				if (currentMapping.OnReset)
 					currentMapping.OnReset();
@@ -54,7 +52,6 @@ namespace sds
 	{
 		return TranslationResult
 		{
-			.DoState = ActionState::KEYREPEAT,
 			.OperationToPerform = [&currentMapping]() {
 				if (currentMapping.OnRepeat)
 					currentMapping.OnRepeat();
@@ -71,7 +68,6 @@ namespace sds
 	{
 		return TranslationResult
 		{
-			.DoState = ActionState::KEYUP,
 			.OperationToPerform = [&overtakenMapping]()
 			{
 				if (overtakenMapping.OnUp)
@@ -89,7 +85,6 @@ namespace sds
 	{
 		return TranslationResult
 		{
-			.DoState = ActionState::KEYUP,
 			.OperationToPerform = [&currentMapping]()
 			{
 				if (currentMapping.OnUp)
@@ -107,7 +102,6 @@ namespace sds
 	{
 		return TranslationResult
 		{
-			.DoState = ActionState::KEYDOWN,
 			.OperationToPerform = [&currentMapping]()
 			{
 				if (currentMapping.OnDown)
@@ -122,7 +116,6 @@ namespace sds
 			}
 		};
 	}
-
 
 	// TODO might not need this
 	/**

@@ -2,7 +2,7 @@
 //
 #include "LibIncludes.h"
 
-#include "KeyboardActionTranslator.h"
+#include "KeyboardTranslationHelpers.h"
 #include "ControllerButtonToActionMap.h"
 #include "KeyboardPollerController.h"
 #include "../XMapLib_Utils/nanotime.h"

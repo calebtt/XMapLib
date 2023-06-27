@@ -20,7 +20,7 @@ namespace sds
 	}
 
 	/**
-	 * \brief Values of 1 in the returned buffer mean set.
+	 * \brief Gets a wrapped controller state update.
 	 * \param playerId Most commonly 0 for a single device connected.
 	 * \return Wrapper for the controller state buffer.
 	 */

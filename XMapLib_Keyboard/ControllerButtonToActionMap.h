@@ -40,7 +40,6 @@ namespace sds
 		constexpr auto SetRepeat() noexcept { m_currentValue = ActionState::KEYREPEAT; }
 		constexpr auto SetInitial() noexcept { m_currentValue = ActionState::INIT; }
 	};
-
 	static_assert(std::is_copy_constructible_v<MappingStateManager>);
 	static_assert(std::is_copy_assignable_v<MappingStateManager>);
 
@@ -78,4 +77,7 @@ namespace sds
 		detail::OptNanosDelay_t DelayForRepeats; // optional custom delay between key-repeats
 		MappingStateManager LastAction; // Last action performed, with get/set methods.
 	};
+	static_assert(std::is_copy_constructible_v<CBActionMap>);
+	static_assert(std::is_copy_assignable_v<CBActionMap>);
+
 }
