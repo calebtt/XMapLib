@@ -355,7 +355,7 @@ auto RunTestDriverLoop()
     while (!gec.IsDone)
     {
         const auto stateUpdate = sds::GetWrappedLegacyApiStateUpdate(playerInfo.player_id);
-        const auto translation = poller(sds::ControllerStateUpdateWrapper<>{stateUpdate});
+        const auto translation = poller(stateUpdate);
         translation();
         nanotime_sleep(sds::KeyboardSettings::PollingLoopDelay.count());
     }
