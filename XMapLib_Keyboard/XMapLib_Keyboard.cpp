@@ -20,7 +20,7 @@ struct GetterExitCallable
     {
         std::string buf;
         std::getline(std::cin, buf);
-        IsDone = true;
+        IsDone.store(true, std::memory_order_relaxed);
     }
 };
 
