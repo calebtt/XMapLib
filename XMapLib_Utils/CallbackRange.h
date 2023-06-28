@@ -24,7 +24,7 @@ namespace sds
     public:
         using TaskInfo = std::function<void()>;
     public:
-        /// <summary> Public data member, allows direct access to the task source. </summary>
+        // Public data member, allows direct access to the task source.
         std::deque<TaskInfo> TaskList{};
     public:
         CallbackRange() = default;
@@ -32,7 +32,7 @@ namespace sds
         {
             TaskList = taskList;
         }
-        CallbackRange(const TaskInfo&& ti)
+        CallbackRange(const TaskInfo& ti)
         {
             PushInfiniteTaskBack(ti);
         }
@@ -40,10 +40,11 @@ namespace sds
         /// <summary> Calls operator() on the collection of tasks. </summary>
         void operator()() const
         {
-            for (auto& elem : TaskList)
+            for (const auto& elem : TaskList)
                 if(elem != nullptr)
                     elem();
         }
+
         [[nodiscard]]
         auto empty() const noexcept -> bool
         {
@@ -67,6 +68,7 @@ namespace sds
                 TaskList.emplace_back(TaskInfo([taskFn, args...] { taskFn(args...); }));
             }
         }
+
         /// <summary> Push a function with zero or more arguments, but no return value, into the task list. </summary>
         /// <typeparam name="F"> The type of the function. </typeparam>
         /// <typeparam name="A"> The types of the arguments. </typeparam>
@@ -84,6 +86,7 @@ namespace sds
                 TaskList.emplace_front(TaskInfo([task, args...] { task(args...); }));
             }
         }
+
         /// <summary> Sets the underlying task list to the new range. </summary>
         /// <param name="taskContainer"> range meeting IsFnRange concept </param>
         void ResetTaskList(const IsFnRange auto& taskContainer)

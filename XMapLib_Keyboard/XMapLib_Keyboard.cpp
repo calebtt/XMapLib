@@ -42,19 +42,19 @@ auto GetDriverButtonMappings()
     {
         cout << msg << " @" << GetEpochTimestamp() << '\n';
     };
-    const auto GetDownLambdaForKeyNamed = [=](std::string keyName)
+    const auto GetDownLambdaForKeyNamed = [=](const std::string& keyName)
 	{
         return [=]() { PrintMessageAndTime(keyName + "=[DOWN]"); };
     };
-    const auto GetUpLambdaForKeyNamed = [=](std::string keyName)
+    const auto GetUpLambdaForKeyNamed = [=](const std::string& keyName)
     {
         return [=]() { PrintMessageAndTime(keyName + "=[UP]"); };
     };
-    const auto GetRepeatLambdaForKeyNamed = [=](std::string keyName)
+    const auto GetRepeatLambdaForKeyNamed = [=](const std::string& keyName)
     {
         return [=]() { PrintMessageAndTime(keyName + "=[REPEAT]"); };
     };
-    const auto GetResetLambdaForKeyNamed = [=](std::string keyName)
+    const auto GetResetLambdaForKeyNamed = [=](const std::string& keyName)
     {
         return [=]() { PrintMessageAndTime(keyName + "=[RESET]"); };
     };
@@ -362,8 +362,8 @@ auto RunTestDriverLoop()
 
     auto mapBuffer = GetDriverButtonMappings();
     mapBuffer.append_range(GetDriverMouseMappings());
-    // Unit test covers testing both translator constructors.
-    sds::KeyboardPlayerInfo playerInfo{};
+
+    const sds::KeyboardPlayerInfo playerInfo{};
     sds::KeyboardPollerControllerLegacy poller{std::move(mapBuffer)};
 
     GetterExitCallable gec;

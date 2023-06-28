@@ -53,8 +53,47 @@ namespace sds
 		{ wrapperInstance.IsRightThumbstickRightDown() } -> std::convertible_to<bool>;
 		{ wrapperInstance.IsRightThumbstickUpDown() } -> std::convertible_to<bool>;
 		{ wrapperInstance.IsRightThumbstickDownDown() } -> std::convertible_to<bool>;
-		{ wrapperInstance.GetDownVirtualKeycodesRange() } -> std::convertible_to<detail::SmallVector_t<int>>;
+		{ wrapperInstance.GetSettings() } -> ControllerSettings_c;
 	};
+
+	// Important helper function, uses the public interface of the class to build a vector of button VKs that are 'down'.
+	[[nodiscard]]
+	constexpr
+	auto GetDownVirtualKeycodesRange(const ControllerStateOperations_c auto wrapper) noexcept -> detail::SmallVector_t<int>
+	{
+		constexpr auto settings = wrapper.GetSettings();
+		detail::SmallVector_t<int> allKeys{};
+		for (const auto elem : settings.ButtonCodeArray)
+		{
+			if (wrapper.IsButtonDown(elem))
+			{
+				allKeys.emplace_back(elem);
+			}
+		}
+		if (wrapper.IsLeftTriggerDown())
+			allKeys.emplace_back(settings.LeftTriggerVk);
+		if (wrapper.IsRightTriggerDown())
+			allKeys.emplace_back(settings.RightTriggerVk);
+
+		if (wrapper.IsLeftThumbstickLeftDown())
+			allKeys.emplace_back(settings.LeftThumbstickLeft);
+		if (wrapper.IsLeftThumbstickRightDown())
+			allKeys.emplace_back(settings.LeftThumbstickRight);
+		if (wrapper.IsLeftThumbstickUpDown())
+			allKeys.emplace_back(settings.LeftThumbstickUp);
+		if (wrapper.IsLeftThumbstickDownDown())
+			allKeys.emplace_back(settings.LeftThumbstickDown);
+
+		if (wrapper.IsRightThumbstickLeftDown())
+			allKeys.emplace_back(settings.RightThumbstickLeft);
+		if (wrapper.IsRightThumbstickRightDown())
+			allKeys.emplace_back(settings.RightThumbstickRight);
+		if (wrapper.IsRightThumbstickUpDown())
+			allKeys.emplace_back(settings.RightThumbstickUp);
+		if (wrapper.IsRightThumbstickDownDown())
+			allKeys.emplace_back(settings.RightThumbstickDown);
+		return allKeys;
+	}
 
 	/**
 	 * \brief Current controller button state info wrapper. Construct an instance to get some info about the state.
@@ -70,7 +109,11 @@ namespace sds
 		ControllerStateUpdateWrapper(const XINPUT_STATE newStates) noexcept
 			: m_controllerStates(newStates)
 		{ }
-
+		[[nodiscard]]
+		constexpr auto GetSettings() const noexcept -> ConfigSettings_t
+		{
+			return m_settings;
+		}
 		[[nodiscard]] constexpr bool IsButtonDown(const detail::VirtualKey_t buttonId) const noexcept
 		{
 			return m_controllerStates.Gamepad.wButtons & buttonId;
@@ -88,43 +131,7 @@ namespace sds
 		[[nodiscard]] constexpr bool IsRightThumbstickRightDown() const noexcept { return m_controllerStates.Gamepad.sThumbRX > m_settings.RightStickDeadzone; }
 		[[nodiscard]] constexpr bool IsRightThumbstickUpDown() const noexcept { return m_controllerStates.Gamepad.sThumbRY > m_settings.RightStickDeadzone; }
 		[[nodiscard]] constexpr bool IsRightThumbstickDownDown() const noexcept { return m_controllerStates.Gamepad.sThumbRY < -m_settings.RightStickDeadzone; }
-
-		[[nodiscard]] constexpr auto GetDownVirtualKeycodesRange() const noexcept -> detail::SmallVector_t<int>
-		{
-			detail::SmallVector_t<int> allKeys{};
-			for(const auto elem: m_settings.ButtonCodeArray)
-			{
-				if(elem & m_controllerStates.Gamepad.wButtons)
-				{
-					allKeys.emplace_back(elem);
-				}
-			}
-			if (IsLeftTriggerDown())
-				allKeys.emplace_back(m_settings.LeftTriggerVk);
-			if (IsRightTriggerDown())
-				allKeys.emplace_back(m_settings.RightTriggerVk);
-
-			if (IsLeftThumbstickLeftDown())
-				allKeys.emplace_back(m_settings.LeftThumbstickLeft);
-			if (IsLeftThumbstickRightDown())
-				allKeys.emplace_back(m_settings.LeftThumbstickRight);
-			if (IsLeftThumbstickUpDown())
-				allKeys.emplace_back(m_settings.LeftThumbstickUp);
-			if (IsLeftThumbstickDownDown())
-				allKeys.emplace_back(m_settings.LeftThumbstickDown);
-
-			if (IsRightThumbstickLeftDown())
-				allKeys.emplace_back(m_settings.RightThumbstickLeft);
-			if (IsRightThumbstickRightDown())
-				allKeys.emplace_back(m_settings.RightThumbstickRight);
-			if (IsRightThumbstickUpDown())
-				allKeys.emplace_back(m_settings.RightThumbstickUp);
-			if (IsRightThumbstickDownDown())
-				allKeys.emplace_back(m_settings.RightThumbstickDown);
-			return allKeys;
-		}
-
 	};
 	static_assert(ControllerStateOperations_c<ControllerStateUpdateWrapper<KeyboardSettings>>);
-
+	static_assert(std::copyable<ControllerStateUpdateWrapper<KeyboardSettings>>);
 }

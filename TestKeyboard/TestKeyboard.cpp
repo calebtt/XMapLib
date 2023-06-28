@@ -48,7 +48,7 @@ namespace TestKeyboard
             sds::ControllerStateUpdateWrapper<> stateUpdate{state};
             Assert::IsTrue(stateUpdate.IsButtonDown(buttonA), L"Button A not down.");
             Assert::IsTrue(stateUpdate.IsButtonDown(buttonB), L"Button B not down.");
-            Assert::IsTrue(stateUpdate.GetDownVirtualKeycodesRange().size() == 2, L"Two state updates not present!");
+            Assert::IsTrue(GetDownVirtualKeycodesRange(stateUpdate).size() == 2, L"Two state updates not present!");
 
             auto maps1 = GetMapping(buttonA);
             auto maps2 = GetMapping(buttonB);
@@ -64,7 +64,7 @@ namespace TestKeyboard
             sds::ControllerStateUpdateWrapper<> stateUpdate2{emptyState};
             Assert::IsFalse(stateUpdate2.IsButtonDown(buttonA));
             const auto translations2 = poller(stateUpdate2);
-            Assert::IsTrue(translations2.NextStateRequests.size(), L"Empty state not creating 2 translations after down.");
+            Assert::IsTrue(translations2.NextStateRequests.size() == 2, L"Empty state not creating 2 translations after down.");
             translations2();
 		}
 	};

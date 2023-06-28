@@ -43,7 +43,7 @@ namespace sds
 		using std::ranges::find, std::ranges::end;
 		if (singleButton.LastAction.IsInitialState())
 		{
-			const auto downResults = updatesWrapper.GetDownVirtualKeycodesRange();
+			const auto downResults = GetDownVirtualKeycodesRange(updatesWrapper);
 			const auto findResult = find(downResults, singleButton.ButtonVirtualKeycode);
 			// If VK *is* found in the down list, create the down translation.
 			if(findResult != end(downResults))
@@ -60,7 +60,7 @@ namespace sds
 		const bool isDownAndUsesRepeat = singleButton.LastAction.IsDown() && (singleButton.UsesInfiniteRepeat || singleButton.SendsFirstRepeatOnly);
 		if (isDownAndUsesRepeat && singleButton.LastAction.DelayBeforeFirstRepeat.IsElapsed())
 		{
-			const auto downResults = updatesWrapper.GetDownVirtualKeycodesRange();
+			const auto downResults = GetDownVirtualKeycodesRange(updatesWrapper);
 			const auto findResult = find(downResults, singleButton.ButtonVirtualKeycode);
 			// If VK *is* found in the down list, create the repeat translation.
 			if (findResult != end(downResults))
@@ -77,7 +77,7 @@ namespace sds
 		const bool isRepeatAndUsesInfinite = singleButton.LastAction.IsRepeating() && singleButton.UsesInfiniteRepeat;
 		if (isRepeatAndUsesInfinite && singleButton.LastAction.LastSentTime.IsElapsed())
 		{
-			const auto downResults = updatesWrapper.GetDownVirtualKeycodesRange();
+			const auto downResults = GetDownVirtualKeycodesRange(updatesWrapper);
 			const auto findResult = find(downResults, singleButton.ButtonVirtualKeycode);
 			// If VK *is* found in the down list, create the repeat translation.
 			if (findResult != end(downResults))
@@ -93,7 +93,7 @@ namespace sds
 		using std::ranges::find, std::ranges::end;
 		if (singleButton.LastAction.IsDown() || singleButton.LastAction.IsRepeating())
 		{
-			const auto downResults = updatesWrapper.GetDownVirtualKeycodesRange();
+			const auto downResults = GetDownVirtualKeycodesRange(updatesWrapper);
 			const auto findResult = find(downResults, singleButton.ButtonVirtualKeycode);
 			// If VK is not found in the down list, create the up translation.
 			if(findResult == end(downResults))
@@ -229,8 +229,7 @@ namespace sds
 			detail::SmallVector_t<TranslationResult> translations;
 			for(auto & mapping : m_mappings)
 			{
-				const bool isLastActionDownOrRepeat = mapping.LastAction.IsDown() || mapping.LastAction.IsRepeating();
-				if(isLastActionDownOrRepeat)
+				if(const bool isLastActionDownOrRepeat = mapping.LastAction.IsDown() || mapping.LastAction.IsRepeating())
 				{
 					translations.emplace_back(GetKeyUpTranslationResult(mapping));
 				}

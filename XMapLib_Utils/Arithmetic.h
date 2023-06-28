@@ -21,43 +21,17 @@ namespace sds::Utilities
 	/// <param name="something">Variable to be casted.</param>
 	/// <returns>variable as type T</returns>
 	template<typename T>
-	[[nodiscard]] constexpr T ToA(const is_number_v auto something) noexcept
+	[[nodiscard]] constexpr T ToA(const is_number_v auto something) noexcept requires std::is_trivial_v<decltype(something)>
 	{
 		return static_cast<T>(something);
 	}
+
 	/// <summary> Returns true if val is "normal" i.e., neither zero, subnormal, infinite, nor NaN. Explicitly calls the <c>float</c> version of the function. </summary>
 	[[nodiscard]] constexpr bool IsNormalF(const is_number_v auto val) noexcept
 	{
 		return std::isnormal(static_cast<float>(val));
 	}
-	/// <summary> Absolute value replacement function. This version is constexpr! </summary>
-	/// <param name="val">Number value to perform absolute value on</param>
-	/// <returns>Returns the absolute value of val</returns>
-	///	<remarks> Unrepresentable negative values will be returned as the type's maximum value! </remarks>
-	[[nodiscard]] constexpr auto ConstAbs(const auto val) noexcept
-	{
-		if constexpr (std::unsigned_integral<decltype(val)>)
-		{
-			return val;
-		}
-		else
-		{
-			// This is a runtime check of a boolean provided at compile time.
-			if (!std::is_constant_evaluated())
-				return std::abs(val);
-			//For integral types (not floating point) we can test perfect equality to the min value
-			//and assign the absolute value of it as the num limit max to avoid pesky overflows.
-			if constexpr (std::integral<decltype(val)>)
-			{
-				//Check to see the value fits into the type as a positive.
-				constexpr auto MinVal = std::numeric_limits<decltype(val)>::min();
-				if (val == MinVal)
-					return std::numeric_limits<decltype(val)>::max();
-			}
-			constexpr decltype(val) zeroValue{};
-			return (val >= zeroValue) ? val : -val;
-		}
-	}
+
 	/// <summary> Utility function for computing a non-negative inverse of a floating type percentage. </summary>
 	[[nodiscard]] constexpr auto GetInverseOfPercentage(const auto scale) noexcept -> double
 	{

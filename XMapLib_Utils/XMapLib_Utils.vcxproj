@@ -149,6 +149,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Arithmetic.h" />
     <ClInclude Include="CallbackRange.h" />
     <ClInclude Include="ControllerStatus.h" />
     <ClInclude Include="framework.h" />

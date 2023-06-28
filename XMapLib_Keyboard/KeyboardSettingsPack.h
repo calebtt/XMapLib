@@ -77,7 +77,7 @@ namespace sds
 		// The type of the button buffer without const/volatile/reference.
 		using ButtonBuffer_t = std::remove_reference_t< std::remove_cv_t<decltype(ButtonCodeArray)> >;
 	};
-
+	static_assert(std::copyable<KeyboardSettings>);
 	/**
 	 * \brief For no other reason but to make the common task of injecting these down the architecture less verbose.
 	 */

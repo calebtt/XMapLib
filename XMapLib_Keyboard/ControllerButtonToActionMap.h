@@ -13,7 +13,7 @@ namespace sds
 	};
 
 	/**
-	 * \brief Wrapper for key mapping state enum, the least I can do is make sure state modifications occur through a managing class,
+	 * \brief Wrapper for button to action mapping state enum, the least I can do is make sure state modifications occur through a managing class,
 	 * and that there exists only one 'current' state, and that it can only be a finite set of possibilities.
 	 * Also contains last sent time (for key-repeat), delay before first key-repeat timer, and a keyboard settings pack.
 	 */
@@ -40,8 +40,7 @@ namespace sds
 		constexpr auto SetRepeat() noexcept { m_currentValue = ActionState::KEYREPEAT; }
 		constexpr auto SetInitial() noexcept { m_currentValue = ActionState::INIT; }
 	};
-	static_assert(std::is_copy_constructible_v<MappingStateManager>);
-	static_assert(std::is_copy_assignable_v<MappingStateManager>);
+	static_assert(std::copyable<MappingStateManager>);
 
 	/**
 	 * \brief	Controller button to action mapping. This is how a mapping of a controller button to an action is described.
@@ -77,7 +76,6 @@ namespace sds
 		detail::OptNanosDelay_t DelayForRepeats; // optional custom delay between key-repeats
 		MappingStateManager LastAction; // Last action performed, with get/set methods.
 	};
-	static_assert(std::is_copy_constructible_v<CBActionMap>);
-	static_assert(std::is_copy_assignable_v<CBActionMap>);
+	static_assert(std::copyable<CBActionMap>);
 
 }
