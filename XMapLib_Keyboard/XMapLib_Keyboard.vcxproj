@@ -147,12 +147,12 @@
   <ItemGroup>
     <ClInclude Include="ControllerButtonToActionMap.h" />
     <ClInclude Include="ControllerStateUpdateWrapper.h" />
-    <ClInclude Include="CustomTypes.h" />
+    <ClInclude Include="KeyboardCustomTypes.h" />
     <ClInclude Include="KeyboardPollerController.h" />
     <ClInclude Include="KeyboardSettingsPack.h" />
     <ClInclude Include="KeyboardTranslationHelpers.h" />
-    <ClInclude Include="LegacyApiFunctions.h" />
-    <ClInclude Include="LibIncludes.h" />
+    <ClInclude Include="KeyboardLegacyApiFunctions.h" />
+    <ClInclude Include="KeyboardLibIncludes.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="KeyboardClassDiagram.cd" />

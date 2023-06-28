@@ -44,13 +44,13 @@
     <ClInclude Include="KeyboardTranslationHelpers.h">
       <Filter>Header Files\Keyboard</Filter>
     </ClInclude>
-    <ClInclude Include="LibIncludes.h">
+    <ClInclude Include="KeyboardLibIncludes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CustomTypes.h">
+    <ClInclude Include="KeyboardCustomTypes.h">
       <Filter>Header Files\Keyboard</Filter>
     </ClInclude>
-    <ClInclude Include="LegacyApiFunctions.h">
+    <ClInclude Include="KeyboardLegacyApiFunctions.h">
       <Filter>Header Files\Keyboard</Filter>
     </ClInclude>
   </ItemGroup>

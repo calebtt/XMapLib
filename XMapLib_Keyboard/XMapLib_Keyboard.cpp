@@ -1,15 +1,15 @@
 // XMapLib_Keyboard.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
-#include "LibIncludes.h"
+#include "KeyboardLibIncludes.h"
 
 #include "KeyboardTranslationHelpers.h"
 #include "ControllerButtonToActionMap.h"
 #include "KeyboardPollerController.h"
+#include "KeyboardLegacyApiFunctions.h"
 #include "../XMapLib_Utils/nanotime.h"
 #include "../XMapLib_Utils/SendMouseInput.h"
 
 #include <iostream>
-#include <fstream>
 
 
 // Crude mechanism to keep the loop running until [enter] is pressed.

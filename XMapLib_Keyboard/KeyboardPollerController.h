@@ -1,11 +1,10 @@
 #pragma once
-#include "LibIncludes.h"
-#include "CustomTypes.h"
+#include "KeyboardLibIncludes.h"
+#include "KeyboardCustomTypes.h"
 #include <stdexcept>
 
 #include "ControllerStateUpdateWrapper.h"
 #include "KeyboardTranslationHelpers.h"
-#include "LegacyApiFunctions.h"
 
 /*
  *	Note: There are some static sized arrays used here with capacity defined in customtypes.
