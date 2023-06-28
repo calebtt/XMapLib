@@ -126,9 +126,12 @@ namespace sds
 		MappingVector_t m_mappings;
 	public:
 		KeyboardPollerControllerLegacy() = delete;
-		/// <summary>
-		/// Mapping Vector move Ctor, throws on exclusivity group error, initializes the timers with the custom timer values.
-		/// </summary>
+
+		/**
+		 * \brief Mapping Vector move Ctor, throws on exclusivity group error, initializes the timers with the custom timer values.
+		 * \param keyMappings Forwarding ref to a mapping vector type.
+		 * \exception std::exception on exclusivity group error during construction
+		 */
 		explicit KeyboardPollerControllerLegacy(MappingVector_t&& keyMappings )
 		: m_mappings(std::move(keyMappings))
 		{
@@ -137,9 +140,12 @@ namespace sds
 			if (!AreExclusivityGroupsUnique(m_mappings))
 				throw std::exception();
 		}
-		/// <summary>
-		/// Mapping Vector copy Ctor, throws on exclusivity group error, initializes the timers with the custom timer values.
-		/// </summary>
+
+		/**
+		 * \brief Mapping Vector copy Ctor, throws on exclusivity group error, initializes the timers with the custom timer values.
+		 * \param keyMappings const-ref to an iterable range of mappings.
+		 * \exception std::exception on exclusivity group error during construction
+		 */
 		explicit KeyboardPollerControllerLegacy(const MappingRange_c auto& keyMappings)
 		: m_mappings(keyMappings)
 		{

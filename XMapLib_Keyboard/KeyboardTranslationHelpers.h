@@ -116,28 +116,6 @@ namespace sds
 			}
 		};
 	}
-
-	// TODO might not need this
-	/**
-	 * \brief By returning the index, we can avoid issues with iterator/pointer invalidation.
-	 * Uses unsigned int because size_t is just a waste of space here.
-	 * \param vk Controller Button Virtual Keycode
-	 * \param mappingsList List of controller button to action mappings.
-	 * \return Vector of indices at which mappings which map to the controller button VK can be located.
-	 */
-	[[nodiscard]]
-	constexpr
-	auto GetVkMatchIndices(const int vk, const std::vector<sds::CBActionMap>& mappingsList) noexcept -> std::vector<std::uint32_t>
-	{
-		std::vector<std::uint32_t> buf;
-		for (std::uint32_t i{}; i < mappingsList.size(); ++i)
-		{
-			const auto& elem = mappingsList[i];
-			if (elem.ButtonVirtualKeycode == vk)
-				buf.emplace_back(i);
-		}
-		return buf;
-	}
 	/**
 	 * \brief	Checks a list of mappings for having multiple exclusivity groupings mapped to a single controller button.
 	 * \param	mappingsList Vector of controller button to action mappings.
@@ -162,6 +140,29 @@ namespace sds
 			groupMap[vk] = currentMappingGroupOpt;
 		}
 		return true;
+	}
+
+
+	// TODO might not need this
+	/**
+	 * \brief By returning the index, we can avoid issues with iterator/pointer invalidation.
+	 * Uses unsigned int because size_t is just a waste of space here.
+	 * \param vk Controller Button Virtual Keycode
+	 * \param mappingsList List of controller button to action mappings.
+	 * \return Vector of indices at which mappings which map to the controller button VK can be located.
+	 */
+	[[nodiscard]]
+	constexpr
+	auto GetVkMatchIndices(const int vk, const std::vector<sds::CBActionMap>& mappingsList) noexcept -> std::vector<std::uint32_t>
+	{
+		std::vector<std::uint32_t> buf;
+		for (std::uint32_t i{}; i < mappingsList.size(); ++i)
+		{
+			const auto& elem = mappingsList[i];
+			if (elem.ButtonVirtualKeycode == vk)
+				buf.emplace_back(i);
+		}
+		return buf;
 	}
 	/**
 	 * \brief If enough time has passed, the key requests to be reset for use again; provided it uses the key-repeat behavior--
