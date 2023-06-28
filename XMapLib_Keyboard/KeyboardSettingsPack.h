@@ -57,6 +57,12 @@ namespace sds
 		static constexpr detail::VirtualKey_t RightThumbstickUp{VK_GAMEPAD_RIGHT_THUMBSTICK_UP};
 		static constexpr detail::VirtualKey_t RightThumbstickDown{VK_GAMEPAD_RIGHT_THUMBSTICK_DOWN};
 
+		// Also an internal representation value.
+		static constexpr detail::VirtualKey_t RightThumbstickUpRight{VK_PAD_RTHUMB_UPRIGHT};
+		static constexpr detail::VirtualKey_t RightThumbstickUpLeft{VK_PAD_RTHUMB_UPLEFT};
+		static constexpr detail::VirtualKey_t RightThumbstickDownRight{VK_PAD_RTHUMB_DOWNRIGHT};
+		static constexpr detail::VirtualKey_t RightThumbstickDownLeft{VK_PAD_RTHUMB_DOWNLEFT};
+
 
 		// used internally to denote left or right triggers, similar to the button VKs though they may
 		// not be used by the OS API state updates in the same way--we virtualize them.
