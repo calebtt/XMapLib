@@ -1,6 +1,7 @@
 #pragma once
 #include "LibIncludes.h"
 #include "CustomTypes.h"
+#include <stdexcept>
 
 #include "ControllerStateUpdateWrapper.h"
 #include "KeyboardTranslationResult.h"
@@ -116,21 +117,48 @@ namespace sds
 		return {};
 	}
 
-	/// <summary>
-	/// Encapsulates the mapping buffer, processes wrapped controller state updates, returns translation packs.
-	/// </summary>
+	/**
+	 * \brief Encapsulates the mapping buffer, processes wrapped controller state updates, returns translation packs.
+	 * \remarks If, before destruction, the mappings are in a state other than initial or awaiting reset, then you may wish to
+	 *	make use of the <c>GetCleanupActions()</c> function. Not copyable. Is movable.
+	 */
 	class KeyboardPollerControllerLegacy
 	{
 		using MappingVector_t = std::vector<CBActionMap>;
 		static_assert(MappingRange_c<MappingVector_t>);
 		MappingVector_t m_mappings;
 	public:
-		KeyboardPollerControllerLegacy() = delete;
+		KeyboardPollerControllerLegacy() = delete; // no default
+		KeyboardPollerControllerLegacy(const KeyboardPollerControllerLegacy& other) = delete; // no copy
+
+		/**
+		 * \brief Move constructor will call the cleanup actions on the moved-into instance before the move!
+		 */
+		KeyboardPollerControllerLegacy(KeyboardPollerControllerLegacy&& other) noexcept // implemented move
+		{
+			const auto cleanup = other.GetCleanupActions();
+			for(const auto & action : cleanup)
+				action();
+			m_mappings = std::move(other.m_mappings);
+		}
+
+		auto operator=(const KeyboardPollerControllerLegacy& other) -> KeyboardPollerControllerLegacy& = delete; // no copy-assign
+
+		auto operator=(KeyboardPollerControllerLegacy&& other) noexcept -> KeyboardPollerControllerLegacy& // implemented move-assign
+		{
+			if (this == &other)
+				return *this;
+			const auto cleanup = other.GetCleanupActions();
+			for (const auto& action : cleanup)
+				action();
+			m_mappings = std::move(other.m_mappings);
+			return *this;
+		}
 
 		/**
 		 * \brief Mapping Vector move Ctor, throws on exclusivity group error, initializes the timers with the custom timer values.
 		 * \param keyMappings Forwarding ref to a mapping vector type.
-		 * \exception std::exception on exclusivity group error during construction
+		 * \exception std::runtime_error on exclusivity group error during construction
 		 */
 		explicit KeyboardPollerControllerLegacy(MappingVector_t&& keyMappings )
 		: m_mappings(std::move(keyMappings))
@@ -138,13 +166,13 @@ namespace sds
 			for (auto& e : m_mappings)
 				InitCustomTimers(e);
 			if (!AreExclusivityGroupsUnique(m_mappings))
-				throw std::exception();
+				throw std::runtime_error("Exception: Mappings with multiple exclusivity groupings for a single VK!");
 		}
 
 		/**
 		 * \brief Mapping Vector copy Ctor, throws on exclusivity group error, initializes the timers with the custom timer values.
 		 * \param keyMappings const-ref to an iterable range of mappings.
-		 * \exception std::exception on exclusivity group error during construction
+		 * \exception std::runtime_error on exclusivity group error during construction
 		 */
 		explicit KeyboardPollerControllerLegacy(const MappingRange_c auto& keyMappings)
 		: m_mappings(keyMappings)
@@ -152,7 +180,7 @@ namespace sds
 			for (auto& e : m_mappings)
 				InitCustomTimers(e);
 			if (!AreExclusivityGroupsUnique(m_mappings))
-				throw std::exception();
+				throw std::runtime_error("Exception: Mappings with multiple exclusivity groupings for a single VK!");
 		}
 	public:
 		[[nodiscard]]
@@ -160,6 +188,7 @@ namespace sds
 		{
 			return GetUpdatedState(stateUpdate);
 		}
+
 		[[nodiscard]]
 		auto GetUpdatedState(const ControllerStateUpdateWrapper<>& stateUpdate) noexcept -> TranslationPack
 		{
@@ -193,8 +222,9 @@ namespace sds
 			}
 			return translations;
 		}
+
 		[[nodiscard]]
-		auto GetCleanupActions() noexcept
+		auto GetCleanupActions() noexcept -> detail::SmallVector_t<TranslationResult>
 		{
 			detail::SmallVector_t<TranslationResult> translations;
 			for(auto & mapping : m_mappings)
