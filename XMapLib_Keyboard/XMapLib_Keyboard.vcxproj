@@ -151,7 +151,6 @@
     <ClInclude Include="KeyboardPollerController.h" />
     <ClInclude Include="KeyboardSettingsPack.h" />
     <ClInclude Include="KeyboardTranslationHelpers.h" />
-    <ClInclude Include="KeyboardTranslationResult.h" />
     <ClInclude Include="LegacyApiFunctions.h" />
     <ClInclude Include="LibIncludes.h" />
   </ItemGroup>

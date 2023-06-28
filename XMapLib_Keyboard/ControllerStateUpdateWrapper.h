@@ -35,8 +35,8 @@ namespace sds
 	};
 
 	// Concept for a state update wrapper that probably depends on some platform specific type or behavior.
-	template<typename Settings_t>
-	concept ControllerStateOperations_c = requires(Settings_t & wrapperInstance)
+	template<typename Wrapper_t>
+	concept ControllerStateOperations_c = requires(Wrapper_t & wrapperInstance)
 	{
 		// Value dependent button test function
 		{ wrapperInstance.IsButtonDown(123) } -> std::convertible_to<bool>;
@@ -89,7 +89,7 @@ namespace sds
 		[[nodiscard]] constexpr bool IsRightThumbstickUpDown() const noexcept { return m_controllerStates.Gamepad.sThumbRY > m_settings.RightStickDeadzone; }
 		[[nodiscard]] constexpr bool IsRightThumbstickDownDown() const noexcept { return m_controllerStates.Gamepad.sThumbRY < -m_settings.RightStickDeadzone; }
 
-		[[nodiscard]] constexpr auto GetDownVirtualKeycodesRange() const noexcept
+		[[nodiscard]] constexpr auto GetDownVirtualKeycodesRange() const noexcept -> detail::SmallVector_t<int>
 		{
 			detail::SmallVector_t<int> allKeys{};
 			for(const auto elem: m_settings.ButtonCodeArray)

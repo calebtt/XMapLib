@@ -4,7 +4,6 @@
 #include <stdexcept>
 
 #include "ControllerStateUpdateWrapper.h"
-#include "KeyboardTranslationResult.h"
 #include "KeyboardTranslationHelpers.h"
 #include "LegacyApiFunctions.h"
 
