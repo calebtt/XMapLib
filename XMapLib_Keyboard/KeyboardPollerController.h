@@ -241,5 +241,6 @@ namespace sds
 		}
 	};
 	static_assert(InputPoller_c<KeyboardPollerControllerLegacy>);
+	static_assert(std::movable<KeyboardPollerControllerLegacy>);
 
 }
