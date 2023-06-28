@@ -22,7 +22,7 @@ namespace sds
 	 *	the right properties.
 	 */
 	template<typename Settings_t>
-	concept HasControllerSettings = requires(Settings_t &settings)
+	concept ControllerSettings_c = requires(Settings_t &settings)
 	{
 		// has compile-time accessible value for the number of controller buttons, and is convertible to size_t
 		{ std::convertible_to<decltype(std::size(Settings_t::ButtonCodeArray)), std::size_t> };
@@ -36,7 +36,7 @@ namespace sds
 
 	// Concept for a state update wrapper that probably depends on some platform specific type or behavior.
 	template<typename Settings_t>
-	concept ControllerStateOperations = requires(Settings_t & wrapperInstance)
+	concept ControllerStateOperations_c = requires(Settings_t & wrapperInstance)
 	{
 		// Value dependent button test function
 		{ wrapperInstance.IsButtonDown(123) } -> std::convertible_to<bool>;
@@ -59,10 +59,10 @@ namespace sds
 	/**
 	 * \brief Current controller button state info wrapper. Construct an instance to get some info about the state.
 	 */
-	template<HasControllerSettings ConfigSettings_t = KeyboardSettings>
+	template<ControllerSettings_c ConfigSettings_t = KeyboardSettings>
 	class ControllerStateUpdateWrapper
 	{
-		static_assert(HasControllerSettings<ConfigSettings_t>);
+		static_assert(ControllerSettings_c<ConfigSettings_t>);
 		XINPUT_STATE m_controllerStates;
 		ConfigSettings_t m_settings;
 	public:
@@ -125,6 +125,6 @@ namespace sds
 		}
 
 	};
-	static_assert(ControllerStateOperations<ControllerStateUpdateWrapper<KeyboardSettings>>);
+	static_assert(ControllerStateOperations_c<ControllerStateUpdateWrapper<KeyboardSettings>>);
 
 }

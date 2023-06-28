@@ -292,66 +292,66 @@ auto GetDriverMouseMappings()
             .DelayBeforeFirstRepeat = FirstDelay,
             .DelayForRepeats = RepeatDelay
         },
-        CBActionMap{
-            .ButtonVirtualKeycode = RightThumbstickUpRight,
-            .UsesInfiniteRepeat = true,
-            .ExclusivityGrouping = MouseExGroup,
-            .OnDown = [smi]() mutable
-            {
-                smi.SendMouseMove(1, 1);
-            },
-            .OnRepeat = [smi]() mutable
-            {
-                smi.SendMouseMove(1, 1);
-            },
-            .DelayBeforeFirstRepeat = FirstDelay,
-            .DelayForRepeats = RepeatDelay
-        },
-        CBActionMap{
-            .ButtonVirtualKeycode = RightThumbstickUpLeft,
-            .UsesInfiniteRepeat = true,
-            .ExclusivityGrouping = MouseExGroup,
-            .OnDown = [smi]() mutable
-            {
-                smi.SendMouseMove(-1, 1);
-            },
-            .OnRepeat = [smi]() mutable
-            {
-                smi.SendMouseMove(-1, 1);
-            },
-            .DelayBeforeFirstRepeat = FirstDelay,
-            .DelayForRepeats = RepeatDelay
-        },
-        CBActionMap{
-            .ButtonVirtualKeycode = RightThumbstickDownLeft,
-            .UsesInfiniteRepeat = true,
-            .ExclusivityGrouping = MouseExGroup,
-            .OnDown = [smi]() mutable
-            {
-                smi.SendMouseMove(-1, -1);
-            },
-            .OnRepeat = [smi]() mutable
-            {
-                smi.SendMouseMove(-1, -1);
-            },
-            .DelayBeforeFirstRepeat = FirstDelay,
-            .DelayForRepeats = RepeatDelay
-        },
-        CBActionMap{
-            .ButtonVirtualKeycode = RightThumbstickDownRight,
-            .UsesInfiniteRepeat = true,
-            .ExclusivityGrouping = MouseExGroup,
-            .OnDown = [smi]() mutable
-            {
-                smi.SendMouseMove(1, -1);
-            },
-            .OnRepeat = [smi]() mutable
-            {
-                smi.SendMouseMove(1, -1);
-            },
-            .DelayBeforeFirstRepeat = FirstDelay,
-            .DelayForRepeats = RepeatDelay
-        },
+        //CBActionMap{
+        //    .ButtonVirtualKeycode = RightThumbstickUpRight,
+        //    .UsesInfiniteRepeat = true,
+        //    .ExclusivityGrouping = MouseExGroup,
+        //    .OnDown = [smi]() mutable
+        //    {
+        //        smi.SendMouseMove(1, 1);
+        //    },
+        //    .OnRepeat = [smi]() mutable
+        //    {
+        //        smi.SendMouseMove(1, 1);
+        //    },
+        //    .DelayBeforeFirstRepeat = FirstDelay,
+        //    .DelayForRepeats = RepeatDelay
+        //},
+        //CBActionMap{
+        //    .ButtonVirtualKeycode = RightThumbstickUpLeft,
+        //    .UsesInfiniteRepeat = true,
+        //    .ExclusivityGrouping = MouseExGroup,
+        //    .OnDown = [smi]() mutable
+        //    {
+        //        smi.SendMouseMove(-1, 1);
+        //    },
+        //    .OnRepeat = [smi]() mutable
+        //    {
+        //        smi.SendMouseMove(-1, 1);
+        //    },
+        //    .DelayBeforeFirstRepeat = FirstDelay,
+        //    .DelayForRepeats = RepeatDelay
+        //},
+        //CBActionMap{
+        //    .ButtonVirtualKeycode = RightThumbstickDownLeft,
+        //    .UsesInfiniteRepeat = true,
+        //    .ExclusivityGrouping = MouseExGroup,
+        //    .OnDown = [smi]() mutable
+        //    {
+        //        smi.SendMouseMove(-1, -1);
+        //    },
+        //    .OnRepeat = [smi]() mutable
+        //    {
+        //        smi.SendMouseMove(-1, -1);
+        //    },
+        //    .DelayBeforeFirstRepeat = FirstDelay,
+        //    .DelayForRepeats = RepeatDelay
+        //},
+        //CBActionMap{
+        //    .ButtonVirtualKeycode = RightThumbstickDownRight,
+        //    .UsesInfiniteRepeat = true,
+        //    .ExclusivityGrouping = MouseExGroup,
+        //    .OnDown = [smi]() mutable
+        //    {
+        //        smi.SendMouseMove(1, -1);
+        //    },
+        //    .OnRepeat = [smi]() mutable
+        //    {
+        //        smi.SendMouseMove(1, -1);
+        //    },
+        //    .DelayBeforeFirstRepeat = FirstDelay,
+        //    .DelayForRepeats = RepeatDelay
+        //},
     };
     return mapBuffer;
 }
@@ -370,10 +370,11 @@ auto RunTestDriverLoop()
     const auto exitFuture = std::async(std::launch::async, [&]() { gec.GetExitSignal(); });
     while (!gec.IsDone)
     {
+        constexpr auto sleepDelay = std::chrono::nanoseconds{ 50us };
         const auto stateUpdate = sds::GetWrappedLegacyApiStateUpdate(playerInfo.PlayerId);
         const auto translation = poller(stateUpdate);
         translation();
-        nanotime_sleep(sds::KeyboardSettings::PollingLoopDelay.count());
+        nanotime_sleep(sleepDelay.count());
     }
     std::cout << "Performing cleanup actions...\n";
     const auto cleanupTranslation = poller.GetCleanupActions();
