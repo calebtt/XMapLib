@@ -182,6 +182,8 @@ namespace sds
 			if (!AreExclusivityGroupsUnique(m_mappings))
 				throw std::runtime_error("Exception: Mappings with multiple exclusivity groupings for a single VK!");
 		}
+
+		~KeyboardPollerControllerLegacy() = default;
 	public:
 		[[nodiscard]]
 		auto operator()(const ControllerStateUpdateWrapper<>& stateUpdate) noexcept -> TranslationPack
